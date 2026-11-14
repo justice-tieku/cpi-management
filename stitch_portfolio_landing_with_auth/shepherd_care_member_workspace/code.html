@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode":"class","theme":{"extend":{"colors":{"on-error":"#690005","on-tertiary-fixed-variant":"#4a3d7c","error":"#ffb4ab","surface-bright":"#38393f","on-surface":"#e3e1e9","surface":"#121318","on-error-container":"#ffdad6","primary-fixed-dim":"#d0bcff","primary":"#d0bcff","outline":"#958ea0","inverse-primary":"#6d3bd7","on-primary-container":"#340080","on-primary-fixed-variant":"#5516be","secondary":"#cebdff","on-tertiary-container":"#2c1f5c","surface-container":"#1e1f25","outline-variant":"#494454","on-primary-fixed":"#23005c","surface-tint":"#d0bcff","secondary-container":"#4f319c","primary-fixed":"#e9ddff","primary-container":"#a078ff","on-secondary-fixed":"#21005e","tertiary-container":"#9587cc","on-secondary-container":"#bea8ff","inverse-surface":"#e3e1e9","tertiary":"#ccbeff","on-primary":"#3c0091","tertiary-fixed":"#e7deff","surface-dim":"#121318","background":"#121318","surface-container-lowest":"#0d0e13","tertiary-fixed-dim":"#ccbeff","on-tertiary-fixed":"#1e0e4e","on-surface-variant":"#cbc3d7","error-container":"#93000a","surface-container-high":"#292a2f","on-background":"#e3e1e9","on-secondary":"#381385","on-secondary-fixed-variant":"#4f319c","on-tertiary":"#332664","surface-container-highest":"#34343a","secondary-fixed-dim":"#cebdff","surface-container-low":"#1a1b21","inverse-on-surface":"#2f3036","surface-variant":"#34343a","secondary-fixed":"#e8ddff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","space-lg":"1.5rem","space-md":"1rem","gutter-lg":"2rem","space-xs":"0.25rem","margin-lg":"5rem","space-xl":"2.5rem","gutter-sm":"1rem","margin":"1.5rem","space-sm":"0.5rem","margin-md":"3rem"},"fontFamily":{"body-md":["Inter"],"headline-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"display-hero":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"display-hero-mobile":["Plus Jakarta Sans"],"body-sm":["Inter"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-lg":["Inter"]},"fontSize":{"body-md":["15px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"400"}],"headline-md":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"headline-lg-mobile":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}],"display-hero":["56px",{"lineHeight":"64px","letterSpacing":"-0.03em","fontWeight":"700"}],"headline-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.04em","fontWeight":"600"}],"display-hero-mobile":["36px",{"lineHeight":"42px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-sm":["13px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"400"}],"headline-sm":["20px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"500"}],"body-lg":["18px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"400"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased min-h-screen selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between py-space-lg px-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-sm"><div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary shadow-[0_0_24px_-4px_rgba(139,92,246,0.25)]"><span class="material-symbols-outlined text-[22px]">church</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-semibold">Grace Ecclesia</span><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">CMS Portal</span></div></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-xl shadow-[0_0_20px_-4px_rgba(160,120,255,0.35)]"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">dashboard</span><span class="font-label-lg text-label-lg">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="all-members" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">groups</span><span class="font-label-lg text-label-lg">All Members</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="shepherd-assignments" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">diversity_3</span><span class="font-label-lg text-label-lg">Shepherd Assignments</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="church-attendance" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">how_to_reg</span><span class="font-label-lg text-label-lg">Church Attendance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="follow-up-care" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">volunteer_activism</span><span class="font-label-lg text-label-lg">Follow-Up &amp; Care</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="first-timers-visitors" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">person_add_alt</span><span class="font-label-lg text-label-lg">First-Timers &amp; Visitors</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="services-calendar" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">event</span><span class="font-label-lg text-label-lg">Services &amp; Calendar</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="reports-analytics" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">monitoring</span><span class="font-label-lg text-label-lg">Reports &amp; Analytics</span></a></nav></div><div class="flex flex-col gap-space-xs pt-space-md"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">settings</span><span class="font-label-lg text-label-lg">Settings</span></a><div class="p-space-sm rounded-xl bg-surface-container-low flex items-center gap-space-sm mt-space-xs"><div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface font-semibold">Ecclesia Global</span><span class="font-label-sm text-label-sm text-outline">v2.4 Secured Sanctuary</span></div></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer"><span class="material-symbols-outlined text-[18px] text-primary">church</span><span class="font-label-lg text-label-lg text-on-surface">Apex Sanctuary (Main Campus)</span><span class="material-symbols-outlined text-[16px] text-outline">expand_more</span></div><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span><input class="w-80 bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline pl-10 pr-space-md py-space-xs rounded-xl focus:outline-none focus:bg-surface-container transition-all" placeholder="Search congregants, shepherds, gifts..." type="text"/></div></div><div class="flex items-center gap-space-md"><button class="flex items-center gap-space-xs bg-primary-container text-on-primary-container px-space-md py-space-xs rounded-xl font-label-lg text-label-lg font-semibold hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_16px_rgba(160,120,255,0.25)]" type="button"><span class="material-symbols-outlined text-[18px]">person_add</span><span>+ New Member</span></button><div class="relative"><button class="w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Rev. Dr. Emmanuel Sterling</span><span class="font-label-sm text-label-sm text-outline leading-tight">Senior Pastor • General Overseer</span></div></div></div></header><main class="w-full pt-16 bg-background flex-1 px-space-lg py-space-lg"><div class="flex flex-col w-full">
+<!-- Subtle Ambient Glow -->
+<div class="relative w-full overflow-hidden">
+<div class="absolute -top-32 left-1/4 w-96 h-96 bg-primary-container/10 rounded-full blur-[120px] pointer-events-none"></div>
+<div class="absolute top-1/2 right-10 w-80 h-80 bg-secondary-container/10 rounded-full blur-[100px] pointer-events-none"></div>
+<!-- Shepherd Identity & Stewardship Header -->
+<section class="relative bg-surface-container-low rounded-2xl p-space-lg mb-space-lg shadow-xl overflow-hidden">
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-lg">
+<!-- Identity Cluster -->
+<div class="flex items-start sm:items-center gap-space-md">
+<div class="relative">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-high overflow-hidden shadow-[0_0_24px_rgba(160,120,255,0.25)] flex items-center justify-center">
+<img class="w-full h-full object-cover" data-alt="Refined, warm photographic portrait of Shepherd David Kimani, an African leader wearing a charcoal collared shirt, calm demeanor, illuminated by cinematic dark studio violet lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCO1yYJK79xCRixvJZd7dDvjTuveYut011CSAZ4Wlo3vifNw6KIduBuoPWAsEvj4McIcqC-nSeoo6JBvs4GAhRes3_jyXJZiaESA6bhMBoujd4zskvutNFJDIM6s6sRVRiPJ8w10Jy2crdo45EQIIR30bJs64159N40DDijWYjPYxQ3sv6smSQxdZTX8hmth5fkLfonkjpTmF4YG8JCNE4S1zG8SSU5fxdhQEqRhJ0"/>
+</div>
+<span class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs flex-wrap">
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight font-semibold">Shepherd David Kimani</h1>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-primary-container/20 text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[13px]" style="font-variation-settings: 'FILL' 1;">verified</span>
+                Zone 3 Central District
+              </span>
+</div>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">
+              Assigned Parishioners: <span class="text-on-surface font-medium">32 Flock Souls</span> • Cell Group: Bethesda Light Fellowship
+            </p>
+</div>
+</div>
+<!-- Stewarded Benchmarks & Fast Actions -->
+<div class="flex flex-wrap items-center gap-space-lg xl:border-l xl:border-surface-container-high/40 xl:pl-space-lg">
+<div class="flex items-center gap-space-md">
+<!-- Care Health Ring Metric -->
+<div class="flex items-center gap-3">
+<div class="relative w-12 h-12">
+<svg class="w-12 h-12 transform -rotate-90" viewbox="0 0 44 44">
+<circle class="text-surface-container-highest" cx="22" cy="22" fill="none" r="18" stroke="currentColor" stroke-width="4.5"></circle>
+<circle class="text-primary-container" cx="22" cy="22" fill="none" r="18" stroke="currentColor" stroke-dasharray="113.1" stroke-dashoffset="4.52" stroke-linecap="round" stroke-width="4.5"></circle>
+</svg>
+<span class="absolute inset-0 flex items-center justify-center font-label-md text-label-md font-bold text-primary">96%</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Flock Health Score</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Excellent Vitality</span>
+</div>
+</div>
+<!-- Completed Touchpoints -->
+<div class="flex flex-col pl-space-md">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Touchpoints This Month</span>
+<div class="flex items-baseline gap-1">
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold">58</span>
+<span class="font-body-sm text-body-sm text-outline">/ 64 planned</span>
+</div>
+</div>
+</div>
+<!-- Quick Action CTA Group -->
+<div class="flex items-center gap-space-xs">
+<button class="flex items-center gap-2 bg-primary-container text-on-primary-container px-space-md py-2.5 rounded-xl font-label-lg text-label-lg font-semibold hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_20px_-4px_rgba(160,120,255,0.4)]" id="btn-quick-log" type="button">
+<span class="material-symbols-outlined text-[18px]">add_task</span>
+<span>+ Log Care Touchpoint</span>
+</button>
+<button class="flex items-center gap-2 bg-surface-container text-on-surface px-space-md py-2.5 rounded-xl font-label-lg text-label-lg font-semibold hover:bg-surface-container-high transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">person_add</span>
+<span>+ Register Flock Soul</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Top Metric Cards -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md mb-space-lg">
+<!-- Metric 1: Total Flock -->
+<div class="bg-surface-container-low p-space-md rounded-2xl flex flex-col justify-between shadow-md relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-outline tracking-wider uppercase">My Assigned Flock</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[18px]">diversity_3</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-1">
+<span class="font-display-hero-mobile text-display-hero-mobile font-bold text-on-surface tracking-tight">32</span>
+<span class="font-label-sm text-label-sm text-primary font-medium">Soul Custodianship</span>
+</div>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm pt-2">
+<span><strong class="text-on-surface">28</strong> Active In Fellowship</span>
+<span class="text-primary-container"><strong class="text-primary">4</strong> In Triage Intake</span>
+</div>
+</div>
+<!-- Metric 2: Follow-Ups Due Today -->
+<div class="bg-surface-container-low p-space-md rounded-2xl flex flex-col justify-between shadow-md relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-outline tracking-wider uppercase">Follow-Ups Due Today</span>
+<div class="w-8 h-8 rounded-lg bg-primary-container/20 flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[18px]">notification_important</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-1">
+<span class="font-display-hero-mobile text-display-hero-mobile font-bold text-primary tracking-tight">3</span>
+<span class="font-label-sm text-label-sm text-outline">Priority Encounters</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline truncate">
+          Absence check, Convalescent prayer, Cell follow-up
+        </p>
+</div>
+<!-- Metric 3: Overdue Care Alert -->
+<div class="bg-surface-container-low p-space-md rounded-2xl flex flex-col justify-between shadow-md relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-error tracking-wider uppercase font-semibold">Overdue Attention</span>
+<div class="w-8 h-8 rounded-lg bg-error-container/30 flex items-center justify-center text-error group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-1">
+<span class="font-display-hero-mobile text-display-hero-mobile font-bold text-error tracking-tight">1</span>
+<span class="font-label-sm text-label-sm text-error/80 font-medium">Critical Breach (4d)</span>
+</div>
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm pt-1">
+<span class="text-on-surface font-medium truncate">Mildred Vance</span>
+<span class="text-error font-semibold">Hospitalization Check</span>
+</div>
+</div>
+<!-- Metric 4: Attendance Rate -->
+<div class="bg-surface-container-low p-space-md rounded-2xl flex flex-col justify-between shadow-md relative overflow-hidden group hover:bg-surface-container transition-all">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-outline tracking-wider uppercase">Last Lord's Day Presence</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary group-hover:scale-105 transition-transform">
+<span class="material-symbols-outlined text-[18px]">church</span>
+</div>
+</div>
+<div class="flex items-baseline gap-2 mb-1">
+<span class="font-display-hero-mobile text-display-hero-mobile font-bold text-on-surface tracking-tight">87.5%</span>
+<span class="font-label-sm text-label-sm text-emerald-400 font-medium">+3.2% vs last mo.</span>
+</div>
+<div class="w-full bg-surface-container-highest h-2 rounded-full overflow-hidden mt-1">
+<div class="bg-primary-container h-full rounded-full" style="width: 87.5%"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline mt-1.5">28 present / 4 excused travel</span>
+</div>
+</section>
+<!-- Main Workspace Two-Column Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Left Column: Care & Follow-Up Action Queue (5 Cols ~42%) -->
+<div class="lg:col-span-5 flex flex-col gap-space-md">
+<div class="bg-surface-container-low rounded-2xl p-space-md shadow-lg">
+<div class="flex items-center justify-between pb-space-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[22px]">playlist_add_check_circle</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Care Action Queue</h2>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-highest text-primary font-label-sm text-label-sm">4 Actions Pending</span>
+</div>
+<!-- Queue Filter Tabs -->
+<div class="flex items-center gap-1.5 p-1 bg-surface-container-lowest rounded-xl my-space-sm">
+<button class="flex-1 py-1.5 px-2 rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm font-semibold shadow-sm transition-all text-center" type="button">
+              Due &amp; Overdue (4)
+            </button>
+<button class="flex-1 py-1.5 px-2 rounded-lg text-outline hover:text-on-surface font-label-sm text-label-sm transition-all text-center" type="button">
+              Upcoming (2)
+            </button>
+<button class="flex-1 py-1.5 px-2 rounded-lg text-outline hover:text-on-surface font-label-sm text-label-sm transition-all text-center" type="button">
+              Completed (12)
+            </button>
+</div>
+<!-- Action Items Queue Cards -->
+<div class="flex flex-col gap-space-sm mt-space-sm">
+<!-- Urgent Overdue Item: Mildred Vance -->
+<div class="bg-surface-container p-space-md rounded-xl shadow-md hover:bg-surface-container-high transition-all">
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Elderly African grandmother smiling gently, wearing violet headwrap, warm soft lighting, church directory portrait style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBUAmjFoqrGE9FHpw8f7ZRAUI_4IFCw-547mHVZmftTzQtFvLd6bk4tAdAarZQWp5Dt543aywFv6y0lO5xCnXlWwxPdKcHWQTXUNEX_rqjqk8P6FVRxTnIbY_YyvgiMyZsHRb3kyi1quyyOyrNGA8J39u2kjOkHfO3ZRb7WiXoEfBhe5kASs1KkQ7dXa5gzFHrQlzhNOVNM-VWM5dNz08g1mHwaTJ9NgnN7KydkQL8"/>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-semibold">Mildred Vance</h3>
+<span class="font-label-sm text-label-sm text-outline">Post-Surgery Convalescence Care</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-error-container text-on-error font-label-sm text-label-sm font-semibold animate-pulse">
+<span class="material-symbols-outlined text-[13px]">schedule</span> 4d Overdue
+                </span>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg mb-space-sm">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Hospital discharge reported Thursday by daughter. Needs elder prayer visitation &amp; communion scheduling.
+                </p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-outline">Last Visit: 6 days ago</span>
+<div class="flex items-center gap-1.5">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-bright text-emerald-400 flex items-center justify-center transition-colors" title="WhatsApp Chat" type="button">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-bright text-primary flex items-center justify-center transition-colors" title="Direct Shepherd Call" type="button">
+<span class="material-symbols-outlined text-[18px]">call</span>
+</button>
+<button class="px-2.5 py-1.5 rounded-lg bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold hover:bg-primary hover:text-on-primary transition-all" type="button">
+                    Log Outcome
+                  </button>
+</div>
+</div>
+</div>
+<!-- Due Today Item: Ezekiel Adebayo (Absence Check) -->
+<div class="bg-surface-container p-space-md rounded-xl shadow-md ring-1 ring-primary/40 bg-gradient-to-r from-surface-container to-primary-container/5 transition-all">
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Warm portrait of Ezekiel Adebayo, a young adult Nigerian software engineer in dark violet sweater, sharp confident smile" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0_aK5b3o0iRCCM9JbXAqakUyqyu5WWC5k7KywQG9mqyHcePFeNGdJHbToficpGrXnvwebhG_EITyjaVekX7XGhi9pK7kmtY-4i6H2Vgf6v0bTEr47IrxY2127zIgrG9PDhhwj779Gp8jfj64nKJQdu2owG2XHS2FPDHE9jsbLxwNVzlzIzWUlQgApBtH8AGPGR4gI_dg5nOLGcmKI5BX3N7lMabr6DKx1-sWaG2U"/>
+</div>
+<div>
+<div class="flex items-center gap-1">
+<h3 class="font-label-lg text-label-lg text-on-surface font-semibold">Ezekiel Adebayo</h3>
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Sanctuary Absence Alert</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                  Due Today
+                </span>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg mb-space-sm">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Missed 2 consecutive Lord's Day gatherings (Nov 17 &amp; Nov 24). Check work shift rotation &amp; physical wellness.
+                </p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-primary">Selected in Dossier</span>
+<div class="flex items-center gap-1.5">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-bright text-emerald-400 flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-bright text-primary flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">call</span>
+</button>
+<button class="px-2.5 py-1.5 rounded-lg bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold hover:bg-primary hover:text-on-primary transition-all" type="button">
+                    Log Outcome
+                  </button>
+</div>
+</div>
+</div>
+<!-- Due Today Item: Naomi Chen -->
+<div class="bg-surface-container p-space-md rounded-xl shadow-md hover:bg-surface-container-high transition-all">
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Naomi Chen, Asian woman mid-twenties, thoughtful friendly expression, minimalist aesthetic dark violet tones" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAwoLMlwbAfVZ4osfZp_XiNwhpsWupLCDwzkw_nbkiOU0IIr3ZNlue_riMNKDO9HWvifATtQzB__ug0rvh7vaGcqtFz2Pz6jDnCnEszle-Vq6l8XADFK4RwvJ09blajGfbDvKx4cne8Bjp30Ga8SUAS8k97iv86wbPecLeZ88jn-iLpU1UgnVOsKe8qyLytN2j91HC6cr7bLuRYuQIKAI4pISUZq84NUEwyDBzg_gg"/>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-semibold">Naomi Chen</h3>
+<span class="font-label-sm text-label-sm text-outline">First-Timer Shepherd Welcome Call</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                  Due Today
+                </span>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg mb-space-sm">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Accepted Christ at Apex Sanctuary last Sunday. Welcome to Cell group and deliver 'New Believer Foundations' manual.
+                </p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-outline">Intake: 2 days ago</span>
+<div class="flex items-center gap-1.5">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-bright text-emerald-400 flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-bright text-primary flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">call</span>
+</button>
+<button class="px-2.5 py-1.5 rounded-lg bg-surface-container-highest text-on-surface font-label-sm text-label-sm font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all" type="button">
+                    Log Outcome
+                  </button>
+</div>
+</div>
+</div>
+<!-- Due Today Item: Marcus Thorne -->
+<div class="bg-surface-container p-space-md rounded-xl shadow-md hover:bg-surface-container-high transition-all">
+<div class="flex items-start justify-between gap-2 mb-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Marcus Thorne, middle aged Caucasian man with neat beard, quiet dignity, obsidian background, dramatic gentle studio light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZTllyaOnfEv_hpHk7DXchOO8z5zZ32X-AyLSbv4wgk99DaCNOGl8oYqWJ4uWwBByq76FEuFcKRITu803TTywx1fDKBavJzMjiUp5p85cbmzVHx4hNwMqT53_ypaeMKlIt1ids7OCth4poTITjw4LXXd86Qaq_Uf7IxPXe9X6qdu5oa_QHfpn0zNoB4lKVGgJAhybSrg9hh1-T4ssNE_6F2_W38ZwGd2AzUbPk2f8"/>
+</div>
+<div>
+<h3 class="font-label-lg text-label-lg text-on-surface font-semibold">Marcus Thorne</h3>
+<span class="font-label-sm text-label-sm text-outline">Cell Group Attendance Check</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                  Due Today
+                </span>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg mb-space-sm">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                  Excused from Tuesday Bible Study due to late corporate shifts. Shepherd touchpoint to share reflection audio recap.
+                </p>
+</div>
+<div class="flex items-center justify-between pt-1">
+<span class="font-label-sm text-label-sm text-outline">Last Contact: Nov 19</span>
+<div class="flex items-center gap-1.5">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-bright text-emerald-400 flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">chat</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-bright text-primary flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">call</span>
+</button>
+<button class="px-2.5 py-1.5 rounded-lg bg-surface-container-highest text-on-surface font-label-sm text-label-sm font-semibold hover:bg-primary-container hover:text-on-primary-container transition-all" type="button">
+                    Log Outcome
+                  </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: My Assigned Flock Directory & Spiritual Health (7 Cols ~58%) -->
+<div class="lg:col-span-7 flex flex-col gap-space-md">
+<!-- Directory Master Panel -->
+<div class="bg-surface-container-low rounded-2xl p-space-md shadow-lg">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Flock Directory &amp; Health Matrix</h2>
+<p class="font-body-sm text-body-sm text-outline">Comprehensive oversight of all 32 flock charges</p>
+</div>
+<!-- Quick Directory Search & Filter -->
+<div class="flex items-center gap-2">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-2.5 top-2.5 text-[16px] text-outline pointer-events-none">search</span>
+<input class="bg-surface-container font-body-sm text-body-sm text-on-surface placeholder:text-outline pl-8 pr-3 py-1.5 rounded-xl focus:outline-none focus:ring-1 focus:ring-primary w-48" placeholder="Filter assigned souls..." type="text"/>
+</div>
+</div>
+</div>
+<!-- Status Filter Chips -->
+<div class="flex items-center gap-2 overflow-x-auto pb-2 mb-space-sm">
+<button class="px-3 py-1 rounded-full bg-primary-container/20 text-primary font-label-sm text-label-sm font-semibold">
+              All (32)
+            </button>
+<button class="px-3 py-1 rounded-full bg-surface-container text-outline hover:text-on-surface font-label-sm text-label-sm transition-colors">
+              Active Believer (24)
+            </button>
+<button class="px-3 py-1 rounded-full bg-surface-container text-outline hover:text-on-surface font-label-sm text-label-sm transition-colors">
+              New Convert (4)
+            </button>
+<button class="px-3 py-1 rounded-full bg-surface-container text-outline hover:text-on-surface font-label-sm text-label-sm transition-colors">
+              Under Care / Triage (4)
+            </button>
+</div>
+<!-- Parishioners Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left">
+<thead>
+<tr class="text-outline font-label-sm text-label-sm uppercase tracking-wider border-b border-surface-container-high/40 pb-2">
+<th class="py-2.5 pl-2 font-medium">Member</th>
+<th class="py-2.5 px-2 font-medium">Milestone</th>
+<th class="py-2.5 px-2 font-medium text-center">4-Wk Pattern</th>
+<th class="py-2.5 px-2 font-medium">Last Contact</th>
+<th class="py-2.5 pr-2 font-medium text-right">Dossier</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-high/20 font-body-sm text-body-sm">
+<!-- Row 1: Ezekiel Adebayo (Active Focus) -->
+<tr class="bg-surface-container/60 hover:bg-surface-container transition-colors group">
+<td class="py-3 pl-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden ring-2 ring-primary">
+<img class="w-full h-full object-cover" data-alt="Portrait of Ezekiel Adebayo, young adult man in violet ambient lighting, church directory avatar" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEwUtp6i2nO5O7rT3p1FZHc2BsahUlV99LuznVQ2rDiYq912Vo89_Qutw5_MnV0sEXIWbJE0ReKQjFTuxcW0iPr1MrnpQFxXpb-arMbG0PG8QgOVNobFrPfY-EGV0aGVzmFV_3DMM5b63szqQP7LYL7H87XUXUATbl273r_VwXaQCVUjcVi6ssj5d3SmBHwgqxivY8kjsij9B0EV1oxvFoGJ611czflvPZWMgYjug"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Ezekiel Adebayo</span>
+<span class="font-label-sm text-label-sm text-outline">Joined Feb 2023</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary-container/15 text-primary font-label-sm text-label-sm">
+                      Baptized • Found. OK
+                    </span>
+</td>
+<td class="py-3 px-2">
+<div class="flex items-center justify-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="3 wks ago: Present"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="2 wks ago: Present"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-error" title="1 wk ago: Absent"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-error" title="Last Sun: Absent"></span>
+</div>
+</td>
+<td class="py-3 px-2 font-label-sm text-label-sm text-outline">
+                    Nov 12 (14d ago)
+                  </td>
+<td class="py-3 pr-2 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold shadow-sm hover:bg-primary hover:text-on-primary transition-colors" type="button">
+<span>Dossier</span>
+<span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</button>
+</td>
+</tr>
+<!-- Row 2: Mildred Vance -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<td class="py-3 pl-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Elderly African grandmother smiling gently, wearing violet headwrap, warm soft lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBvrSWoVPUArGHdVsHC1Pr__bblolK7bRf5i74Mwg0AuemmXSoDXu1OKujaJ1pqoA2SQpXnujAAAEk6L-0I6TArZjMs2-nlLNi9uUJITtMeSqQpHiKqarHPHX4srYPd7ZxqkH9Dw1JExqlJSjQIy2JEZ7IRsgm4diWytNMd9QkXQpVH_4X_oi_tDmDnOWonuFAyzYJ3zZoe9lm_zSB1z5fL2ODAm8scxM3ZjqlQ9wk"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Mildred Vance</span>
+<span class="font-label-sm text-label-sm text-outline">Joined Jan 2019</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface-variant font-label-sm text-label-sm">
+                      Pillar Saint
+                    </span>
+</td>
+<td class="py-3 px-2">
+<div class="flex items-center justify-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="Present"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-amber-400" title="Excused (Hospital)"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-amber-400" title="Excused (Hospital)"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-amber-400" title="Excused (Hospital)"></span>
+</div>
+</td>
+<td class="py-3 px-2 font-label-sm text-label-sm text-error font-medium">
+                    Nov 20 (6d ago)
+                  </td>
+<td class="py-3 pr-2 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm transition-colors" type="button">
+<span>Dossier</span>
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 3: Naomi Chen -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<td class="py-3 pl-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Naomi Chen, Asian woman mid-twenties, thoughtful friendly expression" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBgocPeWNscLhUHogJpqMwms9OnzE06_QX80oTvea_yc28dRhj3NHIxvnspMrc3kA8DAIwmIgBV-pJaLa_W-izgCfGyL5zMZzih45pQ_metzDAMPkLUz6O3Vy8iJOgG6WAJlYjUedotEyx2mSgwtpeX13OjwmBX7HwHweihdK-JkWb1nSKJoC6t1UrYI_zf4Ct-C0PIiAhV6Lh3zMx_PlIkaM5agtwiJC_P_nlbAoY"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Naomi Chen</span>
+<span class="font-label-sm text-label-sm text-primary">New Convert • Nov 2024</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-secondary-container/40 text-secondary font-label-sm text-label-sm">
+                      Water Baptism Pending
+                    </span>
+</td>
+<td class="py-3 px-2">
+<div class="flex items-center justify-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest" title="Not Enrolled"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest" title="Not Enrolled"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-surface-container-highest" title="Not Enrolled"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="Present (Intake)"></span>
+</div>
+</td>
+<td class="py-3 px-2 font-label-sm text-label-sm text-outline">
+                    Nov 24 (2d ago)
+                  </td>
+<td class="py-3 pr-2 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm transition-colors" type="button">
+<span>Dossier</span>
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 4: Marcus Thorne -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<td class="py-3 pl-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Marcus Thorne, middle aged Caucasian man with neat beard, quiet dignity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAZ0N6POWZWTsoo92d_WJ3sl6X2WlnvFa8Gc9v7TvPUwGBceu1cSrJeERzE16aT6RKy9W3KNQ74VzpKmVaRzHYQvvoj-7I_7uvCzFi1aFuAJoa0ARn3oPLb-Atraf4dfRbldxWzTg9zD8g3xWLFsTe_U8on-jGeS54hDFasR06hhcn6EP8fhXdF-DaxmewQg7YF-jm2IEm83LHR2DaQbYbFrmtwRch3YRQZt1Typos"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Marcus Thorne</span>
+<span class="font-label-sm text-label-sm text-outline">Joined Aug 2021</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-surface-container-highest text-on-surface font-label-sm text-label-sm">
+                      Baptized • Cell Worker
+                    </span>
+</td>
+<td class="py-3 px-2">
+<div class="flex items-center justify-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="Present"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="Present"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="Present"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-amber-400" title="Excused Work"></span>
+</div>
+</td>
+<td class="py-3 px-2 font-label-sm text-label-sm text-outline">
+                    Nov 19 (7d ago)
+                  </td>
+<td class="py-3 pr-2 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm transition-colors" type="button">
+<span>Dossier</span>
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+</button>
+</td>
+</tr>
+<!-- Row 5: Tabitha Osei -->
+<tr class="hover:bg-surface-container/40 transition-colors group">
+<td class="py-3 pl-2">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high overflow-hidden">
+<img class="w-full h-full object-cover" data-alt="Portrait of Tabitha Osei, Ghanaian young woman with braided hair, pleasant bright expression, dark obsidian violet backdrop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA0qzWd7HSBP3TpccoMJdDtflbkBCS-wO6uH47aW5CrlwIGAU7U4NhYp0rnf5Raq-h4pRD8Dryg7gyqIZiidzCIQWsPcv16oeGzBbS_kRMETCEhoYSPcsBIkRd0zgzI2rKrAUgIO7MNAUEoLm5OenS5AJEK-usm2f3rcfrj51FwwrrTuh4XqVC90wymRWEyDaoJfEtodlewQsPVWJzkNVPeyuO-stg7OUUcZIQthLY"/>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold group-hover:text-primary transition-colors">Tabitha Osei</span>
+<span class="font-label-sm text-label-sm text-outline">Joined Jan 2024</span>
+</div>
+</div>
+</td>
+<td class="py-3 px-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-primary-container/15 text-primary font-label-sm text-label-sm">
+                      Baptized • Choir Aux.
+                    </span>
+</td>
+<td class="py-3 px-2">
+<div class="flex items-center justify-center gap-1">
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="Present"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="Present"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="Present"></span>
+<span class="w-2.5 h-2.5 rounded-full bg-emerald-400" title="Present"></span>
+</div>
+</td>
+<td class="py-3 px-2 font-label-sm text-label-sm text-outline">
+                    Yesterday (1d ago)
+                  </td>
+<td class="py-3 pr-2 text-right">
+<button class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm transition-colors" type="button">
+<span>Dossier</span>
+<span class="material-symbols-outlined text-[14px]">visibility</span>
+</button>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Docked Live Dossier: Selected Parishioner (Ezekiel Adebayo) -->
+<div class="bg-surface-container-low rounded-2xl p-space-md shadow-xl ring-1 ring-primary/20">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between pb-space-md border-b border-surface-container-high/40 gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high overflow-hidden shadow-md">
+<img class="w-full h-full object-cover" data-alt="Close up photographic avatar of Ezekiel Adebayo, Nigerian parishioner in his late twenties, gentle confident look, violet ambient highlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBr26mLv146h8_tW8I9Um5tIxi0Z0kWmoXyVGPhLFVsKeavylz3iXe3cuCJ-TcRLgQ8wPWbo9fSbaKBSw67YkzsoGDmqor9pD5lzcAZ8drSLzdkWtWzOw3yHidxgsVX27Km3PH_9isJFGniL3XJ3U893LKp-5Y1znWdvezDApZ1SHhYdMstW_9S2RlLNqK6biHL1SEAl5G1EO--5NJfT89gTS4nh0anBgnZ4QUIprI"/>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-2">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold tracking-tight">Parishioner Care Dossier: Ezekiel Adebayo</h3>
+<span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-label-sm text-label-sm">Active Member</span>
+</div>
+<span class="font-body-sm text-body-sm text-outline">ID: GP-FLOCK-2023-049 • Cell: Bethesda Light Fellowship</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-container text-on-surface hover:bg-surface-container-high font-label-sm text-label-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">edit_calendar</span>
+<span>Schedule Visit</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold hover:bg-primary hover:text-on-primary transition-all" type="button">
+<span class="material-symbols-outlined text-[16px]">note_add</span>
+<span>+ Add Care Entry</span>
+</button>
+</div>
+</div>
+<!-- Spiritual Milestones & 6-Week Attendance Tracker Strip -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md py-space-md border-b border-surface-container-high/40">
+<!-- Milestones -->
+<div class="flex flex-col gap-2">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Spiritual Pathway Milestones</span>
+<div class="flex flex-wrap items-center gap-2">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px] text-emerald-400">check_circle</span> Water Baptism (Apr 2023)
+                </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container text-on-surface font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px] text-emerald-400">check_circle</span> Foundations Class 101
+                </span>
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container-highest text-primary font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px] text-primary">pending</span> Leadership Prep 201
+                </span>
+</div>
+</div>
+<!-- 6-Week Attendance Tracker -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">6-Week Service Attendance Record</span>
+<span class="font-label-sm text-label-sm text-error font-medium">Consecutive Absences: 2</span>
+</div>
+<div class="grid grid-cols-6 gap-2">
+<div class="flex flex-col items-center p-2 rounded-lg bg-surface-container-lowest text-center">
+<span class="font-label-sm text-label-sm text-outline">Oct 20</span>
+<span class="material-symbols-outlined text-[18px] text-emerald-400 mt-1">check</span>
+<span class="font-label-sm text-[10px] text-outline">Present</span>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-surface-container-lowest text-center">
+<span class="font-label-sm text-label-sm text-outline">Oct 27</span>
+<span class="material-symbols-outlined text-[18px] text-emerald-400 mt-1">check</span>
+<span class="font-label-sm text-[10px] text-outline">Present</span>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-surface-container-lowest text-center">
+<span class="font-label-sm text-label-sm text-outline">Nov 03</span>
+<span class="material-symbols-outlined text-[18px] text-emerald-400 mt-1">check</span>
+<span class="font-label-sm text-[10px] text-outline">Present</span>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-surface-container-lowest text-center">
+<span class="font-label-sm text-label-sm text-outline">Nov 10</span>
+<span class="material-symbols-outlined text-[18px] text-emerald-400 mt-1">check</span>
+<span class="font-label-sm text-[10px] text-outline">Present</span>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-error-container/20 text-center ring-1 ring-error/40">
+<span class="font-label-sm text-label-sm text-outline">Nov 17</span>
+<span class="material-symbols-outlined text-[18px] text-error mt-1">close</span>
+<span class="font-label-sm text-[10px] text-error">Absent</span>
+</div>
+<div class="flex flex-col items-center p-2 rounded-lg bg-error-container/20 text-center ring-1 ring-error/40">
+<span class="font-label-sm text-label-sm text-outline">Nov 24</span>
+<span class="material-symbols-outlined text-[18px] text-error mt-1">close</span>
+<span class="font-label-sm text-[10px] text-error">Absent</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Split Dossier Notes: General vs Strictly Confidential Pastoral Care Notes -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-space-md pt-space-md">
+<!-- Section A: General Ministry Notes (Shared with Assistant Shepherds/Ushers) -->
+<div class="bg-surface-container p-space-md rounded-xl flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">group</span>
+<h4 class="font-label-lg text-label-lg text-on-surface font-semibold">General Ministry Notes</h4>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Visible to Assisting Workers</span>
+</div>
+<div class="flex flex-col gap-2.5">
+<div class="p-2.5 rounded-lg bg-surface-container-lowest">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm mb-1">
+<span>Bro. Caleb (Asst. Shepherd)</span>
+<span>Nov 10, 2024</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                      Ezekiel volunteered with the parking welcoming team. Expressed interest in joining Sound &amp; Media tech booth next quarter.
+                    </p>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-lowest">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm mb-1">
+<span>Shepherd David Kimani</span>
+<span>Oct 28, 2024</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                      Participated with high enthusiasm in mid-week cell communion dinner at Brother Samuel's home.
+                    </p>
+</div>
+</div>
+</div>
+<button class="mt-space-md w-full py-1.5 rounded-lg bg-surface-container-high hover:bg-surface-bright text-on-surface font-label-sm text-label-sm font-semibold transition-colors text-center" type="button">
+                + Append General Worker Note
+              </button>
+</div>
+<!-- Section B: Confidential Pastoral Care Notes (Restricted - Section 8.4 compliance) -->
+<div class="bg-surface-container p-space-md rounded-xl flex flex-col justify-between relative overflow-hidden ring-1 ring-secondary-container">
+<div class="absolute -right-4 -top-4 w-20 h-20 bg-secondary-container/20 rounded-full blur-xl pointer-events-none"></div>
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-1.5">
+<span class="material-symbols-outlined text-primary text-[18px]">lock</span>
+<h4 class="font-label-lg text-label-lg text-on-surface font-semibold">Confidential Pastoral Notes</h4>
+</div>
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-secondary-container/80 text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[12px]">security</span> Pastor &amp; Primary Shepherd Only
+                  </span>
+</div>
+<div class="flex flex-col gap-2.5">
+<div class="p-2.5 rounded-lg bg-surface-container-lowest border-l-2 border-primary-container">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm mb-1">
+<span class="text-primary font-semibold">Shepherd David Kimani (Confidential)</span>
+<span>Nov 12, 2024</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+                      One-on-one tea discussion. Ezekiel mentioned severe startup workplace burnout and recent bereavement of his uncle in Lagos. Prayed over peace of mind and advised rest.
+                    </p>
+</div>
+<div class="p-2.5 rounded-lg bg-surface-container-lowest border-l-2 border-primary-container/40">
+<div class="flex items-center justify-between text-outline font-label-sm text-label-sm mb-1">
+<span class="text-primary font-semibold">Rev. Emmanuel Sterling</span>
+<span>Sep 18, 2024</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface">
+                      Pastoral counseling debrief regarding family career transition. Agreed to check in through Shepherd David every fortnight.
+                    </p>
+</div>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between gap-2">
+<span class="font-label-sm text-label-sm text-outline flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">lock_clock</span> AES-256 Encrypted Field
+                </span>
+<button class="px-3 py-1.5 rounded-lg bg-secondary-container hover:bg-secondary-container/80 text-on-secondary-container font-label-sm text-label-sm font-semibold transition-colors" type="button">
+                  + Add Restricted Pastoral Entry
+                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple micro-interaction for rapid touchpoint CTA
+  document.getElementById('btn-quick-log')?.addEventListener('click', () => {
+    alert('Care Touchpoint Modal: Select a flock soul to log phone encounter, in-person visitation, or prayer request.');
+  });
+</script></main></div></body></html>

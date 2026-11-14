@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #070c1e;
+    color: #f1f5f9;
+    font-family: 'Inter', sans-serif;
+  }
+
+  *, *::before, *::after {
+    border-radius: 0px !important;
+  }
+}
+
+/* Custom scrollbar matching bright midnight navy theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #070c1e;
+}
+::-webkit-scrollbar-thumb {
+  background: #16285a;
+  border-radius: 0 !important;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #00f0ff;
+}

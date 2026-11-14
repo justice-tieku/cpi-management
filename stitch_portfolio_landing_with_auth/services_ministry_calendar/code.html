@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode":"class","theme":{"extend":{"colors":{"on-error":"#690005","on-tertiary-fixed-variant":"#4a3d7c","error":"#ffb4ab","surface-bright":"#38393f","on-surface":"#e3e1e9","surface":"#121318","on-error-container":"#ffdad6","primary-fixed-dim":"#d0bcff","primary":"#d0bcff","outline":"#958ea0","inverse-primary":"#6d3bd7","on-primary-container":"#340080","on-primary-fixed-variant":"#5516be","secondary":"#cebdff","on-tertiary-container":"#2c1f5c","surface-container":"#1e1f25","outline-variant":"#494454","on-primary-fixed":"#23005c","surface-tint":"#d0bcff","secondary-container":"#4f319c","primary-fixed":"#e9ddff","primary-container":"#a078ff","on-secondary-fixed":"#21005e","tertiary-container":"#9587cc","on-secondary-container":"#bea8ff","inverse-surface":"#e3e1e9","tertiary":"#ccbeff","on-primary":"#3c0091","tertiary-fixed":"#e7deff","surface-dim":"#121318","background":"#121318","surface-container-lowest":"#0d0e13","tertiary-fixed-dim":"#ccbeff","on-tertiary-fixed":"#1e0e4e","on-surface-variant":"#cbc3d7","error-container":"#93000a","surface-container-high":"#292a2f","on-background":"#e3e1e9","on-secondary":"#381385","on-secondary-fixed-variant":"#4f319c","on-tertiary":"#332664","surface-container-highest":"#34343a","secondary-fixed-dim":"#cebdff","surface-container-low":"#1a1b21","inverse-on-surface":"#2f3036","surface-variant":"#34343a","secondary-fixed":"#e8ddff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","space-lg":"1.5rem","space-md":"1rem","gutter-lg":"2rem","space-xs":"0.25rem","margin-lg":"5rem","space-xl":"2.5rem","gutter-sm":"1rem","margin":"1.5rem","space-sm":"0.5rem","margin-md":"3rem"},"fontFamily":{"body-md":["Inter"],"headline-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"display-hero":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"display-hero-mobile":["Plus Jakarta Sans"],"body-sm":["Inter"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-lg":["Inter"]},"fontSize":{"body-md":["15px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"400"}],"headline-md":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"headline-lg-mobile":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}],"display-hero":["56px",{"lineHeight":"64px","letterSpacing":"-0.03em","fontWeight":"700"}],"headline-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.04em","fontWeight":"600"}],"display-hero-mobile":["36px",{"lineHeight":"42px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-sm":["13px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"400"}],"headline-sm":["20px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"500"}],"body-lg":["18px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"400"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased min-h-screen selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between py-space-lg px-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-sm"><div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary shadow-[0_0_24px_-4px_rgba(139,92,246,0.25)]"><span class="material-symbols-outlined text-[22px]">church</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-semibold">Grace Ecclesia</span><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">CMS Portal</span></div></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-xl shadow-[0_0_20px_-4px_rgba(160,120,255,0.35)]"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">dashboard</span><span class="font-label-lg text-label-lg">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="all-members" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">groups</span><span class="font-label-lg text-label-lg">All Members</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="shepherd-assignments" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">diversity_3</span><span class="font-label-lg text-label-lg">Shepherd Assignments</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="church-attendance" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">how_to_reg</span><span class="font-label-lg text-label-lg">Church Attendance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="follow-up-care" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">volunteer_activism</span><span class="font-label-lg text-label-lg">Follow-Up &amp; Care</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="first-timers-visitors" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">person_add_alt</span><span class="font-label-lg text-label-lg">First-Timers &amp; Visitors</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="services-calendar" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">event</span><span class="font-label-lg text-label-lg">Services &amp; Calendar</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="reports-analytics" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">monitoring</span><span class="font-label-lg text-label-lg">Reports &amp; Analytics</span></a></nav></div><div class="flex flex-col gap-space-xs pt-space-md"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">settings</span><span class="font-label-lg text-label-lg">Settings</span></a><div class="p-space-sm rounded-xl bg-surface-container-low flex items-center gap-space-sm mt-space-xs"><div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface font-semibold">Ecclesia Global</span><span class="font-label-sm text-label-sm text-outline">v2.4 Secured Sanctuary</span></div></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer"><span class="material-symbols-outlined text-[18px] text-primary">church</span><span class="font-label-lg text-label-lg text-on-surface">Apex Sanctuary (Main Campus)</span><span class="material-symbols-outlined text-[16px] text-outline">expand_more</span></div><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span><input class="w-80 bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline pl-10 pr-space-md py-space-xs rounded-xl focus:outline-none focus:bg-surface-container transition-all" placeholder="Search congregants, shepherds, gifts..." type="text"/></div></div><div class="flex items-center gap-space-md"><button class="flex items-center gap-space-xs bg-primary-container text-on-primary-container px-space-md py-space-xs rounded-xl font-label-lg text-label-lg font-semibold hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_16px_rgba(160,120,255,0.25)]" type="button"><span class="material-symbols-outlined text-[18px]">person_add</span><span>+ New Member</span></button><div class="relative"><button class="w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Rev. Dr. Emmanuel Sterling</span><span class="font-label-sm text-label-sm text-outline leading-tight">Senior Pastor • General Overseer</span></div></div></div></header><main class="w-full pt-16 bg-background flex-1 px-space-lg py-space-lg"><div class="flex flex-col w-full">
+<!-- Subtle ambient violet illumination glow -->
+<div class="relative w-full overflow-hidden">
+<div class="absolute -top-32 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<div class="absolute top-1/2 -right-24 w-80 h-80 bg-secondary-container/20 rounded-full blur-3xl pointer-events-none -z-10"></div>
+<!-- Top Breadcrumb & Page Header -->
+<div class="flex flex-col gap-space-md mb-space-xl">
+<div class="flex items-center gap-space-xs text-on-surface-variant">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-outline">Ecclesia Ministry Ops</span>
+<span class="text-outline text-label-sm">/</span>
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-widest">Liturgical Schedules</span>
+</div>
+<div class="flex flex-col xl:flex-row xl:items-center justify-between gap-space-lg">
+<div class="flex flex-col max-w-3xl">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight font-bold">
+            Services, Events &amp; Liturgical Calendar
+          </h1>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-xs leading-relaxed">
+            Oversee corporate worship encounters, discipleship schedules, shepherd vigils, and venue capacities across all parishes.
+          </p>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm self-start xl:self-auto">
+<!-- View Switcher Pills -->
+<div class="flex items-center p-1 rounded-xl bg-surface-container-lowest shadow-inner">
+<button class="flex items-center gap-space-xs px-space-md py-1.5 rounded-lg bg-surface-container-high text-on-surface font-label-md text-label-md shadow-sm transition-all" id="view-cal-btn">
+<span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+<span>Calendar View</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-1.5 rounded-lg text-outline hover:text-on-surface font-label-md text-label-md transition-all" id="view-list-btn">
+<span class="material-symbols-outlined text-[16px]">view_timeline</span>
+<span>Upcoming List</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-md py-1.5 rounded-lg text-outline hover:text-on-surface font-label-md text-label-md transition-all" id="view-template-btn">
+<span class="material-symbols-outlined text-[16px]">auto_stories</span>
+<span>Service Templates</span>
+</button>
+</div>
+<button class="flex items-center gap-space-xs bg-surface-container-low hover:bg-surface-container-high text-on-surface px-space-md py-2.5 rounded-xl font-label-lg text-label-lg transition-all shadow-sm">
+<span class="material-symbols-outlined text-[18px] text-outline">sync</span>
+<span>Sync External iCal</span>
+</button>
+<button class="flex items-center gap-space-xs bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary px-space-lg py-2.5 rounded-xl font-label-lg text-label-lg font-semibold shadow-md transition-all">
+<span class="material-symbols-outlined text-[20px]">add_circle</span>
+<span>+ Schedule Service / Event</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Section 2: Top Metric Overview Cards -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-space-md mb-space-xl">
+<!-- Metric Card 1 -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:bg-surface-container transition-colors relative overflow-hidden group">
+<div class="absolute right-0 top-0 w-24 h-24 bg-primary/5 rounded-bl-full pointer-events-none group-hover:bg-primary/10 transition-colors"></div>
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Liturgical Cadence</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold mt-1">4 Services</span>
+</div>
+<div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">church</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex flex-col gap-1">
+<span class="font-body-sm text-body-sm text-on-surface-variant font-medium">Scheduled This Week</span>
+<span class="font-label-sm text-label-sm text-outline truncate">Dawn Watch • Main 10:30 • Youth • Word Night</span>
+</div>
+</div>
+<!-- Metric Card 2 -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:bg-surface-container transition-colors relative overflow-hidden group">
+<div class="absolute right-0 top-0 w-24 h-24 bg-secondary-container/20 rounded-bl-full pointer-events-none group-hover:bg-secondary-container/30 transition-colors"></div>
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-primary uppercase tracking-wider flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-primary animate-ping"></span> Next Sanctuary Liturgy
+            </span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold mt-1">In 2 Days</span>
+</div>
+<div class="w-10 h-10 rounded-xl bg-secondary-container text-on-secondary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-[20px]">access_time</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">Sunday Celebration</span>
+<span class="font-label-sm text-label-sm text-outline">Main Sanctuary (10:30 AM)</span>
+</div>
+<span class="px-2 py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm font-semibold">~1,200 Exp.</span>
+</div>
+</div>
+<!-- Metric Card 3 -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:bg-surface-container transition-colors relative overflow-hidden group">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Ministerial Roster</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold mt-1">8 Rosters</span>
+</div>
+<div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex flex-col gap-1">
+<div class="flex justify-between items-center text-label-sm font-label-sm">
+<span class="text-on-surface-variant font-medium">Volunteers Assigned</span>
+<span class="text-primary font-bold">96% Confirmed</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden mt-1">
+<div class="bg-primary h-full rounded-full" style="width: 96%"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline truncate mt-1">Ushers, Sanctuary Care, Media, Praise Team</span>
+</div>
+</div>
+<!-- Metric Card 4 -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm flex flex-col justify-between hover:bg-surface-container transition-colors relative overflow-hidden group">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Auditorium &amp; Chapel</span>
+<span class="font-headline-md text-headline-md text-on-surface font-bold mt-1">78%</span>
+</div>
+<div class="w-10 h-10 rounded-xl bg-surface-container-highest flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[20px]">meeting_room</span>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex flex-col gap-1">
+<div class="flex justify-between items-center text-label-sm font-label-sm">
+<span class="text-on-surface-variant">Facility Capacity Load</span>
+<span class="text-on-surface">Apex &amp; Chapel of Grace</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1.5 rounded-full overflow-hidden mt-1">
+<div class="bg-tertiary h-full rounded-full" style="width: 78%"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline truncate mt-1">No schedule conflicts detected</span>
+</div>
+</div>
+</div>
+<!-- Section 3: Split Grid (Left ~65%, Right ~35%) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg mb-space-xl">
+<!-- LEFT COLUMN: Calendar & Schedule Engine (12-col -> 8-col desktop) -->
+<div class="lg:col-span-8 flex flex-col gap-space-lg">
+<!-- Interactive Controls Bar -->
+<div class="bg-surface-container-low rounded-xl p-space-md shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs">
+<button class="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-outline hover:text-on-surface transition-colors" title="Previous Month">
+<span class="material-symbols-outlined text-[18px]">chevron_left</span>
+</button>
+<span class="font-headline-sm text-headline-sm text-on-surface font-bold px-space-xs">November 2024</span>
+<button class="w-8 h-8 rounded-lg bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-outline hover:text-on-surface transition-colors" title="Next Month">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</button>
+</div>
+<span class="px-space-sm py-1 rounded-md bg-surface-container text-outline font-label-sm text-label-sm">Week 47</span>
+</div>
+<!-- Quick Filters -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-1 md:pb-0">
+<button class="px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm font-semibold whitespace-nowrap shadow-sm">
+              All Events
+            </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap transition-colors flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-primary"></span> Sunday Services
+            </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap transition-colors flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-secondary-fixed-dim"></span> Mid-Week
+            </button>
+<button class="px-3 py-1.5 rounded-lg bg-surface-container-lowest hover:bg-surface-container text-on-surface-variant font-label-sm text-label-sm whitespace-nowrap transition-colors flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span> Shepherd Vigils
+            </button>
+</div>
+</div>
+<!-- Weekly Schedule View: Days Cards List -->
+<div class="flex flex-col gap-space-md">
+<!-- Day Item: WEDNESDAY, NOV 20 -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm">
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-container">
+<div class="flex items-center gap-space-sm">
+<div class="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-label-lg text-label-lg font-bold">
+                  20
+                </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">Wednesday</span>
+<span class="font-label-sm text-label-sm text-outline">Mid-Week Liturgical Encounter</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-secondary">
+                1 Corporate Gathering
+              </span>
+</div>
+<!-- Event Card 1 (Mid-Week Service) -->
+<div class="mt-space-md bg-surface-container rounded-xl p-space-md hover:bg-surface-container-high transition-all flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-1.5 self-stretch rounded-full bg-secondary-container"></div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs mb-1">
+<span class="px-2 py-0.5 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                      Mid-Week Word &amp; Communion
+                    </span>
+<span class="font-label-sm text-label-sm text-outline">06:00 PM - 07:45 PM</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                    The Bread of Life &amp; Apostolic Impartation
+                  </h3>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-space-md mt-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">person</span>
+                      Minister: Pastor Ruth Sterling
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">location_on</span>
+                      Chapel of Grace (East Wing)
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">groups</span>
+                      Expected: 350
+                    </span>
+</div>
+</div>
+</div>
+<!-- Roster & Status Pill -->
+<div class="flex flex-row md:flex-col md:items-end justify-between items-center gap-space-xs shrink-0">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container-lowest text-on-surface font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span> Choir Confirmed (18)
+                </span>
+<span class="font-label-sm text-label-sm text-outline">Sanctuary Setup Ready</span>
+</div>
+</div>
+</div>
+<!-- Day Item: FRIDAY, NOV 22 -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm">
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-container">
+<div class="flex items-center gap-space-sm">
+<div class="px-2.5 py-1 rounded-lg bg-surface-container-high text-on-surface font-label-lg text-label-lg font-bold">
+                  22
+                </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">Friday</span>
+<span class="font-label-sm text-label-sm text-outline">Ministry Leadership &amp; Intercession</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-surface-container font-label-sm text-label-sm text-tertiary">
+                1 Specialized Session
+              </span>
+</div>
+<!-- Event Card 2 (Shepherd Vigil) -->
+<div class="mt-space-md bg-surface-container rounded-xl p-space-md hover:bg-surface-container-high transition-all flex flex-col md:flex-row md:items-center justify-between gap-space-md">
+<div class="flex items-start gap-space-md">
+<div class="w-1.5 self-stretch rounded-full bg-tertiary-container"></div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs mb-1">
+<span class="px-2 py-0.5 rounded-md bg-surface-container-highest text-tertiary font-label-sm text-label-sm font-semibold">
+                      Shepherds &amp; Stewards Vigil
+                    </span>
+<span class="font-label-sm text-label-sm text-outline">10:00 PM - 02:00 AM</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                    Night of Intercession &amp; Discipleship Strategy
+                  </h3>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-space-md mt-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-tertiary">assignment_ind</span>
+                      Lead: Shepherd Pastor Julian Cross
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">location_on</span>
+                      Prayer Pavilion
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">groups</span>
+                      Registered Shepherds: 120
+                    </span>
+</div>
+</div>
+</div>
+<!-- Roster & Status Pill -->
+<div class="flex flex-row md:flex-col md:items-end justify-between items-center gap-space-xs shrink-0">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container-lowest text-on-surface font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px] text-tertiary">groups_3</span> 100% Shepherds Invited
+                </span>
+<span class="font-label-sm text-label-sm text-outline">Prayer Manual Deployed</span>
+</div>
+</div>
+</div>
+<!-- Day Item: SUNDAY, NOV 24 (Lord's Day) -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm">
+<div class="flex items-center justify-between pb-space-sm border-b border-surface-container">
+<div class="flex items-center gap-space-sm">
+<div class="px-2.5 py-1 rounded-lg bg-primary-container text-on-primary-container font-label-lg text-label-lg font-bold">
+                  24
+                </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface">Sunday (Lord's Day)</span>
+<span class="font-label-sm text-label-sm text-primary font-medium">Flagship Services Day</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                2 Major Services Scheduled
+              </span>
+</div>
+<!-- Service Card 3A: First Service -->
+<div class="mt-space-md bg-surface-container rounded-xl p-space-md hover:bg-surface-container-high transition-all flex flex-col md:flex-row md:items-center justify-between gap-space-md mb-space-sm">
+<div class="flex items-start gap-space-md">
+<div class="w-1.5 self-stretch rounded-full bg-primary"></div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs mb-1">
+<span class="px-2 py-0.5 rounded-md bg-surface-container-highest text-primary font-label-sm text-label-sm font-semibold">
+                      Sunday Dawn Encounter
+                    </span>
+<span class="font-label-sm text-label-sm text-outline">07:30 AM - 09:15 AM</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">
+                    The Early Reign: Covenantal Renewal
+                  </h3>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-space-md mt-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-primary">person</span>
+                      Minister: Pastor Marcus Thorne
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">location_on</span>
+                      Apex Main Sanctuary
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">groups</span>
+                      Capacity: 650
+                    </span>
+</div>
+</div>
+</div>
+<div class="flex flex-row md:flex-col md:items-end justify-between items-center gap-space-xs shrink-0">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-surface-container-lowest text-on-surface font-label-sm text-label-sm font-medium">
+<span class="material-symbols-outlined text-[14px] text-primary">check_circle</span> Ushers 100% Filled
+                </span>
+<span class="font-label-sm text-label-sm text-outline">Sound Check: 06:45 AM</span>
+</div>
+</div>
+<!-- Service Card 3B: Main Service (Featured) -->
+<div class="bg-surface-container-high rounded-xl p-space-md hover:bg-surface-bright transition-all flex flex-col md:flex-row md:items-center justify-between gap-space-md shadow-md">
+<div class="flex items-start gap-space-md">
+<div class="w-1.5 self-stretch rounded-full bg-primary-container"></div>
+<div class="flex flex-col">
+<div class="flex flex-wrap items-center gap-space-xs mb-1">
+<span class="px-2.5 py-0.5 rounded-md bg-primary-container text-on-primary-container font-label-sm text-label-sm font-bold uppercase tracking-wider">
+                      Main Celebration (Flagship)
+                    </span>
+<span class="font-label-sm text-label-sm text-primary font-semibold">10:30 AM - 12:45 PM</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">
+                    The Diligent Shepherd &amp; Flourishing Flock
+                  </h3>
+<div class="flex flex-wrap items-center gap-y-1 gap-x-space-md mt-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="flex items-center gap-1 font-medium text-on-surface">
+<span class="material-symbols-outlined text-[16px] text-primary">verified_user</span>
+                      Rev. Dr. Emmanuel Sterling
+                    </span>
+<span class="flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-outline">location_on</span>
+                      Apex Main Sanctuary
+                    </span>
+<span class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-[16px]">groups</span>
+                      Expected: 1,200 Attendees
+                    </span>
+</div>
+</div>
+</div>
+<div class="flex flex-row md:flex-col md:items-end justify-between items-center gap-space-xs shrink-0">
+<span class="inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold">
+<span class="material-symbols-outlined text-[14px]">campaign</span> Live Broadcast Ready
+                </span>
+<span class="font-label-sm text-label-sm text-outline">Full Media &amp; Translation Crew</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- RIGHT COLUMN: Upcoming Service Spotlight & Liturgical Details (~35% width) -->
+<div class="lg:col-span-4 flex flex-col gap-space-md">
+<!-- Spotlight Card -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-xl relative overflow-hidden flex flex-col justify-between">
+<div class="absolute top-0 right-0 w-36 h-36 bg-primary/10 rounded-bl-full pointer-events-none"></div>
+<div class="flex flex-col gap-space-md">
+<!-- Top Spotlight Header -->
+<div class="flex items-center justify-between">
+<span class="px-2.5 py-1 rounded-full bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold tracking-wider uppercase">
+                Sanctuary Spotlight
+              </span>
+<div class="flex items-center gap-1.5 text-primary font-label-sm text-label-sm font-semibold">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span>Session Active</span>
+</div>
+</div>
+<!-- Title & Metadata -->
+<div>
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Sunday 24 Nov • 10:30 AM</span>
+<h2 class="font-headline-md text-headline-md text-on-surface font-bold tracking-tight mt-1">
+                Sunday Main Celebration Service
+              </h2>
+<div class="mt-space-xs p-space-sm rounded-lg bg-surface-container-lowest flex items-center justify-between">
+<div class="flex items-center gap-space-xs text-outline">
+<span class="material-symbols-outlined text-[16px] text-primary">qr_code_2</span>
+<span class="font-label-sm text-label-sm">Session: #SESS-20241124-02</span>
+</div>
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Check-in Ready</span>
+</div>
+</div>
+<!-- Sermon & Preacher Meta Box -->
+<div class="bg-surface-container rounded-xl p-space-md flex flex-col gap-space-sm">
+<div class="flex items-start gap-space-sm">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary shrink-0">
+<span class="material-symbols-outlined text-[18px]">menu_book</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Sermon Theme</span>
+<span class="font-body-md text-body-md text-on-surface font-semibold leading-snug">
+                    “The Diligent Shepherd &amp; Flourishing Flock”
+                  </span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs border-t border-surface-container-high">
+<span class="font-label-sm text-label-sm text-outline">Scriptural Anchor</span>
+<span class="font-label-md text-label-md text-primary font-medium">Proverbs 27:23-27; Psalm 23</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Chief Preacher</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Rev. Dr. Emmanuel Sterling</span>
+</div>
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Lead Shepherd on Duty</span>
+<span class="font-label-md text-label-md text-on-surface-variant">Pastor Julian Cross</span>
+</div>
+</div>
+<!-- Liturgical Order of Service (Run-of-Show) -->
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider font-semibold">Liturgy Order of Service</span>
+<span class="font-label-sm text-label-sm text-primary">5 Liturgical Movements</span>
+</div>
+<div class="flex flex-col gap-2 mt-1">
+<!-- Movement 1 -->
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-space-sm">
+<span class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-label-sm font-label-sm text-outline">1</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Opening Praise &amp; High Worship</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">10:30 - 11:00</span>
+</div>
+<!-- Movement 2 -->
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-space-sm">
+<span class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-label-sm font-label-sm text-outline">2</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Pastoral Welcome &amp; Confession</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">11:00 - 11:15</span>
+</div>
+<!-- Movement 3 -->
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-space-sm">
+<span class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-label-sm font-label-sm text-outline">3</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Tithes, Kingdom Seed &amp; Offertory</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">11:15 - 11:25</span>
+</div>
+<!-- Movement 4 -->
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-high text-on-surface">
+<div class="flex items-center gap-space-sm">
+<span class="w-5 h-5 rounded-full bg-primary text-on-primary flex items-center justify-center text-label-sm font-label-sm font-bold">4</span>
+<span class="font-body-sm text-body-sm text-on-surface font-semibold">Proclamation of the Word</span>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-bold">11:25 - 12:20</span>
+</div>
+<!-- Movement 5 -->
+<div class="flex items-center justify-between p-2 rounded-lg bg-surface-container hover:bg-surface-container-high transition-colors">
+<div class="flex items-center gap-space-sm">
+<span class="w-5 h-5 rounded-full bg-surface-container-highest flex items-center justify-center text-label-sm font-label-sm text-outline">5</span>
+<span class="font-body-sm text-body-sm text-on-surface font-medium">Altar Call &amp; First-Timer Reception</span>
+</div>
+<span class="font-label-sm text-label-sm text-outline">12:20 - 12:45</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-space-sm mt-space-lg pt-space-md border-t border-surface-container">
+<button class="w-full flex items-center justify-center gap-space-xs bg-primary-container hover:bg-primary text-on-primary-container hover:text-on-primary py-2.5 rounded-xl font-label-lg text-label-lg font-bold transition-all shadow-md">
+<span class="material-symbols-outlined text-[20px]">how_to_reg</span>
+<span>Open Live Attendance Console</span>
+</button>
+<div class="flex gap-space-sm">
+<button class="flex-1 flex items-center justify-center gap-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface py-2 rounded-xl font-label-md text-label-md transition-colors">
+<span class="material-symbols-outlined text-[18px]">edit_calendar</span>
+<span>Edit Service Details</span>
+</button>
+<button class="w-10 h-10 rounded-xl bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-outline hover:text-on-surface transition-colors" title="Print Liturgical Bulletin">
+<span class="material-symbols-outlined text-[18px]">print</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Venue Capacity Gauge Widget -->
+<div class="bg-surface-container-low rounded-xl p-space-md shadow-sm flex items-center justify-between">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[20px]">domain</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline">Apex Sanctuary Capacity</span>
+<span class="font-label-lg text-label-lg font-bold text-on-surface">1,500 Seated (Air-Conditioned)</span>
+</div>
+</div>
+<span class="px-2.5 py-1 rounded-md bg-surface-container text-outline font-label-sm text-label-sm">Balcony Open</span>
+</div>
+</div>
+</div>
+<!-- Section 4: Bottom Panel - Recurring Service Templates -->
+<div class="bg-surface-container-low rounded-xl p-space-lg shadow-sm mb-space-lg">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">auto_stories</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-bold">
+              Recurring Liturgical Templates &amp; Blueprint Engine
+            </h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-0.5">
+            Pre-configured liturgical run-of-shows, worker duty templates, and audio-visual cues ready for single-click instantiation.
+          </p>
+</div>
+<button class="flex items-center gap-space-xs bg-surface-container hover:bg-surface-container-high text-on-surface px-space-md py-2 rounded-xl font-label-md text-label-md transition-colors self-start sm:self-auto">
+<span class="material-symbols-outlined text-[16px] text-primary">playlist_add</span>
+<span>Create New Template</span>
+</button>
+</div>
+<!-- Templates Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<!-- Template 1: Sunday 1st Service -->
+<div class="bg-surface-container rounded-xl p-space-md hover:bg-surface-container-high transition-all flex flex-col justify-between group">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded-md bg-secondary-container text-on-secondary-container font-label-sm text-label-sm font-semibold">
+                Weekly Sunday
+              </span>
+<span class="font-label-sm text-label-sm text-outline">07:30 AM</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface group-hover:text-primary transition-colors">
+                Sunday 1st Service (Dawn Watch)
+              </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-1">
+                90-minute concentrated liturgical flow with extended acoustic prayer, communion sacrament, and discipleship focus.
+              </p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-md mt-space-sm border-t border-surface-container-highest">
+<span class="font-label-sm text-label-sm text-outline">5 Liturgical Acts</span>
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface font-label-sm text-label-sm transition-colors">
+                Edit
+              </button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-highest hover:bg-primary hover:text-on-primary text-primary font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">content_copy</span> Duplicate
+              </button>
+</div>
+</div>
+</div>
+<!-- Template 2: Sunday 2nd Service -->
+<div class="bg-surface-container rounded-xl p-space-md hover:bg-surface-container-high transition-all flex flex-col justify-between group">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded-md bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold">
+                Weekly Sunday
+              </span>
+<span class="font-label-sm text-label-sm text-outline">10:30 AM</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface group-hover:text-primary transition-colors">
+                Sunday 2nd Service (Main Celebration)
+              </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-1">
+                135-minute full sanctuary experience with full orchestra choir, livestream streaming cues, visitor hospitality track.
+              </p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-md mt-space-sm border-t border-surface-container-highest">
+<span class="font-label-sm text-label-sm text-outline">6 Liturgical Acts</span>
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface font-label-sm text-label-sm transition-colors">
+                Edit
+              </button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-highest hover:bg-primary hover:text-on-primary text-primary font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">content_copy</span> Duplicate
+              </button>
+</div>
+</div>
+</div>
+<!-- Template 3: Wednesday Mid-Week Communion -->
+<div class="bg-surface-container rounded-xl p-space-md hover:bg-surface-container-high transition-all flex flex-col justify-between group">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded-md bg-surface-container-highest text-secondary font-label-sm text-label-sm font-semibold">
+                Weekly Wednesday
+              </span>
+<span class="font-label-sm text-label-sm text-outline">06:00 PM</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface group-hover:text-primary transition-colors">
+                Mid-Week Word &amp; Holy Communion
+              </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-1">
+                105-minute doctrinal teaching series, corporate broken bread sacramental table, interactive congregation Q&amp;A.
+              </p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-md mt-space-sm border-t border-surface-container-highest">
+<span class="font-label-sm text-label-sm text-outline">4 Liturgical Acts</span>
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface font-label-sm text-label-sm transition-colors">
+                Edit
+              </button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-highest hover:bg-primary hover:text-on-primary text-primary font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">content_copy</span> Duplicate
+              </button>
+</div>
+</div>
+</div>
+<!-- Template 4: Monthly Workers & Shepherds Vigil -->
+<div class="bg-surface-container rounded-xl p-space-md hover:bg-surface-container-high transition-all flex flex-col justify-between group">
+<div class="flex flex-col gap-space-sm">
+<div class="flex items-center justify-between">
+<span class="px-2 py-0.5 rounded-md bg-surface-container-highest text-tertiary font-label-sm text-label-sm font-semibold">
+                Monthly Friday
+              </span>
+<span class="font-label-sm text-label-sm text-outline">10:00 PM</span>
+</div>
+<div>
+<h4 class="font-label-lg text-label-lg font-bold text-on-surface group-hover:text-primary transition-colors">
+                Monthly Workers &amp; Shepherds Vigil
+              </h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2 mt-1">
+                240-minute all-night ministerial vigil, pastoral realignment, parish review, personal consecration prayers.
+              </p>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-md mt-space-sm border-t border-surface-container-highest">
+<span class="font-label-sm text-label-sm text-outline">7 Liturgical Acts</span>
+<div class="flex items-center gap-1">
+<button class="px-2 py-1 rounded-lg hover:bg-surface-container-highest text-outline hover:text-on-surface font-label-sm text-label-sm transition-colors">
+                Edit
+              </button>
+<button class="px-2.5 py-1 rounded-lg bg-surface-container-highest hover:bg-primary hover:text-on-primary text-primary font-label-sm text-label-sm font-semibold transition-colors flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">content_copy</span> Duplicate
+              </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<script>
+  // Simple view tab toggle styling micro-interaction
+  document.addEventListener('DOMContentLoaded', () => {
+    const calBtn = document.getElementById('view-cal-btn');
+    const listBtn = document.getElementById('view-list-btn');
+    const tplBtn = document.getElementById('view-template-btn');
+
+    const buttons = [calBtn, listBtn, tplBtn];
+
+    buttons.forEach(btn => {
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        buttons.forEach(b => {
+          b.classList.remove('bg-surface-container-high', 'text-on-surface', 'shadow-sm');
+          b.classList.add('text-outline');
+        });
+        btn.classList.add('bg-surface-container-high', 'text-on-surface', 'shadow-sm');
+        btn.classList.remove('text-outline');
+      });
+    });
+  });
+</script></main></div></body></html>

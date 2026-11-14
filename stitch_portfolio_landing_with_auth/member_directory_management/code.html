@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode":"class","theme":{"extend":{"colors":{"on-error":"#690005","on-tertiary-fixed-variant":"#4a3d7c","error":"#ffb4ab","surface-bright":"#38393f","on-surface":"#e3e1e9","surface":"#121318","on-error-container":"#ffdad6","primary-fixed-dim":"#d0bcff","primary":"#d0bcff","outline":"#958ea0","inverse-primary":"#6d3bd7","on-primary-container":"#340080","on-primary-fixed-variant":"#5516be","secondary":"#cebdff","on-tertiary-container":"#2c1f5c","surface-container":"#1e1f25","outline-variant":"#494454","on-primary-fixed":"#23005c","surface-tint":"#d0bcff","secondary-container":"#4f319c","primary-fixed":"#e9ddff","primary-container":"#a078ff","on-secondary-fixed":"#21005e","tertiary-container":"#9587cc","on-secondary-container":"#bea8ff","inverse-surface":"#e3e1e9","tertiary":"#ccbeff","on-primary":"#3c0091","tertiary-fixed":"#e7deff","surface-dim":"#121318","background":"#121318","surface-container-lowest":"#0d0e13","tertiary-fixed-dim":"#ccbeff","on-tertiary-fixed":"#1e0e4e","on-surface-variant":"#cbc3d7","error-container":"#93000a","surface-container-high":"#292a2f","on-background":"#e3e1e9","on-secondary":"#381385","on-secondary-fixed-variant":"#4f319c","on-tertiary":"#332664","surface-container-highest":"#34343a","secondary-fixed-dim":"#cebdff","surface-container-low":"#1a1b21","inverse-on-surface":"#2f3036","surface-variant":"#34343a","secondary-fixed":"#e8ddff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","space-lg":"1.5rem","space-md":"1rem","gutter-lg":"2rem","space-xs":"0.25rem","margin-lg":"5rem","space-xl":"2.5rem","gutter-sm":"1rem","margin":"1.5rem","space-sm":"0.5rem","margin-md":"3rem"},"fontFamily":{"body-md":["Inter"],"headline-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"display-hero":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"display-hero-mobile":["Plus Jakarta Sans"],"body-sm":["Inter"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-lg":["Inter"]},"fontSize":{"body-md":["15px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"400"}],"headline-md":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"headline-lg-mobile":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}],"display-hero":["56px",{"lineHeight":"64px","letterSpacing":"-0.03em","fontWeight":"700"}],"headline-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.04em","fontWeight":"600"}],"display-hero-mobile":["36px",{"lineHeight":"42px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-sm":["13px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"400"}],"headline-sm":["20px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"500"}],"body-lg":["18px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"400"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased min-h-screen selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between py-space-lg px-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-sm"><div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary shadow-[0_0_24px_-4px_rgba(139,92,246,0.25)]"><span class="material-symbols-outlined text-[22px]">church</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-semibold">Grace Ecclesia</span><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">CMS Portal</span></div></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-xl shadow-[0_0_20px_-4px_rgba(160,120,255,0.35)]"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">dashboard</span><span class="font-label-lg text-label-lg">Dashboard</span></a><a aria-current="page" class="flex items-center gap-space-sm px-space-md py-space-sm transition-all group bg-primary-container text-on-primary-container font-semibold rounded-xl shadow-[0_0_20px_-4px_rgba(160,120,255,0.35)]" data-path="all-members" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">groups</span><span class="font-label-lg text-label-lg">All Members</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="shepherd-assignments" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">diversity_3</span><span class="font-label-lg text-label-lg">Shepherd Assignments</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="church-attendance" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">how_to_reg</span><span class="font-label-lg text-label-lg">Church Attendance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="follow-up-care" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">volunteer_activism</span><span class="font-label-lg text-label-lg">Follow-Up &amp; Care</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="first-timers-visitors" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">person_add_alt</span><span class="font-label-lg text-label-lg">First-Timers &amp; Visitors</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="services-calendar" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">event</span><span class="font-label-lg text-label-lg">Services &amp; Calendar</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="reports-analytics" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">monitoring</span><span class="font-label-lg text-label-lg">Reports &amp; Analytics</span></a></nav></div><div class="flex flex-col gap-space-xs pt-space-md"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">settings</span><span class="font-label-lg text-label-lg">Settings</span></a><div class="p-space-sm rounded-xl bg-surface-container-low flex items-center gap-space-sm mt-space-xs"><div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface font-semibold">Ecclesia Global</span><span class="font-label-sm text-label-sm text-outline">v2.4 Secured Sanctuary</span></div></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer"><span class="material-symbols-outlined text-[18px] text-primary">church</span><span class="font-label-lg text-label-lg text-on-surface">Apex Sanctuary (Main Campus)</span><span class="material-symbols-outlined text-[16px] text-outline">expand_more</span></div><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span><input class="w-80 bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline pl-10 pr-space-md py-space-xs rounded-xl focus:outline-none focus:bg-surface-container transition-all" placeholder="Search congregants, shepherds, gifts..." type="text"/></div></div><div class="flex items-center gap-space-md"><button class="flex items-center gap-space-xs bg-primary-container text-on-primary-container px-space-md py-space-xs rounded-xl font-label-lg text-label-lg font-semibold hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_16px_rgba(160,120,255,0.25)]" type="button"><span class="material-symbols-outlined text-[18px]">person_add</span><span>+ New Member</span></button><div class="relative"><button class="w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Rev. Dr. Emmanuel Sterling</span><span class="font-label-sm text-label-sm text-outline leading-tight">Senior Pastor • General Overseer</span></div></div></div></header><main class="w-full pt-16 bg-background flex-1 px-space-lg py-space-lg"><div class="flex flex-col w-full gap-space-lg pb-margin-lg">
+<!-- Top Page Context & Primary Action Bar -->
+<div class="flex flex-col gap-space-md">
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-primary">
+<span class="material-symbols-outlined text-[16px]" style="font-variation-settings: 'FILL' 1;">dataset</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary">Sanctuary Census • Apex Campus</span>
+</div>
+<div class="flex items-baseline gap-space-md">
+<h1 class="font-headline-md text-headline-md text-on-surface tracking-tight">Congregation Directory</h1>
+<span class="font-label-md text-label-md text-outline">1,482 Active Souls Recorded</span>
+</div>
+</div>
+<!-- Quick Metrics Ribbon -->
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-sm bg-surface-container-low px-space-md py-space-xs rounded-xl shadow-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+<span class="font-label-sm text-label-sm text-outline">Sync Pulse:</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">99.8% Shepherd Clustered</span>
+</div>
+<button class="flex items-center gap-space-xs bg-gradient-to-r from-primary-container to-secondary-container text-on-primary-container px-space-lg py-space-sm rounded-xl font-label-lg text-label-lg font-semibold hover:opacity-95 transition-all shadow-[0_0_24px_-4px_rgba(160,120,255,0.4)]" id="open-register-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+<span>+ Register New Member</span>
+</button>
+</div>
+</div>
+<!-- Active Duplicate Prevention Guard Banner -->
+<div class="relative overflow-hidden bg-surface-container-low rounded-xl p-space-md shadow-sm">
+<div class="absolute -right-10 -bottom-10 w-44 h-44 bg-primary/5 rounded-full blur-2xl pointer-events-none"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-md relative z-10">
+<div class="flex items-center gap-space-md">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary shadow-[0_0_16px_-2px_rgba(208,188,255,0.25)] flex-shrink-0">
+<span class="material-symbols-outlined text-[22px]">verified_user</span>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Active Duplicate Prevention Guard Enabled</span>
+<span class="font-label-sm text-label-sm px-space-xs py-0.5 rounded bg-primary-container/20 text-primary uppercase font-semibold">E.164 &amp; DNS Strict</span>
+</div>
+<p class="font-body-sm text-body-sm text-outline">Normalized phone strings &amp; canonized email hashes prevent duplicate intake records across satellite ministries.</p>
+</div>
+</div>
+<div class="flex items-center gap-space-sm self-start sm:self-auto flex-shrink-0">
+<span class="font-label-sm text-label-sm text-outline">Intake Guard Queue: <strong class="text-on-surface">0 flagged</strong></span>
+<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+<button class="font-label-sm text-label-sm text-primary hover:text-on-surface transition-colors underline decoration-primary/40" type="button">Audit Logs</button>
+</div>
+</div>
+</div>
+<!-- Interactive Filters & Search Controls -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-sm flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-space-md">
+<!-- Search Input -->
+<div class="relative flex-1 min-w-[280px]">
+<span class="material-symbols-outlined absolute left-space-md top-1/2 -translate-y-1/2 text-outline text-[20px] pointer-events-none">filter_list</span>
+<input class="w-full bg-surface-container font-body-sm text-body-sm text-on-surface placeholder:text-outline pl-11 pr-space-md py-space-sm rounded-xl focus:outline-none focus:bg-surface-container-high transition-all" id="directory-search" placeholder="Instant lookup by name, member hash (#GE-XXXX), phone, or email..." type="text"/>
+</div>
+<!-- Filter Controls Group -->
+<div class="flex flex-wrap items-center gap-space-sm">
+<!-- Status Dropdown -->
+<div class="relative">
+<select class="appearance-none bg-surface-container text-on-surface font-label-md text-label-md py-space-sm pl-space-md pr-9 rounded-xl focus:outline-none cursor-pointer hover:bg-surface-container-high transition-colors" id="status-filter">
+<option value="all">Status: All Statuses</option>
+<option value="active">Active Members</option>
+<option value="pending">Pending Verification</option>
+<option value="new">New Intake</option>
+<option value="transferred">Transferred</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+<!-- Shepherd Assignment Filter -->
+<div class="relative">
+<select class="appearance-none bg-surface-container text-on-surface font-label-md text-label-md py-space-sm pl-space-md pr-9 rounded-xl focus:outline-none cursor-pointer hover:bg-surface-container-high transition-colors" id="shepherd-filter">
+<option value="all">Shepherd: Any Pastor / Leader</option>
+<option value="david">Ps. David Osei</option>
+<option value="grace">Sis. Grace Mensah</option>
+<option value="selorm">Elder Selorm Kofi</option>
+<option value="deborah">Deaconess Deborah Vance</option>
+<option value="unassigned">Unassigned (Needs Care)</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+<!-- Ministry Unit / Department Tag -->
+<div class="relative">
+<select class="appearance-none bg-surface-container text-on-surface font-label-md text-label-md py-space-sm pl-space-md pr-9 rounded-xl focus:outline-none cursor-pointer hover:bg-surface-container-high transition-colors" id="unit-filter">
+<option value="all">Unit: All Departments</option>
+<option value="media">Media &amp; Broadcast</option>
+<option value="choir">Sanctuary Choir</option>
+<option value="ushering">Ushering &amp; Protocol</option>
+<option value="children">Children's Ministry</option>
+<option value="intercessory">Intercessory Cell</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+<!-- Reset Button -->
+<button class="w-10 h-10 rounded-xl bg-surface-container hover:bg-surface-container-high flex items-center justify-center text-outline hover:text-on-surface transition-colors" id="reset-filters" title="Reset Filters" type="button">
+<span class="material-symbols-outlined text-[18px]">restart_alt</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Main Members Table (Generous Row Padding, No Strict Borders) -->
+<div class="bg-surface-container-lowest rounded-xl shadow-sm overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left min-w-[960px]">
+<thead>
+<tr class="bg-surface-container-low text-outline font-label-sm text-label-sm tracking-wider uppercase">
+<th class="py-space-md px-space-lg font-semibold">Member &amp; ID</th>
+<th class="py-space-md px-space-md font-semibold">Contact Coordinates</th>
+<th class="py-space-md px-space-md font-semibold">Assigned Shepherd</th>
+<th class="py-space-md px-space-md font-semibold">Status</th>
+<th class="py-space-md px-space-md font-semibold">6-Wk Presence</th>
+<th class="py-space-md px-space-lg text-right font-semibold">Actions</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md divide-y-0" id="member-rows">
+<!-- Row 1: Active Leader -->
+<tr class="hover:bg-surface-container/60 transition-colors group">
+<td class="py-space-lg px-space-lg align-middle">
+<div class="flex items-center gap-space-md">
+<div class="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Portrait photo of a distinguished young West African gentleman in church leader attire against a minimalist studio background with subtle deep purple rim lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAhbYh9vxLmuXJ5xYl4-uruZpp9Sv07vX6nUBgCBBTaeVQnD0vz6yaEMYkeSLOcMFj1arcSozV09EuydHQos5bmLInFyH9SZXtOq95rW1ChTFqK-68A3EKfm5qxallEvesNE82-gAr-OfaH47Y6fjDb21rMDORjJzo0dxWJKwHRKEeF1WiP74hJbAnI_16TWhgIXpTsrU_my4JWW07Q2deSt0dLbUWLCAJGCrFx_D0"/>
+<div class="absolute bottom-0 inset-x-0 h-1 bg-primary"></div>
+</div>
+<div class="flex flex-col min-w-0">
+<div class="flex items-center gap-space-xs">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate group-hover:text-primary transition-colors">Kwame Mensah-Annan</span>
+<span class="material-symbols-outlined text-[16px] text-primary" style="font-variation-settings: 'FILL' 1;" title="Ordained Leader">stars</span>
+</div>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-label-sm text-outline">#GE-4019</span>
+<span class="text-outline">•</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">Media &amp; Broadcast</span>
+</div>
+</div>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-label-md text-on-surface font-medium">+1 (404) 892-0192</span>
+<span class="font-body-sm text-body-sm text-outline truncate">k.mensah@ecclesia.org</span>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-label-sm text-label-sm font-semibold flex-shrink-0">
+                  DO
+                </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Pastor David Osei</span>
+<span class="font-label-sm text-label-sm text-outline">Apex Sanctuary • East Wing</span>
+</div>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Active Member
+              </span>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1">
+<!-- 6 Sunday dots -->
+<div class="w-3 h-3 rounded bg-primary" title="Week 1: Present"></div>
+<div class="w-3 h-3 rounded bg-primary" title="Week 2: Present"></div>
+<div class="w-3 h-3 rounded bg-primary" title="Week 3: Present"></div>
+<div class="w-3 h-3 rounded bg-surface-container-high" title="Week 4: Excused"></div>
+<div class="w-3 h-3 rounded bg-primary" title="Week 5: Present"></div>
+<div class="w-3 h-3 rounded bg-primary" title="Week 6: Present"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">5 of 6 (83%)</span>
+</div>
+</td>
+<td class="py-space-lg px-space-lg align-middle text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" title="Message Member" type="button">
+<span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" title="Quick Care Log" type="button">
+<span class="material-symbols-outlined text-[18px]">volunteer_activism</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" title="More Options" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 2: Choir Member -->
+<tr class="hover:bg-surface-container/60 transition-colors group">
+<td class="py-space-lg px-space-lg align-middle">
+<div class="flex items-center gap-space-md">
+<div class="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Portrait photography of a smiling elegant woman wearing deep violet tailored blazer in high resolution dark church interior background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDnlsIud1ZVfIi84MYR7Wdt1VZj1T4I3DcXkw31yBqwo0cRyG7eRAkBxbolPHGC6poiYM7zjlAUP6znu7h_EqsklyaEQwnREv4V6ihe7ZwoWwR4HHC6E-sUPo1KsrZ9RS432Pm1NxGMnUtt-Jx3zRPFM4_S7Uv0N8VwHKtfB5wwYKVLKjm3pTPvvKZHEhKPGBZH1m-6dtlXq6YWQP4Do94zDWd_Ie-hnlBgCO396Zk"/>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate group-hover:text-primary transition-colors">Abena Serwaa Boateng</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-label-sm text-outline">#GE-4088</span>
+<span class="text-outline">•</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">Sanctuary Choir</span>
+</div>
+</div>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-label-md text-on-surface font-medium">+1 (770) 334-1180</span>
+<span class="font-body-sm text-body-sm text-outline truncate">abena.boateng@gmail.com</span>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-primary font-label-sm text-label-sm font-semibold flex-shrink-0">
+                  GM
+                </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Sis. Grace Mensah</span>
+<span class="font-label-sm text-label-sm text-outline">Praise &amp; Worship Circle</span>
+</div>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Active Member
+              </span>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1">
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">6 of 6 (100%)</span>
+</div>
+</td>
+<td class="py-space-lg px-space-lg align-middle text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">volunteer_activism</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 3: New Member (Unassigned) -->
+<tr class="hover:bg-surface-container/60 transition-colors group">
+<td class="py-space-lg px-space-lg align-middle">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-primary font-headline-sm text-headline-sm font-semibold flex-shrink-0 shadow-sm">
+                  EK
+                </div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate group-hover:text-primary transition-colors">Emmanuel Caleb Koffi</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-label-sm text-outline">#GE-4112</span>
+<span class="text-outline">•</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-secondary-container/30 text-secondary">First-Timer Convert</span>
+</div>
+</div>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-label-md text-on-surface font-medium">+1 (678) 501-9923</span>
+<span class="font-body-sm text-body-sm text-outline truncate">e.koffi.dev@outlook.com</span>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="inline-flex items-center gap-space-xs px-space-sm py-1 rounded-lg bg-error-container/30 text-error">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+<span class="font-label-sm text-label-sm font-semibold">Unassigned Shepherd</span>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-secondary-container/50 text-on-secondary-container font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+                New Intake
+              </span>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1">
+<div class="w-3 h-3 rounded bg-surface-container-high"></div>
+<div class="w-3 h-3 rounded bg-surface-container-high"></div>
+<div class="w-3 h-3 rounded bg-surface-container-high"></div>
+<div class="w-3 h-3 rounded bg-surface-container-high"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">2 of 6 (Recent Join)</span>
+</div>
+</td>
+<td class="py-space-lg px-space-lg align-middle text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="px-space-sm py-1 rounded-lg bg-primary-container text-on-primary-container font-label-sm text-label-sm font-semibold hover:bg-primary transition-all" type="button">
+                  Assign Shepherd
+                </button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 4: Ushering Lead -->
+<tr class="hover:bg-surface-container/60 transition-colors group">
+<td class="py-space-lg px-space-lg align-middle">
+<div class="flex items-center gap-space-md">
+<div class="relative w-12 h-12 rounded-xl overflow-hidden bg-surface-container-high flex-shrink-0 shadow-sm">
+<img class="w-full h-full object-cover" data-alt="Portrait of an authoritative African woman church protocol lead in dark studio lighting with violet ambient glow" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCmn2ROiUuTE8_qAxee9eI9ZQQYeo8S0d40wNmwNPaSbYc5eIps1KUh6kCIYu8QSHj_t4JUHc0D_s1N-xd4XQt_qaaMcBl04_Z2SeHMs8tFocQHvsGV9zdTgpxwhKs41DHwaCmjWiV9zy-T7nc3XJ5M0tVsjWgBtI20gKGIPiuiqBYJ5-jDe8Lqm3DUncfEZsHsyugVm8-5lh1DkziUpQSV_0tuJIlvxScoKpnLymA"/>
+</div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate group-hover:text-primary transition-colors">Miriam T. Adebayo</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-label-sm text-outline">#GE-3890</span>
+<span class="text-outline">•</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">Ushering &amp; Protocol</span>
+</div>
+</div>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-label-md text-on-surface font-medium">+1 (404) 918-4421</span>
+<span class="font-body-sm text-body-sm text-outline truncate">adebayo.miriam@ecclesia.org</span>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-primary font-label-sm text-label-sm font-semibold flex-shrink-0">
+                  SK
+                </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Elder Selorm Kofi</span>
+<span class="font-label-sm text-label-sm text-outline">Diaconate Council</span>
+</div>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-primary/10 text-primary font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Active Member
+              </span>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1">
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-surface-container-high"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">5 of 6 (83%)</span>
+</div>
+</td>
+<td class="py-space-lg px-space-lg align-middle text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">chat_bubble_outline</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">volunteer_activism</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<!-- Row 5: Pending Verification -->
+<tr class="hover:bg-surface-container/60 transition-colors group">
+<td class="py-space-lg px-space-lg align-middle">
+<div class="flex items-center gap-space-md">
+<div class="w-12 h-12 rounded-xl bg-surface-container-high flex items-center justify-center text-secondary font-headline-sm text-headline-sm font-semibold flex-shrink-0 shadow-sm">
+                  JT
+                </div>
+<div class="flex flex-col min-w-0">
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold truncate group-hover:text-primary transition-colors">Jonathan Tariq Asamoah</span>
+<div class="flex items-center gap-space-xs mt-0.5">
+<span class="font-label-sm text-label-sm text-outline">#GE-4130</span>
+<span class="text-outline">•</span>
+<span class="font-label-sm text-label-sm px-2 py-0.5 rounded-full bg-surface-container text-on-surface-variant">Intercessory Cell</span>
+</div>
+</div>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-0.5">
+<span class="font-label-md text-label-md text-on-surface font-medium">+1 (678) 492-8012</span>
+<span class="font-body-sm text-body-sm text-outline truncate">j.t.asamoah@cloudworks.io</span>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex items-center gap-space-sm">
+<div class="w-7 h-7 rounded-full bg-surface-container flex items-center justify-center text-primary font-label-sm text-label-sm font-semibold flex-shrink-0">
+                  DV
+                </div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Deaconess Deborah Vance</span>
+<span class="font-label-sm text-label-sm text-outline">Intercessory Oversight</span>
+</div>
+</div>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<span class="inline-flex items-center gap-1.5 px-space-sm py-1 rounded-full bg-surface-container-high text-on-surface font-label-sm text-label-sm font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-outline animate-ping"></span>
+                Pending Verification
+              </span>
+</td>
+<td class="py-space-lg px-space-md align-middle">
+<div class="flex flex-col gap-1.5">
+<div class="flex items-center gap-1">
+<div class="w-3 h-3 rounded bg-surface-container-high"></div>
+<div class="w-3 h-3 rounded bg-surface-container-high"></div>
+<div class="w-3 h-3 rounded bg-surface-container-high"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+<div class="w-3 h-3 rounded bg-primary"></div>
+</div>
+<span class="font-label-sm text-label-sm text-outline">3 of 6 (50%)</span>
+</div>
+</td>
+<td class="py-space-lg px-space-lg align-middle text-right">
+<div class="flex items-center justify-end gap-space-xs">
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">verified</span>
+</button>
+<button class="w-8 h-8 rounded-lg bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface flex items-center justify-center transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Pagination / Footer Context -->
+<div class="p-space-md bg-surface-container-low flex flex-col sm:flex-row items-center justify-between gap-space-md">
+<div class="flex items-center gap-space-sm text-outline font-body-sm text-body-sm">
+<span>Showing <strong>1-5</strong> of <strong>1,482</strong> records</span>
+<span>•</span>
+<span>Directory Index <strong>rev.2024.11</strong></span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="px-space-md py-space-xs rounded-xl bg-surface-container text-outline hover:text-on-surface font-label-md text-label-md disabled:opacity-40" disabled="" type="button">Previous</button>
+<button class="px-space-md py-space-xs rounded-xl bg-primary-container text-on-primary-container font-label-md text-label-md font-semibold" type="button">1</button>
+<button class="px-space-md py-space-xs rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md" type="button">2</button>
+<button class="px-space-md py-space-xs rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md" type="button">3</button>
+<span class="px-space-xs text-outline">…</span>
+<button class="px-space-md py-space-xs rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md" type="button">98</button>
+<button class="px-space-md py-space-xs rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md" type="button">Next</button>
+</div>
+</div>
+</div>
+<!-- Registration Workflow Slide-Over Modal Backdrop & Drawer -->
+<div class="fixed inset-0 bg-surface-container-lowest/80 backdrop-blur-md z-50 opacity-0 pointer-events-none transition-opacity duration-300 flex justify-end" id="registration-drawer-backdrop">
+<!-- Slide Panel Container -->
+<div class="w-full max-w-xl bg-surface-container-low h-full flex flex-col shadow-2xl translate-x-full transition-transform duration-300 ease-out" id="registration-panel">
+<!-- Panel Header -->
+<div class="p-space-lg bg-surface-container flex items-center justify-between shadow-sm">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs text-primary">
+<span class="material-symbols-outlined text-[18px]">person_add</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider font-semibold">Canonized Registration Intake</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Register New Member</h2>
+</div>
+<button class="w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-outline hover:text-on-surface transition-colors" id="close-drawer-btn" type="button">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+<!-- Step Navigation Indicator -->
+<div class="px-space-lg py-space-md bg-surface-container-low">
+<div class="grid grid-cols-3 gap-space-xs">
+<!-- Step 1 -->
+<div class="flex flex-col gap-1.5">
+<div class="h-1 rounded-full bg-primary transition-all"></div>
+<span class="font-label-sm text-label-sm font-semibold text-primary">1. Identity</span>
+</div>
+<!-- Step 2 -->
+<div class="flex flex-col gap-1.5">
+<div class="h-1 rounded-full bg-surface-container-high transition-all" id="step-bar-2"></div>
+<span class="font-label-sm text-label-sm text-outline" id="step-label-2">2. Contact Info</span>
+</div>
+<!-- Step 3 -->
+<div class="flex flex-col gap-1.5">
+<div class="h-1 rounded-full bg-surface-container-high transition-all" id="step-bar-3"></div>
+<span class="font-label-sm text-label-sm text-outline" id="step-label-3">3. Shepherd Policy</span>
+</div>
+</div>
+</div>
+<!-- Slide-Over Form Content Body -->
+<div class="flex-1 overflow-y-auto p-space-lg flex flex-col gap-space-lg">
+<!-- Step 1 Container -->
+<div class="flex flex-col gap-space-md" id="step-content-1">
+<div class="flex flex-col gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Personal Identity • Stage 1</h3>
+<p class="font-body-sm text-body-sm text-outline">Establish ecclesiastical profile and legal nominatives.</p>
+</div>
+<!-- Name Inputs -->
+<div class="grid grid-cols-2 gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-outline uppercase">First Name *</label>
+<input class="bg-surface-container font-body-sm text-body-sm text-on-surface placeholder:text-outline/70 px-space-md py-space-sm rounded-xl focus:outline-none focus:bg-surface-container-high" placeholder="e.g. Christian" type="text"/>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-outline uppercase">Last Name *</label>
+<input class="bg-surface-container font-body-sm text-body-sm text-on-surface placeholder:text-outline/70 px-space-md py-space-sm rounded-xl focus:outline-none focus:bg-surface-container-high" placeholder="e.g. Darko" type="text"/>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-outline uppercase">Gender &amp; Marital State</label>
+<div class="grid grid-cols-2 gap-space-md">
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container font-body-sm text-body-sm text-on-surface px-space-md py-space-sm rounded-xl focus:outline-none">
+<option>Male</option>
+<option>Female</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container font-body-sm text-body-sm text-on-surface px-space-md py-space-sm rounded-xl focus:outline-none">
+<option>Single</option>
+<option>Married</option>
+<option>Widowed</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-outline uppercase">Date of Birth (For Pastoral Milestones)</label>
+<input class="bg-surface-container font-body-sm text-body-sm text-on-surface px-space-md py-space-sm rounded-xl focus:outline-none" type="date"/>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-outline uppercase">Ministry Department Interest</label>
+<div class="grid grid-cols-2 gap-space-xs">
+<label class="flex items-center gap-space-xs p-space-sm rounded-xl bg-surface-container cursor-pointer hover:bg-surface-container-high transition-colors">
+<input class="w-4 h-4 rounded text-primary focus:ring-0" type="checkbox"/>
+<span class="font-label-sm text-label-sm text-on-surface">Media &amp; Tech</span>
+</label>
+<label class="flex items-center gap-space-xs p-space-sm rounded-xl bg-surface-container cursor-pointer hover:bg-surface-container-high transition-colors">
+<input class="w-4 h-4 rounded text-primary focus:ring-0" type="checkbox"/>
+<span class="font-label-sm text-label-sm text-on-surface">Choir &amp; Music</span>
+</label>
+<label class="flex items-center gap-space-xs p-space-sm rounded-xl bg-surface-container cursor-pointer hover:bg-surface-container-high transition-colors">
+<input class="w-4 h-4 rounded text-primary focus:ring-0" type="checkbox"/>
+<span class="font-label-sm text-label-sm text-on-surface">Protocol / Ushering</span>
+</label>
+<label class="flex items-center gap-space-xs p-space-sm rounded-xl bg-surface-container cursor-pointer hover:bg-surface-container-high transition-colors">
+<input class="w-4 h-4 rounded text-primary focus:ring-0" type="checkbox"/>
+<span class="font-label-sm text-label-sm text-on-surface">Intercessory</span>
+</label>
+</div>
+</div>
+</div>
+<!-- Step 2 Container (Contact Info & Normalized Duplicate Check) -->
+<div class="flex flex-col gap-space-md" id="step-content-2">
+<div class="flex flex-col gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Contact &amp; Verification • Stage 2</h3>
+<p class="font-body-sm text-body-sm text-outline">Real-time normalization checks running against the central database.</p>
+</div>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm text-outline uppercase">Mobile Phone (E.164 Format) *</label>
+<span class="font-label-sm text-label-sm text-primary flex items-center gap-1" id="phone-duplicate-status">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+                Valid &amp; Unique
+              </span>
+</div>
+<div class="relative">
+<input class="w-full bg-surface-container font-body-sm text-body-sm text-on-surface px-space-md py-space-sm rounded-xl focus:outline-none focus:bg-surface-container-high" id="drawer-phone-input" type="tel" value="+1 (404) 555-0199"/>
+</div>
+<span class="font-label-sm text-label-sm text-outline">Sanctuary SMS alerts, broadcast notifications, and Shepherd calls.</span>
+</div>
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center justify-between">
+<label class="font-label-sm text-label-sm text-outline uppercase">Email Address *</label>
+<span class="font-label-sm text-label-sm text-outline">Instant DNS check</span>
+</div>
+<input class="bg-surface-container font-body-sm text-body-sm text-on-surface placeholder:text-outline/70 px-space-md py-space-sm rounded-xl focus:outline-none focus:bg-surface-container-high" placeholder="c.darko@domain.com" type="email"/>
+</div>
+<div class="flex flex-col gap-space-xs">
+<label class="font-label-sm text-label-sm text-outline uppercase">Residential Address / Zone</label>
+<textarea class="bg-surface-container font-body-sm text-body-sm text-on-surface placeholder:text-outline/70 px-space-md py-space-sm rounded-xl focus:outline-none focus:bg-surface-container-high resize-none" placeholder="Street Address, City, Postal Code" rows="2"></textarea>
+</div>
+</div>
+<!-- Step 3 Container (Shepherd Assignment Policy) -->
+<div class="flex flex-col gap-space-md" id="step-content-3">
+<div class="flex flex-col gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold">Shepherd Assignment Policy • Stage 3</h3>
+<p class="font-body-sm text-body-sm text-outline">Select assignment logic to route pastoral care immediately upon registration.</p>
+</div>
+<!-- Radio Selection for Shepherd Policies -->
+<div class="flex flex-col gap-space-sm">
+<!-- Policy Option 1: Geographic Auto-Assign -->
+<label class="p-space-md rounded-xl bg-surface-container flex items-start gap-space-md cursor-pointer hover:bg-surface-container-high transition-colors">
+<input checked="" class="mt-1 text-primary focus:ring-0" name="shepherd-policy" type="radio" value="auto"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Automated Shepherd Routing (Recommended)</span>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">Algorithmically assigns the member to a licensed shepherd matching residential perimeter and cell cluster.</p>
+<div class="mt-space-sm inline-flex items-center gap-space-xs px-space-sm py-0.5 rounded bg-surface-container-low text-primary font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">auto_awesome</span>
+                  Auto-Matches with Pastor David Osei (Apex East)
+                </div>
+</div>
+</label>
+<!-- Policy Option 2: Direct Pastoral Queue / Manual Admin Review -->
+<label class="p-space-md rounded-xl bg-surface-container flex items-start gap-space-md cursor-pointer hover:bg-surface-container-high transition-colors">
+<input class="mt-1 text-primary focus:ring-0" name="shepherd-policy" type="radio" value="review"/>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Route to Senior Pastoral Review Queue</span>
+<p class="font-body-sm text-body-sm text-outline mt-0.5">Flags for Rev. Dr. Emmanuel Sterling or Diaconate Council for personalized leadership assignment.</p>
+</div>
+</label>
+<!-- Policy Option 3: Manual Direct Selection -->
+<label class="p-space-md rounded-xl bg-surface-container flex items-start gap-space-md cursor-pointer hover:bg-surface-container-high transition-colors">
+<input class="mt-1 text-primary focus:ring-0" name="shepherd-policy" type="radio" value="manual"/>
+<div class="flex flex-col w-full">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Explicit Shepherd Assignment</span>
+<div class="mt-space-sm relative">
+<select class="w-full appearance-none bg-surface-container-low font-body-sm text-body-sm text-on-surface px-space-md py-space-sm rounded-xl focus:outline-none">
+<option>Pastor David Osei (East Wing Shepherd)</option>
+<option>Sis. Grace Mensah (Choir &amp; Praise Lead)</option>
+<option>Elder Selorm Kofi (Diaconate Lead)</option>
+<option>Deaconess Deborah Vance (Intercessory Lead)</option>
+</select>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">expand_more</span>
+</div>
+</div>
+</label>
+</div>
+</div>
+</div>
+<!-- Slide-Over Footer Action Buttons -->
+<div class="p-space-lg bg-surface-container flex items-center justify-between shadow-lg">
+<button class="px-space-md py-space-sm rounded-xl bg-surface-container-low hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-colors" id="cancel-registration-btn" type="button">
+          Cancel Intake
+        </button>
+<div class="flex items-center gap-space-sm">
+<button class="flex items-center gap-space-xs bg-primary-container text-on-primary-container px-space-lg py-space-sm rounded-xl font-label-lg text-label-lg font-semibold hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_20px_-4px_rgba(160,120,255,0.4)]" id="commit-registration-btn" type="button">
+<span class="material-symbols-outlined text-[18px]">save</span>
+<span>Finalize &amp; Seal Record</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Vanilla JS for Micro-Interactions: Filter Search, Drawer Toggles, Quick Feedback -->
+<script>
+  (function() {
+    const openBtn = document.getElementById('open-register-btn');
+    const closeBtn = document.getElementById('close-drawer-btn');
+    const cancelBtn = document.getElementById('cancel-registration-btn');
+    const commitBtn = document.getElementById('commit-registration-btn');
+    const backdrop = document.getElementById('registration-drawer-backdrop');
+    const panel = document.getElementById('registration-panel');
+    const searchInput = document.getElementById('directory-search');
+    const memberRows = document.getElementById('member-rows');
+    const statusFilter = document.getElementById('status-filter');
+    const shepherdFilter = document.getElementById('shepherd-filter');
+    const unitFilter = document.getElementById('unit-filter');
+    const resetFiltersBtn = document.getElementById('reset-filters');
+
+    function openDrawer() {
+      backdrop.classList.remove('opacity-0', 'pointer-events-none');
+      backdrop.classList.add('opacity-100');
+      panel.classList.remove('translate-x-full');
+      panel.classList.add('translate-x-0');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeDrawer() {
+      backdrop.classList.remove('opacity-100');
+      backdrop.classList.add('opacity-0', 'pointer-events-none');
+      panel.classList.remove('translate-x-0');
+      panel.classList.add('translate-x-full');
+      document.body.style.overflow = '';
+    }
+
+    if (openBtn) openBtn.addEventListener('click', openDrawer);
+    if (closeBtn) closeBtn.addEventListener('click', closeDrawer);
+    if (cancelBtn) cancelBtn.addEventListener('click', closeDrawer);
+
+    if (backdrop) {
+      backdrop.addEventListener('click', function(e) {
+        if (e.target === backdrop) {
+          closeDrawer();
+        }
+      });
+    }
+
+    // Instant Filter & Search Functionality
+    function filterTable() {
+      const query = (searchInput.value || '').toLowerCase().trim();
+      if (!memberRows) return;
+      const rows = memberRows.querySelectorAll('tr');
+
+      rows.forEach(function(row) {
+        const text = row.textContent.toLowerCase();
+        const matchesQuery = !query || text.includes(query);
+        row.style.display = matchesQuery ? '' : 'none';
+      });
+    }
+
+    if (searchInput) {
+      searchInput.addEventListener('input', filterTable);
+    }
+
+    if (resetFiltersBtn) {
+      resetFiltersBtn.addEventListener('click', function() {
+        if (searchInput) searchInput.value = '';
+        if (statusFilter) statusFilter.value = 'all';
+        if (shepherdFilter) shepherdFilter.value = 'all';
+        if (unitFilter) unitFilter.value = 'all';
+        filterTable();
+      });
+    }
+
+    // Simple Feedback on Commit
+    if (commitBtn) {
+      commitBtn.addEventListener('click', function() {
+        commitBtn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span>Verifying & Sealing...</span>';
+        commitBtn.disabled = true;
+        setTimeout(function() {
+          commitBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">done</span><span>Registered!</span>';
+          setTimeout(function() {
+            closeDrawer();
+            commitBtn.innerHTML = '<span class="material-symbols-outlined text-[18px]">save</span><span>Finalize & Seal Record</span>';
+            commitBtn.disabled = false;
+          }, 600);
+        }, 800);
+      });
+    }
+  })();
+</script></main></div></body></html>

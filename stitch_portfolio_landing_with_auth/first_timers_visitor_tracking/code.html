@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode":"class","theme":{"extend":{"colors":{"on-error":"#690005","on-tertiary-fixed-variant":"#4a3d7c","error":"#ffb4ab","surface-bright":"#38393f","on-surface":"#e3e1e9","surface":"#121318","on-error-container":"#ffdad6","primary-fixed-dim":"#d0bcff","primary":"#d0bcff","outline":"#958ea0","inverse-primary":"#6d3bd7","on-primary-container":"#340080","on-primary-fixed-variant":"#5516be","secondary":"#cebdff","on-tertiary-container":"#2c1f5c","surface-container":"#1e1f25","outline-variant":"#494454","on-primary-fixed":"#23005c","surface-tint":"#d0bcff","secondary-container":"#4f319c","primary-fixed":"#e9ddff","primary-container":"#a078ff","on-secondary-fixed":"#21005e","tertiary-container":"#9587cc","on-secondary-container":"#bea8ff","inverse-surface":"#e3e1e9","tertiary":"#ccbeff","on-primary":"#3c0091","tertiary-fixed":"#e7deff","surface-dim":"#121318","background":"#121318","surface-container-lowest":"#0d0e13","tertiary-fixed-dim":"#ccbeff","on-tertiary-fixed":"#1e0e4e","on-surface-variant":"#cbc3d7","error-container":"#93000a","surface-container-high":"#292a2f","on-background":"#e3e1e9","on-secondary":"#381385","on-secondary-fixed-variant":"#4f319c","on-tertiary":"#332664","surface-container-highest":"#34343a","secondary-fixed-dim":"#cebdff","surface-container-low":"#1a1b21","inverse-on-surface":"#2f3036","surface-variant":"#34343a","secondary-fixed":"#e8ddff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","space-lg":"1.5rem","space-md":"1rem","gutter-lg":"2rem","space-xs":"0.25rem","margin-lg":"5rem","space-xl":"2.5rem","gutter-sm":"1rem","margin":"1.5rem","space-sm":"0.5rem","margin-md":"3rem"},"fontFamily":{"body-md":["Inter"],"headline-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"display-hero":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"display-hero-mobile":["Plus Jakarta Sans"],"body-sm":["Inter"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-lg":["Inter"]},"fontSize":{"body-md":["15px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"400"}],"headline-md":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"headline-lg-mobile":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}],"display-hero":["56px",{"lineHeight":"64px","letterSpacing":"-0.03em","fontWeight":"700"}],"headline-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.04em","fontWeight":"600"}],"display-hero-mobile":["36px",{"lineHeight":"42px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-sm":["13px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"400"}],"headline-sm":["20px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"500"}],"body-lg":["18px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"400"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased min-h-screen selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between py-space-lg px-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-sm"><div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary shadow-[0_0_24px_-4px_rgba(139,92,246,0.25)]"><span class="material-symbols-outlined text-[22px]">church</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-semibold">Grace Ecclesia</span><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">CMS Portal</span></div></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-xl shadow-[0_0_20px_-4px_rgba(160,120,255,0.35)]"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">dashboard</span><span class="font-label-lg text-label-lg">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="all-members" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">groups</span><span class="font-label-lg text-label-lg">All Members</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="shepherd-assignments" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">diversity_3</span><span class="font-label-lg text-label-lg">Shepherd Assignments</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="church-attendance" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">how_to_reg</span><span class="font-label-lg text-label-lg">Church Attendance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="follow-up-care" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">volunteer_activism</span><span class="font-label-lg text-label-lg">Follow-Up &amp; Care</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="first-timers-visitors" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">person_add_alt</span><span class="font-label-lg text-label-lg">First-Timers &amp; Visitors</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="services-calendar" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">event</span><span class="font-label-lg text-label-lg">Services &amp; Calendar</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="reports-analytics" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">monitoring</span><span class="font-label-lg text-label-lg">Reports &amp; Analytics</span></a></nav></div><div class="flex flex-col gap-space-xs pt-space-md"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">settings</span><span class="font-label-lg text-label-lg">Settings</span></a><div class="p-space-sm rounded-xl bg-surface-container-low flex items-center gap-space-sm mt-space-xs"><div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface font-semibold">Ecclesia Global</span><span class="font-label-sm text-label-sm text-outline">v2.4 Secured Sanctuary</span></div></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer"><span class="material-symbols-outlined text-[18px] text-primary">church</span><span class="font-label-lg text-label-lg text-on-surface">Apex Sanctuary (Main Campus)</span><span class="material-symbols-outlined text-[16px] text-outline">expand_more</span></div><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span><input class="w-80 bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline pl-10 pr-space-md py-space-xs rounded-xl focus:outline-none focus:bg-surface-container transition-all" placeholder="Search congregants, shepherds, gifts..." type="text"/></div></div><div class="flex items-center gap-space-md"><button class="flex items-center gap-space-xs bg-primary-container text-on-primary-container px-space-md py-space-xs rounded-xl font-label-lg text-label-lg font-semibold hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_16px_rgba(160,120,255,0.25)]" type="button"><span class="material-symbols-outlined text-[18px]">person_add</span><span>+ New Member</span></button><div class="relative"><button class="w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Rev. Dr. Emmanuel Sterling</span><span class="font-label-sm text-label-sm text-outline leading-tight">Senior Pastor • General Overseer</span></div></div></div></header><main class="w-full pt-16 bg-background flex-1 px-space-lg py-space-lg"><div class="flex flex-col w-full">
+<div class="relative flex flex-col gap-space-xl">
+<div class="pointer-events-none absolute -top-16 -right-20 w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+<div class="pointer-events-none absolute top-40 -left-20 w-80 h-80 bg-secondary-container/20 rounded-full blur-3xl"></div>
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-primary font-label-sm text-label-sm uppercase tracking-widest">Growth &amp; Assimilation</span>
+<span class="w-1.5 h-1.5 rounded-full bg-outline-variant"></span>
+<span class="font-label-sm text-label-sm text-outline">Sanctuary Onboarding Flow</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">First-Timers &amp; Visitor Tracking Pipeline</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl">Track visitor lifecycle from first visit to spiritual assimilation and membership integration.</p>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<div class="relative">
+<select class="appearance-none bg-surface-container-low text-on-surface font-label-lg text-label-lg pl-space-md pr-10 py-space-sm rounded-xl focus:outline-none focus:bg-surface-container cursor-pointer shadow-sm">
+<option>All Sanctuary Services</option>
+<option>Sunday Encounter (1st Service)</option>
+<option>Apex Glory (2nd Service)</option>
+<option>Midweek Communion &amp; Word</option>
+<option>Youth Paradigm Service</option>
+</select>
+<span class="material-symbols-outlined absolute right-space-sm top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[18px]">unfold_more</span>
+</div>
+<button class="flex items-center gap-space-xs px-space-md py-space-sm bg-surface-container-low text-on-surface hover:bg-surface-container-high rounded-xl font-label-lg text-label-lg transition-colors shadow-sm" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary">download</span>
+<span>Export Retention Report</span>
+</button>
+<button class="flex items-center gap-space-xs px-space-lg py-space-sm bg-primary-container text-on-primary-container hover:bg-primary hover:text-on-primary rounded-xl font-label-lg text-label-lg font-semibold shadow-[0_0_20px_-4px_rgba(160,120,255,0.4)] transition-all" type="button">
+<span class="material-symbols-outlined text-[20px]">fitbit_push_ups</span>
+<span>+ Register Visitor</span>
+</button>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-space-md">
+<div class="relative overflow-hidden bg-surface-container-low rounded-xl p-space-lg shadow-sm group hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-outline tracking-wider uppercase">Total Visitors (This Month)</span>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-display-hero text-[44px] leading-tight font-bold text-on-surface tracking-tight">64</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +18%
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">vs. 54 past calendar month</span>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary group-hover:scale-105 transition-transform shadow-[0_0_16px_rgba(208,188,255,0.15)]">
+<span class="material-symbols-outlined text-[24px]">group_add</span>
+</div>
+</div>
+<div class="mt-space-md h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full" style="width: 78%;"></div>
+</div>
+</div>
+<div class="relative overflow-hidden bg-surface-container-low rounded-xl p-space-lg shadow-sm group hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-outline tracking-wider uppercase">Contacted Within 48 Hrs</span>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-display-hero text-[44px] leading-tight font-bold text-on-surface tracking-tight">89.2%</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center">
+<span class="material-symbols-outlined text-[14px]">verified</span> Met
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Pastoral SLA Target: ≥85.0%</span>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-secondary group-hover:scale-105 transition-transform shadow-[0_0_16px_rgba(206,189,255,0.15)]">
+<span class="material-symbols-outlined text-[24px]">schedule</span>
+</div>
+</div>
+<div class="mt-space-md h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-secondary rounded-full" style="width: 89.2%;"></div>
+</div>
+</div>
+<div class="relative overflow-hidden bg-surface-container-low rounded-xl p-space-lg shadow-sm group hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-outline tracking-wider uppercase">Return Visitors (2nd+ Visit)</span>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-display-hero text-[44px] leading-tight font-bold text-on-surface tracking-tight">28</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">43.8% return rate</span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Active retention velocity</span>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary-container group-hover:scale-105 transition-transform shadow-[0_0_16px_rgba(160,120,255,0.2)]">
+<span class="material-symbols-outlined text-[24px]">replay</span>
+</div>
+</div>
+<div class="mt-space-md h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-primary-container rounded-full" style="width: 44%;"></div>
+</div>
+</div>
+<div class="relative overflow-hidden bg-surface-container-low rounded-xl p-space-lg shadow-sm group hover:bg-surface-container transition-all">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-space-xs">
+<span class="font-label-md text-label-md text-outline tracking-wider uppercase">Integrated to Flock</span>
+<div class="flex items-baseline gap-space-xs mt-space-xs">
+<span class="font-display-hero text-[44px] leading-tight font-bold text-on-surface tracking-tight">19</span>
+<span class="font-label-sm text-label-sm text-primary flex items-center">
+<span class="material-symbols-outlined text-[14px]">workspace_premium</span> Full
+              </span>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Assigned to covenant cell shepherds</span>
+</div>
+<div class="w-12 h-12 rounded-xl bg-surface-container flex items-center justify-center text-primary group-hover:scale-105 transition-transform shadow-[0_0_16px_rgba(208,188,255,0.2)]">
+<span class="material-symbols-outlined text-[24px]">church</span>
+</div>
+</div>
+<div class="mt-space-md h-1.5 w-full bg-surface-container-high rounded-full overflow-hidden">
+<div class="h-full bg-gradient-to-r from-secondary to-primary-container rounded-full" style="width: 68%;"></div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-md">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<span class="material-symbols-outlined text-[22px] text-primary">view_kanban</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Stage Retention Pipeline</h2>
+<span class="px-space-sm py-0.5 rounded-full bg-surface-container-high text-outline font-label-sm text-label-sm">6 Sequential Milestones</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="p-1.5 rounded-lg bg-surface-container-low text-outline hover:text-on-surface hover:bg-surface-container transition-colors" title="Filter Pipeline" type="button">
+<span class="material-symbols-outlined text-[18px]">filter_list</span>
+</button>
+<button class="p-1.5 rounded-lg bg-surface-container-low text-outline hover:text-on-surface hover:bg-surface-container transition-colors" title="Sort Order" type="button">
+<span class="material-symbols-outlined text-[18px]">swap_vert</span>
+</button>
+<button class="p-1.5 rounded-lg bg-surface-container-low text-outline hover:text-on-surface hover:bg-surface-container transition-colors" title="Expand View" type="button">
+<span class="material-symbols-outlined text-[18px]">fullscreen</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto pb-space-sm">
+<div class="grid grid-cols-6 gap-space-md min-w-[1360px]">
+<div class="flex flex-col gap-space-sm bg-surface-container-lowest/70 p-space-sm rounded-xl">
+<div class="flex items-center justify-between px-space-xs py-1">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2 h-2 rounded-full bg-outline"></span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">1. First Visit</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">14</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="bg-surface-container-low hover:bg-surface-container p-space-md rounded-xl shadow-sm transition-all flex flex-col gap-space-sm cursor-pointer group">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs min-w-0">
+<img class="w-8 h-8 rounded-full object-cover shrink-0" data-alt="Warm photographic close-up portrait of Chimamanda Obi, a radiant young West African woman smiling kindly in natural ambient sanctuary lighting, wearing contemporary attire with subtle violet tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBi94qgQWfhzFcD1GGtBVGROctA5LN2D-CkLp3KJB3U6hmjH_XpJ83fdzmbdHTj6ILKNSLjm9Api0Wtp5f35MWF5X-VL7afvWgeZ6cmYmGGBfn0ozwu_5ZGu9l0ba_zhbhUGsE3lTXhVPQLmcdp8rJq5905ICy2F4SZHgRdyHCdY19ZBgvbWmkOaP1StRjj_36QvXNIsJcbVKxOkMZcW-ZUE23x65QLpdSugBFXDAg"/>
+<div class="min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate block group-hover:text-primary transition-colors">Chimamanda Obi</span>
+<span class="font-label-sm text-label-sm text-outline block">Sun Nov 17 • 1st Service</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-on-surface">more_horiz</span>
+</div>
+<div class="flex flex-col gap-1 text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">person_pin</span>
+<span class="truncate">Invited by: Sis. Grace Adebayo</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">forum</span>
+<span>Channel: Preferred WhatsApp</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-high text-primary font-label-sm text-label-sm">Follow-up Assigned</span>
+<span class="font-label-sm text-label-sm text-outline">Bro. Caleb</span>
+</div>
+<div class="flex items-center gap-space-xs pt-1">
+<button class="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high text-label-sm font-label-sm transition-colors" title="WhatsApp Message" type="button">
+<span class="material-symbols-outlined text-[14px]">chat</span> Chat
+                  </button>
+<button class="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high text-label-sm font-label-sm transition-colors" title="Direct Phone Call" type="button">
+<span class="material-symbols-outlined text-[14px]">call</span> Call
+                  </button>
+<button class="p-1 rounded bg-primary-container/20 text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors" title="Promote to Next Stage" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="bg-surface-container-low hover:bg-surface-container p-space-md rounded-xl shadow-sm transition-all flex flex-col gap-space-sm cursor-pointer group">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs min-w-0">
+<div class="w-8 h-8 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-label-md text-label-md font-semibold shrink-0">EK</div>
+<div class="min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate block group-hover:text-primary transition-colors">Emmanuel Kalu</span>
+<span class="font-label-sm text-label-sm text-outline block">Sun Nov 17 • 2nd Service</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-on-surface">more_horiz</span>
+</div>
+<div class="flex flex-col gap-1 text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">map</span>
+<span class="truncate">Relocated from Lagos Island</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-high text-outline font-label-sm text-label-sm">Intake Queued</span>
+<span class="font-label-sm text-label-sm text-outline">Host Ministry</span>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-sm bg-surface-container-lowest/70 p-space-sm rounded-xl">
+<div class="flex items-center justify-between px-space-xs py-1">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2 h-2 rounded-full bg-tertiary"></span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">2. Contact Attempted</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">11</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="bg-surface-container-low hover:bg-surface-container p-space-md rounded-xl shadow-sm transition-all flex flex-col gap-space-sm cursor-pointer group">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs min-w-0">
+<img class="w-8 h-8 rounded-full object-cover shrink-0" data-alt="Studio style headshot of Tunde Balogun, an African professional in his early thirties with clean hair cut and glasses, neutral calm expression under violet rim lighting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAdtirKmRIIdaxD2T0XBR4xtWJgJa5LDQ1qAu0PEBniAejIc9OgiFEP9eJ9dLoIFsm7P9TR_RQ8Qvf-ovQNYX0SRHg1mquM8nGr6C2J8vkM8fpBUc7U4wI2tB2sK6nvDzXHm1kaLKKzuD2HeKiyQdjzzAXSbDcyQLZxYg0XIxfH-u7Zq9732r1eqMXhJ1KaJ0efbEQExh0YgGe1SB923MY0J1uBhiz4IhjzmbzN6YM"/>
+<div class="min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate block group-hover:text-primary transition-colors">Tunde Balogun</span>
+<span class="font-label-sm text-label-sm text-outline block">Sun Nov 10 • 1st Service</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-on-surface">more_horiz</span>
+</div>
+<div class="flex flex-col gap-1 text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[14px]">phone_in_talk</span>
+<span class="truncate font-semibold">Call rescheduled for 6:30 PM</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">person</span>
+<span>Officer: Dcn. Samuel K.</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="px-space-xs py-0.5 rounded bg-secondary-container/40 text-secondary font-label-sm text-label-sm">Dialed 1x • Agreed</span>
+<span class="font-label-sm text-label-sm text-outline">Touchpoint 1</span>
+</div>
+<div class="flex items-center gap-space-xs pt-1">
+<button class="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high text-label-sm font-label-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">call</span> Redial
+                  </button>
+<button class="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high text-label-sm font-label-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">notes</span> Note
+                  </button>
+<button class="p-1 rounded bg-primary-container/20 text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors" title="Advance Stage" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-sm bg-surface-container-lowest/70 p-space-sm rounded-xl">
+<div class="flex items-center justify-between px-space-xs py-1">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">3. Welcomed</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">9</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="bg-surface-container-low hover:bg-surface-container p-space-md rounded-xl shadow-sm transition-all flex flex-col gap-space-sm cursor-pointer group">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs min-w-0">
+<img class="w-8 h-8 rounded-full object-cover shrink-0" data-alt="Portrait photo of Jessica Mensah, a charismatic Ghanaian woman in her late 20s, elegant braided hair, warm gentle smile, moody architectural background with deep charcoal tones and subtle soft ambient purple light." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAfPfew1926RMP94yA6RaPQLBTnkZmbBERWkXZYOjAQ0Es2bqAMYtdJlc2wg-_zo7WXy3SI1LbcnClpdH3rFFl8jWqNzDDqh_gU_m9yzx3IHolKjkQNI9li9Ki__7u1qFjZr3KDtjYY7flytB8vbXKAv9TKSa-lNWz1pQn0ee9aZ_y1Q7rB_dRvJslWX0l-BOhtBv5ALDqrAyvX2WYV1Q2ffa95Xecp1LtuerWErLk"/>
+<div class="min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate block group-hover:text-primary transition-colors">Jessica Mensah</span>
+<span class="font-label-sm text-label-sm text-outline block">Sun Nov 10 • Midweek Communion</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-on-surface">more_horiz</span>
+</div>
+<div class="p-space-xs rounded bg-surface-container flex flex-col gap-0.5">
+<span class="font-label-sm text-label-sm text-secondary font-semibold">Prayer Request Submitted:</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant line-clamp-2">"Breakthrough in new job interview with multinational logistics firm."</p>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="px-space-xs py-0.5 rounded bg-primary-container/20 text-primary font-label-sm text-label-sm">Welcome Pack Sent</span>
+<span class="font-label-sm text-label-sm text-outline">Sis. Victoria</span>
+</div>
+<div class="flex items-center gap-space-xs pt-1">
+<button class="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high text-label-sm font-label-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">volunteer_activism</span> Pray
+                  </button>
+<button class="p-1 rounded bg-primary-container/20 text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors" title="Advance to Invitation" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-sm bg-surface-container-lowest/70 p-space-sm rounded-xl">
+<div class="flex items-center justify-between px-space-xs py-1">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2 h-2 rounded-full bg-primary-container"></span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">4. Invited Back</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">12</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="bg-surface-container-low hover:bg-surface-container p-space-md rounded-xl shadow-sm transition-all flex flex-col gap-space-sm cursor-pointer group">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs min-w-0">
+<div class="w-8 h-8 rounded-full bg-surface-bright text-on-surface flex items-center justify-center font-label-md text-label-md font-semibold shrink-0">MO</div>
+<div class="min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate block group-hover:text-primary transition-colors">Michael Osei</span>
+<span class="font-label-sm text-label-sm text-outline block">Sun Nov 03 • Youth Paradigm</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-on-surface">more_horiz</span>
+</div>
+<div class="flex flex-col gap-1 text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[14px] text-primary">event_available</span>
+<span class="truncate">Invited: Mid-Week Word &amp; Prayer</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">cell_merge</span>
+<span>Zone: Ikeja Grace Cell 04</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="px-space-xs py-0.5 rounded bg-surface-container-high text-secondary font-label-sm text-label-sm">RSVP Confirmed</span>
+<span class="font-label-sm text-label-sm text-outline">Lead Timothy</span>
+</div>
+<div class="flex items-center gap-space-xs pt-1">
+<button class="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high text-label-sm font-label-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">send</span> Remind
+                  </button>
+<button class="p-1 rounded bg-primary-container/20 text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors" title="Mark Attendance" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-sm bg-surface-container-lowest/70 p-space-sm rounded-xl">
+<div class="flex items-center justify-between px-space-xs py-1">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2 h-2 rounded-full bg-primary"></span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">5. Second Visit</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">8</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="bg-surface-container-low hover:bg-surface-container p-space-md rounded-xl shadow-sm transition-all flex flex-col gap-space-sm cursor-pointer group">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs min-w-0">
+<img class="w-8 h-8 rounded-full object-cover shrink-0" data-alt="Portrait photography of Amara Okafor, an African woman in her early thirties with composed thoughtful gaze, dressed in a contemporary dark indigo blazer, set against a dark obsidian architecture studio backdrop with purple glow highlights." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD0Qlyp3rgC22ty0KtvPwec7nV-kAYJmQdc-QRDZGD2VMPOK6tu4Keg1GXrDXg-dQjuYPeSuwt4eDmiUX5QPPkGW3RDisDp-2a8M7bricGm79kptFk8o6J-FyX30yu_wUItfnESh8VwLSwf_2JOBmxyMPJ2jzd_zp_VrkTRc4Ih9b59B7tlfUrZvjmTw2n3w5mz7yPqslIFYzSaCwi3AXmhOiCJvNqiTXe2ppr_oXA"/>
+<div class="min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate block group-hover:text-primary transition-colors">Amara Okafor</span>
+<span class="font-label-sm text-label-sm text-outline block">2nd Sunday • Nov 17</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-on-surface">more_horiz</span>
+</div>
+<div class="flex flex-col gap-1 text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5 text-primary">
+<span class="material-symbols-outlined text-[14px]">school</span>
+<span class="truncate">Ready for Foundations Class</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">domain</span>
+<span>Campus: Apex Sanctuary</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="px-space-xs py-0.5 rounded bg-primary/20 text-primary font-label-sm text-label-sm">High Affinity</span>
+<span class="font-label-sm text-label-sm text-outline">Elder Mark</span>
+</div>
+<div class="flex items-center gap-space-xs pt-1">
+<button class="flex-1 flex items-center justify-center gap-1 py-1 rounded bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high text-label-sm font-label-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">badge</span> Enroll
+                  </button>
+<button class="p-1 rounded bg-primary-container/20 text-primary hover:bg-primary-container hover:text-on-primary-container transition-colors" title="Complete Integration" type="button">
+<span class="material-symbols-outlined text-[16px]">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-sm bg-surface-container-lowest/70 p-space-sm rounded-xl">
+<div class="flex items-center justify-between px-space-xs py-1">
+<div class="flex items-center gap-space-xs min-w-0">
+<span class="w-2 h-2 rounded-full bg-primary-fixed-dim"></span>
+<span class="font-label-md text-label-md text-on-surface font-semibold truncate">6. Integrated</span>
+</div>
+<span class="px-space-xs py-0.5 rounded-full bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm font-semibold">19</span>
+</div>
+<div class="flex flex-col gap-space-sm">
+<div class="bg-surface-container-low hover:bg-surface-container p-space-md rounded-xl shadow-sm transition-all flex flex-col gap-space-sm cursor-pointer group">
+<div class="flex items-start justify-between gap-space-xs">
+<div class="flex items-center gap-space-xs min-w-0">
+<div class="w-8 h-8 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-label-md text-label-md font-semibold shrink-0">DA</div>
+<div class="min-w-0">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold truncate block group-hover:text-primary transition-colors">David Alabi</span>
+<span class="font-label-sm text-label-sm text-outline block">Graduated Assimilation</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline hover:text-on-surface">more_horiz</span>
+</div>
+<div class="flex flex-col gap-1 text-body-sm font-body-sm text-on-surface-variant">
+<div class="flex items-center gap-1.5 text-on-surface">
+<span class="material-symbols-outlined text-[14px] text-primary">diversity_1</span>
+<span class="truncate">Shepherd: Rachel Okoye</span>
+</div>
+<div class="flex items-center gap-1.5 text-outline">
+<span class="material-symbols-outlined text-[14px]">how_to_reg</span>
+<span>Status: Full Covenant Member</span>
+</div>
+</div>
+<div class="flex items-center justify-between pt-space-xs">
+<span class="px-space-xs py-0.5 rounded bg-primary text-on-primary font-label-sm text-label-sm font-semibold">Completed 100%</span>
+<span class="font-label-sm text-label-sm text-outline">Flock #08</span>
+</div>
+<div class="flex items-center gap-space-xs pt-1">
+<button class="w-full flex items-center justify-center gap-1 py-1 rounded bg-surface-container text-on-surface-variant hover:text-primary hover:bg-surface-container-high text-label-sm font-label-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[14px]">account_box</span> View Member Profile
+                  </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-space-md bg-surface-container-low rounded-xl p-space-lg shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-primary">fact_check</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface font-semibold tracking-tight">Recent Visitor Intake &amp; Verification Table</h3>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Verify automated SMS/WhatsApp delivery, deduplicate registry entries, and dispatch shepherd follow-ups.</p>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[16px]">search</span>
+<input class="bg-surface-container text-on-surface placeholder:text-outline font-body-sm text-body-sm pl-9 pr-space-md py-space-xs rounded-xl focus:outline-none focus:bg-surface-container-high w-64" placeholder="Search by name, phone, or area..." type="text"/>
+</div>
+<div class="relative">
+<select class="appearance-none bg-surface-container text-on-surface font-label-md text-label-md pl-space-md pr-8 py-space-xs rounded-xl focus:outline-none cursor-pointer">
+<option>Filter by Service</option>
+<option>1st Service (7:30 AM)</option>
+<option>2nd Service (9:30 AM)</option>
+<option>Midweek Communion</option>
+</select>
+<span class="material-symbols-outlined absolute right-2.5 top-1/2 -translate-y-1/2 text-outline pointer-events-none text-[16px]">expand_more</span>
+</div>
+<button class="flex items-center gap-1 bg-surface-container text-on-surface-variant hover:text-on-surface hover:bg-surface-container-high px-space-md py-space-xs rounded-xl font-label-md text-label-md transition-colors" type="button">
+<span class="material-symbols-outlined text-[16px]">calendar_month</span>
+<span>Last 30 Days</span>
+</button>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-lowest text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-sm px-space-md rounded-l-xl">Visitor Name &amp; Contact</th>
+<th class="py-space-sm px-space-md">Visit Date &amp; Service</th>
+<th class="py-space-sm px-space-md">Invited By / Channel</th>
+<th class="py-space-sm px-space-md">Duplicate Check</th>
+<th class="py-space-sm px-space-md">Assigned Shepherd</th>
+<th class="py-space-sm px-space-md rounded-r-xl text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y-0 text-on-surface font-body-sm text-body-sm">
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-primary-container/30 text-primary flex items-center justify-center font-semibold text-label-md">CO</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface group-hover:text-primary transition-colors">Chimamanda Obi</span>
+<span class="text-outline font-body-sm">+234 803 491 8820 • Lekki Phase 1</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Sun, 17 Nov 2024</span>
+<span class="text-outline text-label-sm">Apex Sanctuary 1st Service</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="text-on-surface">Sis. Grace Adebayo</span>
+<span class="text-outline text-label-sm">Personal Evangelism</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Clean - Verified Unique Contact
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-full bg-surface-bright flex items-center justify-center text-outline text-[12px]">CB</span>
+<span class="font-label-md text-label-md text-on-surface">Bro. Caleb B.</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="inline-flex items-center gap-space-xs">
+<button class="px-space-sm py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-label-sm transition-colors" type="button">Shepherd Reassign</button>
+<button class="p-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" title="More options" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-secondary-container/40 text-secondary flex items-center justify-center font-semibold text-label-md">TB</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface group-hover:text-primary transition-colors">Tunde Balogun</span>
+<span class="text-outline font-body-sm">+234 812 770 1932 • Victoria Island</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Sun, 10 Nov 2024</span>
+<span class="text-outline text-label-sm">Apex Sanctuary 1st Service</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="text-on-surface">Digital Campaign</span>
+<span class="text-outline text-label-sm">Instagram Live / YouTube Link</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Clean - Verified Unique Contact
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-full bg-surface-bright flex items-center justify-center text-outline text-[12px]">SK</span>
+<span class="font-label-md text-label-md text-on-surface">Dcn. Samuel K.</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="inline-flex items-center gap-space-xs">
+<button class="px-space-sm py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-label-sm transition-colors" type="button">Shepherd Reassign</button>
+<button class="p-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" title="More options" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-surface-container-high text-primary flex items-center justify-center font-semibold text-label-md">JM</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface group-hover:text-primary transition-colors">Jessica Mensah</span>
+<span class="text-outline font-body-sm">+234 901 324 7119 • Ikoyi Sanctuary</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Wed, 06 Nov 2024</span>
+<span class="text-outline text-label-sm">Midweek Communion &amp; Word</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="text-on-surface">Walk-in Billboard</span>
+<span class="text-outline text-label-sm">Expressway Directional Sign</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Clean - Verified Unique Contact
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-full bg-surface-bright flex items-center justify-center text-outline text-[12px]">VO</span>
+<span class="font-label-md text-label-md text-on-surface">Sis. Victoria O.</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="inline-flex items-center gap-space-xs">
+<button class="px-space-sm py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-label-sm transition-colors" type="button">Shepherd Reassign</button>
+<button class="p-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" title="More options" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+<tr class="hover:bg-surface-container transition-colors group">
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-sm">
+<div class="w-9 h-9 rounded-full bg-tertiary-container/30 text-tertiary flex items-center justify-center font-semibold text-label-md">AO</div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg font-semibold text-on-surface group-hover:text-primary transition-colors">Amara Okafor</span>
+<span class="text-outline font-body-sm">+234 809 112 0044 • Yaba Mainland</span>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface">Sun, 03 Nov 2024</span>
+<span class="text-outline text-label-sm">Apex Sanctuary 2nd Service</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex flex-col">
+<span class="text-on-surface">Elder Mark D.</span>
+<span class="text-outline text-label-sm">Workplace Colleague</span>
+</div>
+</td>
+<td class="py-space-md px-space-md">
+<span class="inline-flex items-center gap-1 px-space-sm py-0.5 rounded-full bg-surface-container text-primary font-label-sm text-label-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+                  Clean - Verified Unique Contact
+                </span>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="w-6 h-6 rounded-full bg-surface-bright flex items-center justify-center text-outline text-[12px]">EM</span>
+<span class="font-label-md text-label-md text-on-surface">Elder Mark D.</span>
+</div>
+</td>
+<td class="py-space-md px-space-md text-right">
+<div class="inline-flex items-center gap-space-xs">
+<button class="px-space-sm py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary font-label-sm text-label-sm transition-colors" type="button">Shepherd Reassign</button>
+<button class="p-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant hover:text-on-surface transition-colors" title="More options" type="button">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="flex flex-col sm:flex-row items-center justify-between gap-space-sm pt-space-xs text-outline font-label-sm text-label-sm">
+<span>Showing 4 of 64 recorded visitors (Month-to-date)</span>
+<div class="flex items-center gap-1">
+<button class="px-space-sm py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface disabled:opacity-40" disabled="" type="button">Previous</button>
+<span class="px-space-sm py-1 rounded bg-primary-container text-on-primary-container font-semibold">1</span>
+<button class="px-space-sm py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface" type="button">2</button>
+<button class="px-space-sm py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface" type="button">3</button>
+<button class="px-space-sm py-1 rounded bg-surface-container hover:bg-surface-container-high text-on-surface" type="button">Next</button>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

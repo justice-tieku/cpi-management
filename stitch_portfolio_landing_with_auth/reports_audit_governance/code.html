@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {"darkMode":"class","theme":{"extend":{"colors":{"on-error":"#690005","on-tertiary-fixed-variant":"#4a3d7c","error":"#ffb4ab","surface-bright":"#38393f","on-surface":"#e3e1e9","surface":"#121318","on-error-container":"#ffdad6","primary-fixed-dim":"#d0bcff","primary":"#d0bcff","outline":"#958ea0","inverse-primary":"#6d3bd7","on-primary-container":"#340080","on-primary-fixed-variant":"#5516be","secondary":"#cebdff","on-tertiary-container":"#2c1f5c","surface-container":"#1e1f25","outline-variant":"#494454","on-primary-fixed":"#23005c","surface-tint":"#d0bcff","secondary-container":"#4f319c","primary-fixed":"#e9ddff","primary-container":"#a078ff","on-secondary-fixed":"#21005e","tertiary-container":"#9587cc","on-secondary-container":"#bea8ff","inverse-surface":"#e3e1e9","tertiary":"#ccbeff","on-primary":"#3c0091","tertiary-fixed":"#e7deff","surface-dim":"#121318","background":"#121318","surface-container-lowest":"#0d0e13","tertiary-fixed-dim":"#ccbeff","on-tertiary-fixed":"#1e0e4e","on-surface-variant":"#cbc3d7","error-container":"#93000a","surface-container-high":"#292a2f","on-background":"#e3e1e9","on-secondary":"#381385","on-secondary-fixed-variant":"#4f319c","on-tertiary":"#332664","surface-container-highest":"#34343a","secondary-fixed-dim":"#cebdff","surface-container-low":"#1a1b21","inverse-on-surface":"#2f3036","surface-variant":"#34343a","secondary-fixed":"#e8ddff"},"borderRadius":{"DEFAULT":"0.25rem","lg":"0.5rem","xl":"0.75rem","full":"9999px"},"spacing":{"gutter":"1.5rem","space-lg":"1.5rem","space-md":"1rem","gutter-lg":"2rem","space-xs":"0.25rem","margin-lg":"5rem","space-xl":"2.5rem","gutter-sm":"1rem","margin":"1.5rem","space-sm":"0.5rem","margin-md":"3rem"},"fontFamily":{"body-md":["Inter"],"headline-md":["Plus Jakarta Sans"],"label-lg":["Plus Jakarta Sans"],"headline-lg-mobile":["Plus Jakarta Sans"],"display-hero":["Plus Jakarta Sans"],"headline-lg":["Plus Jakarta Sans"],"label-md":["Plus Jakarta Sans"],"display-hero-mobile":["Plus Jakarta Sans"],"body-sm":["Inter"],"headline-sm":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"body-lg":["Inter"]},"fontSize":{"body-md":["15px",{"lineHeight":"24px","letterSpacing":"-0.005em","fontWeight":"400"}],"headline-md":["28px",{"lineHeight":"36px","letterSpacing":"-0.02em","fontWeight":"600"}],"label-lg":["14px",{"lineHeight":"20px","letterSpacing":"0.01em","fontWeight":"600"}],"headline-lg-mobile":["28px",{"lineHeight":"34px","letterSpacing":"-0.02em","fontWeight":"700"}],"display-hero":["56px",{"lineHeight":"64px","letterSpacing":"-0.03em","fontWeight":"700"}],"headline-lg":["40px",{"lineHeight":"48px","letterSpacing":"-0.025em","fontWeight":"700"}],"label-md":["12px",{"lineHeight":"16px","letterSpacing":"0.04em","fontWeight":"600"}],"display-hero-mobile":["36px",{"lineHeight":"42px","letterSpacing":"-0.02em","fontWeight":"700"}],"body-sm":["13px",{"lineHeight":"20px","letterSpacing":"0em","fontWeight":"400"}],"headline-sm":["20px",{"lineHeight":"28px","letterSpacing":"-0.015em","fontWeight":"600"}],"label-sm":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"500"}],"body-lg":["18px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"400"}]}}}};</script></head><body class="bg-background font-body-md text-on-surface antialiased min-h-screen selection:bg-secondary-container selection:text-on-secondary-container"><aside class="fixed left-0 top-0 h-full w-72 bg-surface-container-lowest z-50 flex flex-col justify-between py-space-lg px-space-md shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex flex-col gap-space-lg"><div class="flex items-center gap-space-sm px-space-sm"><div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary shadow-[0_0_24px_-4px_rgba(139,92,246,0.25)]"><span class="material-symbols-outlined text-[22px]">church</span></div><div class="flex flex-col"><span class="font-headline-sm text-headline-sm tracking-tight text-on-surface font-semibold">Grace Ecclesia</span><span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">CMS Portal</span></div></div><nav class="flex flex-col gap-space-xs" data-active-classes="bg-primary-container text-on-primary-container font-semibold rounded-xl shadow-[0_0_20px_-4px_rgba(160,120,255,0.35)]"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">dashboard</span><span class="font-label-lg text-label-lg">Dashboard</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="all-members" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">groups</span><span class="font-label-lg text-label-lg">All Members</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="shepherd-assignments" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">diversity_3</span><span class="font-label-lg text-label-lg">Shepherd Assignments</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="church-attendance" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">how_to_reg</span><span class="font-label-lg text-label-lg">Church Attendance</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="follow-up-care" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">volunteer_activism</span><span class="font-label-lg text-label-lg">Follow-Up &amp; Care</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="first-timers-visitors" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">person_add_alt</span><span class="font-label-lg text-label-lg">First-Timers &amp; Visitors</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="services-calendar" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">event</span><span class="font-label-lg text-label-lg">Services &amp; Calendar</span></a><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="reports-analytics" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">monitoring</span><span class="font-label-lg text-label-lg">Reports &amp; Analytics</span></a></nav></div><div class="flex flex-col gap-space-xs pt-space-md"><a class="flex items-center gap-space-sm px-space-md py-space-sm rounded-xl text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-all group" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px] transition-transform group-hover:scale-105">settings</span><span class="font-label-lg text-label-lg">Settings</span></a><div class="p-space-sm rounded-xl bg-surface-container-low flex items-center gap-space-sm mt-space-xs"><div class="w-2 h-2 rounded-full bg-primary animate-pulse"></div><div class="flex flex-col"><span class="font-label-sm text-label-sm text-on-surface font-semibold">Ecclesia Global</span><span class="font-label-sm text-label-sm text-outline">v2.4 Secured Sanctuary</span></div></div></div></aside><div class="pl-72 flex flex-col min-h-screen"><header class="fixed top-0 left-72 right-0 h-16 bg-surface-container-lowest/80 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)] z-40 flex items-center justify-between px-space-lg"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-surface-container-low px-space-md py-space-xs rounded-xl hover:bg-surface-container-high transition-colors cursor-pointer"><span class="material-symbols-outlined text-[18px] text-primary">church</span><span class="font-label-lg text-label-lg text-on-surface">Apex Sanctuary (Main Campus)</span><span class="material-symbols-outlined text-[16px] text-outline">expand_more</span></div><div class="relative flex items-center"><span class="material-symbols-outlined absolute left-space-md text-[18px] text-outline pointer-events-none">search</span><input class="w-80 bg-surface-container-low font-body-sm text-body-sm text-on-surface placeholder:text-outline pl-10 pr-space-md py-space-xs rounded-xl focus:outline-none focus:bg-surface-container transition-all" placeholder="Search congregants, shepherds, gifts..." type="text"/></div></div><div class="flex items-center gap-space-md"><button class="flex items-center gap-space-xs bg-primary-container text-on-primary-container px-space-md py-space-xs rounded-xl font-label-lg text-label-lg font-semibold hover:bg-primary hover:text-on-primary transition-all shadow-[0_0_16px_rgba(160,120,255,0.25)]" type="button"><span class="material-symbols-outlined text-[18px]">person_add</span><span>+ New Member</span></button><div class="relative"><button class="w-10 h-10 rounded-xl bg-surface-container-low hover:bg-surface-container-high flex items-center justify-center text-on-surface-variant transition-colors" type="button"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2.5 right-2.5 w-2 h-2 rounded-full bg-error ring-2 ring-surface-container-lowest"></span></button></div><div class="flex items-center gap-space-sm pl-space-xs"><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><div class="flex flex-col text-left"><span class="font-label-md text-label-md text-on-surface font-semibold leading-tight">Rev. Dr. Emmanuel Sterling</span><span class="font-label-sm text-label-sm text-outline leading-tight">Senior Pastor • General Overseer</span></div></div></div></header><main class="w-full pt-16 bg-background flex-1 px-space-lg py-space-lg"><div class="flex flex-col w-full">
+<div class="relative w-full space-y-gutter-lg pb-space-xl">
+<div class="pointer-events-none absolute -top-16 left-1/4 h-96 w-96 rounded-full bg-primary/5 blur-[120px]"></div>
+<div class="pointer-events-none absolute top-48 right-10 h-80 w-80 rounded-full bg-secondary-container/10 blur-[100px]"></div>
+<div class="flex flex-col gap-space-md lg:flex-row lg:items-end lg:justify-between">
+<div class="flex flex-col gap-space-xs">
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-primary font-semibold">Ecclesial Governance &amp; Analytics</span>
+<span class="text-outline-variant font-label-sm text-label-sm">/</span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-outline">Pastoral Audit &amp; Executive Reports</span>
+</div>
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Reports, Analytics &amp; Audit Intelligence</h1>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">Comprehensive demographic trends, shepherd care effectiveness, attendance retention vectors, and security audit trails.</p>
+</div>
+<div class="flex flex-wrap items-center gap-space-sm">
+<button class="group flex items-center gap-space-xs rounded-xl bg-surface-container-low px-space-md py-space-sm font-label-lg text-label-lg text-on-surface shadow-sm transition-all hover:bg-surface-container-high" type="button">
+<span class="material-symbols-outlined text-[18px] text-primary transition-transform group-hover:scale-110">download</span>
+<span>Export CSV</span>
+</button>
+<button class="group flex items-center gap-space-xs rounded-xl bg-surface-container-low px-space-md py-space-sm font-label-lg text-label-lg text-on-surface shadow-sm transition-all hover:bg-surface-container-high" type="button">
+<span class="material-symbols-outlined text-[18px] text-tertiary transition-transform group-hover:rotate-12">schedule_send</span>
+<span>Schedule Monday Briefing</span>
+</button>
+<button class="group flex items-center gap-space-xs rounded-xl bg-primary-container px-space-md py-space-sm font-label-lg text-label-lg font-semibold text-on-primary-container shadow-[0_0_24px_rgba(160,120,255,0.3)] transition-all hover:bg-primary hover:text-on-primary" type="button">
+<span class="material-symbols-outlined text-[18px]">picture_as_pdf</span>
+<span>Executive Digest PDF</span>
+</button>
+</div>
+</div>
+<div class="rounded-xl bg-surface-container-low p-space-md shadow-sm">
+<div class="grid grid-cols-1 gap-space-sm sm:grid-cols-2 lg:grid-cols-4">
+<div class="flex flex-col gap-space-xs rounded-lg bg-surface-container px-space-md py-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Date Horizon</span>
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+<span class="font-label-lg text-label-lg text-on-surface">Trailing Quarter (Q4 2024)</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs rounded-lg bg-surface-container px-space-md py-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Sanctuary Node</span>
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">location_on</span>
+<span class="font-label-lg text-label-lg text-on-surface">Apex Main Sanctuary</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs rounded-lg bg-surface-container px-space-md py-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Service Cadence</span>
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary">celebration</span>
+<span class="font-label-lg text-label-lg text-on-surface">Sunday &amp; Midweek Rites</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+<div class="flex flex-col gap-space-xs rounded-lg bg-surface-container px-space-md py-space-xs">
+<span class="font-label-sm text-label-sm text-outline uppercase tracking-wider">Pastoral District</span>
+<div class="flex items-center justify-between cursor-pointer">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">shield</span>
+<span class="font-label-lg text-label-lg text-on-surface">All 4 Pastoral Districts</span>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-space-md sm:grid-cols-2 xl:grid-cols-4">
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md shadow-sm transition-all hover:bg-surface-container">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Lord's Day Average</span>
+<div class="mt-space-xs flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">3,482</span>
+<span class="font-label-sm text-label-sm font-semibold text-primary flex items-center">+8.4% YoY</span>
+</div>
+</div>
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-container-high text-primary">
+<span class="material-symbols-outlined text-[20px]">groups_3</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>Capacity: 87.1% Peak Sanctuary</span>
+<span class="text-on-surface font-medium">Target: 3,500</span>
+</div>
+<div class="mt-space-xs h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full rounded-full bg-primary" style="width: 87.1%;"></div>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md shadow-sm transition-all hover:bg-surface-container">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Shepherd Touchpoint SLA</span>
+<div class="mt-space-xs flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">94.3%</span>
+<span class="font-label-sm text-label-sm font-semibold text-secondary flex items-center">+3.1%</span>
+</div>
+</div>
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-container-high text-secondary">
+<span class="material-symbols-outlined text-[20px]">verified_user</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>Avg First Response: 18 hrs</span>
+<span class="text-on-surface font-medium">Strict SLA: &lt;24 hrs</span>
+</div>
+<div class="mt-space-xs h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full rounded-full bg-secondary" style="width: 94.3%;"></div>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md shadow-sm transition-all hover:bg-surface-container">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Assimilation Conversion</span>
+<div class="mt-space-xs flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">64.0%</span>
+<span class="font-label-sm text-label-sm font-semibold text-tertiary flex items-center">60-day cohort</span>
+</div>
+</div>
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-container-high text-tertiary">
+<span class="material-symbols-outlined text-[20px]">conversion_path</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>214 of 334 Visitors Active</span>
+<span class="text-on-surface font-medium">+5.2% vs Q3</span>
+</div>
+<div class="mt-space-xs h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full rounded-full bg-tertiary" style="width: 64%;"></div>
+</div>
+</div>
+<div class="relative overflow-hidden rounded-xl bg-surface-container-low p-space-md shadow-sm transition-all hover:bg-surface-container">
+<div class="flex items-start justify-between">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-outline">Audit Governance Health</span>
+<div class="mt-space-xs flex items-baseline gap-space-xs">
+<span class="font-headline-lg text-headline-lg font-bold text-on-surface">100%</span>
+<span class="font-label-sm text-label-sm font-semibold text-primary flex items-center">Canon 6 PASS</span>
+</div>
+</div>
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-surface-container-high text-primary">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between text-outline font-label-sm text-label-sm">
+<span>RBAC Integrity: 0 Breaches</span>
+<span class="text-on-surface font-medium">1,402 Signatures</span>
+</div>
+<div class="mt-space-xs h-1.5 w-full rounded-full bg-surface-container-highest overflow-hidden">
+<div class="h-full rounded-full bg-primary-container" style="width: 100%;"></div>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-space-lg xl:grid-cols-12">
+<div class="xl:col-span-8 rounded-xl bg-surface-container-low p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-semibold">Retention Vectors</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Flock Vitality &amp; Attendance Retention Matrix</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Multi-period discipleship growth tracking over trailing 14 liturgical weeks</p>
+</div>
+<div class="flex items-center gap-space-md">
+<div class="flex items-center gap-space-xs">
+<span class="h-2.5 w-2.5 rounded-full bg-primary"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mature Disciples (Tier I)</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="h-2.5 w-2.5 rounded-full bg-secondary-container"></span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">New Converts (&lt;12m)</span>
+</div>
+</div>
+</div>
+<div class="relative w-full h-64 mt-space-md">
+<svg class="w-full h-full overflow-visible" preserveaspectratio="none" viewbox="0 0 760 220">
+<defs>
+<lineargradient id="matureGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#d0bcff" stop-opacity="0.3"></stop>
+<stop offset="100%" stop-color="#d0bcff" stop-opacity="0.0"></stop>
+</lineargradient>
+<lineargradient id="convertGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="#4f319c" stop-opacity="0.25"></stop>
+<stop offset="100%" stop-color="#4f319c" stop-opacity="0.0"></stop>
+</lineargradient>
+</defs>
+<line stroke="#34343a" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="760" y1="30" y2="30"></line>
+<line stroke="#34343a" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="760" y1="90" y2="90"></line>
+<line stroke="#34343a" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="760" y1="150" y2="150"></line>
+<line stroke="#34343a" stroke-width="1" x1="0" x2="760" y1="210" y2="210"></line>
+<path d="M 0 160 Q 60 150, 120 145 T 240 135 T 360 120 T 480 110 T 600 95 T 760 70 L 760 210 L 0 210 Z" fill="url(#convertGrad)"></path>
+<path d="M 0 160 Q 60 150, 120 145 T 240 135 T 360 120 T 480 110 T 600 95 T 760 70" fill="none" stroke="#4f319c" stroke-width="3"></path>
+<path d="M 0 110 Q 60 100, 120 90 T 240 75 T 360 65 T 480 50 T 600 42 T 760 32 L 760 210 L 0 210 Z" fill="url(#matureGrad)"></path>
+<path d="M 0 110 Q 60 100, 120 90 T 240 75 T 360 65 T 480 50 T 600 42 T 760 32" fill="none" stroke="#d0bcff" stroke-width="3"></path>
+<circle cx="240" cy="75" fill="#d0bcff" r="4"></circle>
+<circle cx="480" cy="50" fill="#d0bcff" r="4"></circle>
+<circle cx="760" cy="32" fill="#d0bcff" r="5"></circle>
+<circle cx="760" cy="70" fill="#cebdff" r="5"></circle>
+</svg>
+</div>
+<div class="flex justify-between font-label-sm text-label-sm text-outline mt-space-xs px-1">
+<span>Wk 40</span>
+<span>Wk 42</span>
+<span>Wk 44</span>
+<span>Wk 46</span>
+<span>Wk 48</span>
+<span>Wk 50</span>
+<span>Wk 52 (Crossover Eve)</span>
+</div>
+</div>
+<div class="mt-space-lg grid grid-cols-1 sm:grid-cols-3 gap-space-sm pt-space-md bg-surface-container rounded-lg p-space-md">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">4-Week Absence Alert Rate</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-space-xs">2.4%</span>
+<span class="font-body-sm text-body-sm text-secondary">Decreased -1.1% vs Q3</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Midweek Communion Retention</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-space-xs">78.9%</span>
+<span class="font-body-sm text-body-sm text-primary">+4.8% participation</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-outline uppercase">Re-engagement Velocity</span>
+<span class="font-headline-sm text-headline-sm text-on-surface font-semibold mt-space-xs">3.2 Days</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Time to return after pastoral contact</span>
+</div>
+</div>
+</div>
+<div class="xl:col-span-4 rounded-xl bg-surface-container-low p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-center justify-between mb-space-xs">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-tertiary font-semibold">Assimilation Pathway</span>
+<span class="font-label-sm text-label-sm bg-surface-container px-space-xs py-0.5 rounded text-outline">Q4 Full Funnel</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Assimilation Funnel</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">Progression: First-Time Visitor to Fully Integrated Believer</p>
+<div class="space-y-space-md">
+<div>
+<div class="flex justify-between font-label-md text-label-md mb-1">
+<span class="text-on-surface flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary">how_to_reg</span>
+<span>First-Timer Registry</span>
+</span>
+<span class="text-on-surface font-semibold">334 souls <span class="text-outline">(100%)</span></span>
+</div>
+<div class="h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-primary" style="width: 100%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-md text-label-md mb-1">
+<span class="text-on-surface flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-secondary">forum</span>
+<span>Pastoral Welcome Visit/Call</span>
+</span>
+<span class="text-on-surface font-semibold">302 souls <span class="text-outline">(90.4%)</span></span>
+</div>
+<div class="h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-secondary" style="width: 90.4%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-md text-label-md mb-1">
+<span class="text-on-surface flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">menu_book</span>
+<span>Believers Foundation Class</span>
+</span>
+<span class="text-on-surface font-semibold">256 souls <span class="text-outline">(76.6%)</span></span>
+</div>
+<div class="h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-primary-container" style="width: 76.6%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-md text-label-md mb-1">
+<span class="text-on-surface flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-tertiary">water_drop</span>
+<span>Water Baptism &amp; Ministry Cell</span>
+</span>
+<span class="text-on-surface font-semibold">228 souls <span class="text-outline">(68.2%)</span></span>
+</div>
+<div class="h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-secondary-container" style="width: 68.2%;"></div>
+</div>
+</div>
+<div>
+<div class="flex justify-between font-label-md text-label-md mb-1">
+<span class="text-on-surface flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[16px] text-primary">workspace_premium</span>
+<span>Active Covenant Member</span>
+</span>
+<span class="text-on-surface font-semibold">214 souls <span class="text-outline">(64.1%)</span></span>
+</div>
+<div class="h-2 rounded-full bg-surface-container overflow-hidden">
+<div class="h-full bg-tertiary-container" style="width: 64.1%;"></div>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-space-lg rounded-lg bg-surface-container p-space-md flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary-container text-on-primary-container">
+<span class="material-symbols-outlined text-[20px]">bolt</span>
+</div>
+<div class="flex flex-col">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Conversion Velocity</span>
+<span class="font-body-sm text-body-sm text-outline">Mean transition: 48 days</span>
+</div>
+</div>
+<span class="font-label-sm text-label-sm text-primary font-semibold">+12d faster</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 gap-space-lg lg:grid-cols-12">
+<div class="lg:col-span-12 rounded-xl bg-surface-container-low p-space-lg shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs mb-space-md">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Pastoral Care Leagues</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Shepherd Care SLA &amp; Touchpoint Performance</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Measuring proactive pastoral intervention after missed services across 4 regional zones</p>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-label-sm text-label-sm text-outline">Threshold SLA: 24h</span>
+<span class="inline-flex items-center gap-1 rounded-full bg-surface-container px-space-sm py-1 font-label-sm text-label-sm text-primary">
+<span class="h-1.5 w-1.5 rounded-full bg-primary animate-pulse"></span>
+              98.1% Active Pastoral Cover
+            </span>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<div class="rounded-xl bg-surface-container p-space-md flex flex-col justify-between transition-all hover:bg-surface-container-high">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-primary text-on-primary font-semibold font-label-lg text-label-lg">
+                    DK
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Pastor David Kimani</span>
+<span class="font-label-sm text-label-sm text-outline">Northern Zion District (428 Sheep)</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 rounded-full bg-surface-container-highest px-space-xs py-0.5 font-label-sm text-label-sm text-primary font-semibold">
+                  #1 Rank
+                </span>
+</div>
+<div class="mt-space-md grid grid-cols-2 gap-space-xs bg-surface-container-low p-space-sm rounded-lg">
+<div>
+<span class="font-label-sm text-label-sm text-outline">Touchpoint SLA</span>
+<p class="font-headline-sm text-headline-sm text-on-surface font-bold mt-0.5">98%</p>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-outline">Overdue Inquiries</span>
+<p class="font-headline-sm text-headline-sm text-primary font-bold mt-0.5">0</p>
+</div>
+</div>
+<div class="mt-space-sm space-y-space-xs font-body-sm text-body-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>First Absence Contact:</span>
+<span class="text-on-surface font-semibold">11.4 hrs avg</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Sick &amp; Hospital Visitation:</span>
+<span class="text-on-surface font-semibold">100% completed</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Care Cell Attendance:</span>
+<span class="text-on-surface font-semibold">92.4% active</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Shepherd Cell Cohort: Bethel-North</span>
+<button class="text-primary hover:text-tertiary font-label-sm text-label-sm font-semibold flex items-center" type="button">
+                Review Logs <span class="material-symbols-outlined text-[16px] ml-0.5">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="rounded-xl bg-surface-container p-space-md flex flex-col justify-between transition-all hover:bg-surface-container-high">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-on-secondary font-semibold font-label-lg text-label-lg">
+                    RN
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Pastor Rachel Nwosu</span>
+<span class="font-label-sm text-label-sm text-outline">Central Grace Sector (512 Sheep)</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 rounded-full bg-surface-container-highest px-space-xs py-0.5 font-label-sm text-label-sm text-secondary font-semibold">
+                  #2 Rank
+                </span>
+</div>
+<div class="mt-space-md grid grid-cols-2 gap-space-xs bg-surface-container-low p-space-sm rounded-lg">
+<div>
+<span class="font-label-sm text-label-sm text-outline">Touchpoint SLA</span>
+<p class="font-headline-sm text-headline-sm text-on-surface font-bold mt-0.5">94%</p>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-outline">Overdue Inquiries</span>
+<p class="font-headline-sm text-headline-sm text-secondary font-bold mt-0.5">2</p>
+</div>
+</div>
+<div class="mt-space-sm space-y-space-xs font-body-sm text-body-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>First Absence Contact:</span>
+<span class="text-on-surface font-semibold">17.2 hrs avg</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Sick &amp; Hospital Visitation:</span>
+<span class="text-on-surface font-semibold">96% completed</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Care Cell Attendance:</span>
+<span class="text-on-surface font-semibold">88.1% active</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Shepherd Cell Cohort: Shiloh-Central</span>
+<button class="text-primary hover:text-tertiary font-label-sm text-label-sm font-semibold flex items-center" type="button">
+                Review Logs <span class="material-symbols-outlined text-[16px] ml-0.5">chevron_right</span>
+</button>
+</div>
+</div>
+<div class="rounded-xl bg-surface-container p-space-md flex flex-col justify-between transition-all hover:bg-surface-container-high">
+<div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="flex h-10 w-10 items-center justify-center rounded-xl bg-tertiary text-on-tertiary font-semibold font-label-lg text-label-lg">
+                    MA
+                  </div>
+<div class="flex flex-col">
+<span class="font-label-lg text-label-lg text-on-surface font-semibold">Pastor Michael Adebayo</span>
+<span class="font-label-sm text-label-sm text-outline">Moriah Metro District (390 Sheep)</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1 rounded-full bg-surface-container-highest px-space-xs py-0.5 font-label-sm text-label-sm text-tertiary font-semibold">
+                  #3 Rank
+                </span>
+</div>
+<div class="mt-space-md grid grid-cols-2 gap-space-xs bg-surface-container-low p-space-sm rounded-lg">
+<div>
+<span class="font-label-sm text-label-sm text-outline">Touchpoint SLA</span>
+<p class="font-headline-sm text-headline-sm text-on-surface font-bold mt-0.5">91%</p>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-outline">Overdue Inquiries</span>
+<p class="font-headline-sm text-headline-sm text-outline font-bold mt-0.5">4</p>
+</div>
+</div>
+<div class="mt-space-sm space-y-space-xs font-body-sm text-body-sm">
+<div class="flex justify-between text-on-surface-variant">
+<span>First Absence Contact:</span>
+<span class="text-on-surface font-semibold">22.8 hrs avg</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Sick &amp; Hospital Visitation:</span>
+<span class="text-on-surface font-semibold">91% completed</span>
+</div>
+<div class="flex justify-between text-on-surface-variant">
+<span>Care Cell Attendance:</span>
+<span class="text-on-surface font-semibold">84.7% active</span>
+</div>
+</div>
+</div>
+<div class="mt-space-md pt-space-sm flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-outline">Shepherd Cell Cohort: Moriah-East</span>
+<button class="text-primary hover:text-tertiary font-label-sm text-label-sm font-semibold flex items-center" type="button">
+                Review Logs <span class="material-symbols-outlined text-[16px] ml-0.5">chevron_right</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="rounded-xl bg-surface-container-low p-space-lg shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-space-md mb-space-md">
+<div>
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-primary">security</span>
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-primary font-semibold">Section 22 Security Framework</span>
+</div>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Cryptographic Pastoral Audit &amp; Event Ledger</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Tamper-evident logs of administrative reassignment, pastoral record modifications, and member directory actions</p>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs">
+<div class="flex items-center gap-space-xs bg-surface-container px-space-md py-space-xs rounded-lg">
+<span class="material-symbols-outlined text-[16px] text-primary">gavel</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Diocesan Canon 6 Compliant</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container px-space-md py-space-xs rounded-lg">
+<span class="material-symbols-outlined text-[16px] text-secondary">verified</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">ISO 27001 Certified</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container px-space-md py-space-xs rounded-lg">
+<span class="material-symbols-outlined text-[16px] text-tertiary">key</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Zero Cross-Shepherd Leakage</span>
+</div>
+</div>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container text-outline font-label-sm text-label-sm uppercase tracking-wider">
+<th class="py-space-sm px-space-md rounded-l-lg">Timestamp &amp; Epoch</th>
+<th class="py-space-sm px-space-md">Authorized Minister</th>
+<th class="py-space-sm px-space-md">Ecclesial Action</th>
+<th class="py-space-sm px-space-md">IP &amp; Security Fingerprint</th>
+<th class="py-space-sm px-space-md rounded-r-lg text-right">Verification</th>
+</tr>
+</thead>
+<tbody class="divide-y-0">
+<tr class="transition-colors hover:bg-surface-container/60">
+<td class="py-space-md px-space-md font-body-sm text-body-sm font-mono text-outline">
+                2024-12-29 08:14:22 UTC
+                <div class="text-[11px] text-outline/70">#TX-948102-ECC</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="h-7 w-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-[11px]">
+                    ES
+                  </div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Rev. Dr. Emmanuel Sterling</div>
+<div class="font-label-sm text-label-sm text-outline">Senior Overseer</div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md font-body-sm text-body-sm text-on-surface">
+                Reassigned 7 members from District 1 to District 2 (Boundary Shift)
+              </td>
+<td class="py-space-md px-space-md font-mono text-body-sm text-on-surface-variant">
+                196.216.24.118
+                <span class="block text-[11px] text-outline">SHA256: 9b2d...f411</span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<span class="inline-flex items-center gap-1 rounded-full bg-surface-container px-space-sm py-0.5 font-label-sm text-label-sm text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">lock</span>
+                  Encrypted &amp; Signed
+                </span>
+</td>
+</tr>
+<tr class="transition-colors hover:bg-surface-container/60">
+<td class="py-space-md px-space-md font-body-sm text-body-sm font-mono text-outline">
+                2024-12-28 19:42:05 UTC
+                <div class="text-[11px] text-outline/70">#TX-947990-ECC</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="h-7 w-7 rounded-full bg-secondary-container text-on-secondary-container flex items-center justify-center font-bold text-[11px]">
+                    RN
+                  </div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Pastor Rachel Nwosu</div>
+<div class="font-label-sm text-label-sm text-outline">District Lead</div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md font-body-sm text-body-sm text-on-surface">
+                Modified Attendance Excuse status #ATT-401 (Approved Bereavement)
+              </td>
+<td class="py-space-md px-space-md font-mono text-body-sm text-on-surface-variant">
+                102.89.34.82
+                <span class="block text-[11px] text-outline">SHA256: 4e81...aa29</span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<span class="inline-flex items-center gap-1 rounded-full bg-surface-container px-space-sm py-0.5 font-label-sm text-label-sm text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">verified</span>
+                  Canon Validated
+                </span>
+</td>
+</tr>
+<tr class="transition-colors hover:bg-surface-container/60">
+<td class="py-space-md px-space-md font-body-sm text-body-sm font-mono text-outline">
+                2024-12-28 14:05:19 UTC
+                <div class="text-[11px] text-outline/70">#TX-947514-ECC</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="h-7 w-7 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-[11px]">
+                    ES
+                  </div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Rev. Dr. Emmanuel Sterling</div>
+<div class="font-label-sm text-label-sm text-outline">Senior Overseer</div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md font-body-sm text-body-sm text-on-surface">
+                Exported Encrypted Directory Backup (AES-256 Vault Backup)
+              </td>
+<td class="py-space-md px-space-md font-mono text-body-sm text-on-surface-variant">
+                196.216.24.118
+                <span class="block text-[11px] text-outline">SHA256: d83a...310c</span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<span class="inline-flex items-center gap-1 rounded-full bg-surface-container px-space-sm py-0.5 font-label-sm text-label-sm text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">shield_with_heart</span>
+                  Vault Authenticated
+                </span>
+</td>
+</tr>
+<tr class="transition-colors hover:bg-surface-container/60">
+<td class="py-space-md px-space-md font-body-sm text-body-sm font-mono text-outline">
+                2024-12-27 11:22:40 UTC
+                <div class="text-[11px] text-outline/70">#TX-946802-ECC</div>
+</td>
+<td class="py-space-md px-space-md">
+<div class="flex items-center gap-space-xs">
+<div class="h-7 w-7 rounded-full bg-tertiary-container text-on-tertiary-container flex items-center justify-center font-bold text-[11px]">
+                    DK
+                  </div>
+<div>
+<div class="font-label-md text-label-md text-on-surface font-semibold">Pastor David Kimani</div>
+<div class="font-label-sm text-label-sm text-outline">District Lead</div>
+</div>
+</div>
+</td>
+<td class="py-space-md px-space-md font-body-sm text-body-sm text-on-surface">
+                Granted Care Cell Leader Access for Zone 14 Sub-District
+              </td>
+<td class="py-space-md px-space-md font-mono text-body-sm text-on-surface-variant">
+                41.204.188.19
+                <span class="block text-[11px] text-outline">SHA256: 77b1...bc09</span>
+</td>
+<td class="py-space-md px-space-md text-right">
+<span class="inline-flex items-center gap-1 rounded-full bg-surface-container px-space-sm py-0.5 font-label-sm text-label-sm text-primary font-semibold">
+<span class="material-symbols-outlined text-[14px]">key</span>
+                  RBAC Verified
+                </span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-space-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-space-xs pt-space-sm font-label-sm text-label-sm text-outline">
+<span>Showing 4 of 1,402 Cryptographic Signatures in Epoch 2024-Q4</span>
+<div class="flex items-center gap-space-xs">
+<button class="rounded px-space-sm py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors" type="button">Previous</button>
+<span class="px-space-xs text-on-surface font-semibold">1</span>
+<span class="px-space-xs">2</span>
+<span class="px-space-xs">3</span>
+<span class="px-space-xs">... 351</span>
+<button class="rounded px-space-sm py-1 bg-surface-container text-on-surface hover:bg-surface-container-high transition-colors" type="button">Next</button>
+</div>
+</div>
+</div>
+</div>
+</div></main></div></body></html>

@@ -1,0 +1,139 @@
+import React, { useState } from 'react';
+import { Bell, UserPlus, Check, X, Shield, User, Menu } from 'lucide-react';
+import { useCMS } from '../../context/CMSContext';
+
+interface NavbarProps {
+  title: string;
+  subtitle?: string;
+  onOpenAddPerson: () => void;
+  showAddPerson?: boolean;
+  onToggleMobileMenu?: () => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({
+  title,
+  subtitle,
+  onOpenAddPerson,
+  showAddPerson = false,
+  onToggleMobileMenu
+}) => {
+  const { currentUser, visibleNotifications, markNotificationRead } = useCMS();
+  const [showNotifMenu, setShowNotifMenu] = useState(false);
+
+  const unreadCount = visibleNotifications.filter((n) => !n.read).length;
+
+  return (
+    <header className="h-16 px-4 sm:px-6 bg-[#0c152e] flex items-center justify-between shrink-0 relative z-30">
+      {/* Mobile Hamburger & Title */}
+      <div className="flex items-center gap-3 min-w-0">
+        {onToggleMobileMenu && (
+          <button
+            type="button"
+            onClick={onToggleMobileMenu}
+            className="md:hidden p-2 bg-[#111d44] hover:bg-[#16285a] text-[#a6c4eb] hover:text-white transition-colors cursor-pointer shrink-0"
+            title="Open navigation menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
+        <div className="min-w-0">
+          <h2 className="text-base font-bold text-white tracking-tight truncate">
+            {title}
+          </h2>
+          {subtitle && (
+            <p className="text-xs text-[#a6c4eb] mt-0.5 truncate hidden sm:block">{subtitle}</p>
+          )}
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        {/* '+ Add Person' Button only visible on relevant pages */}
+        {showAddPerson && (
+          <button
+            onClick={onOpenAddPerson}
+            className="flex items-center gap-2 px-3.5 py-1.5 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-bold shadow-md transition-colors cursor-pointer"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Add New Person</span>
+          </button>
+        )}
+
+        {/* Notifications Bell with Popover */}
+        <div className="relative">
+          <button
+            onClick={() => setShowNotifMenu(!showNotifMenu)}
+            className="relative w-8 h-8 bg-[#111d44] hover:bg-[#16285a] flex items-center justify-center text-[#a6c4eb] hover:text-white transition-colors cursor-pointer"
+            title="Notifications"
+          >
+            <Bell className="w-4 h-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#ff4d6d] text-[10px] font-bold text-white flex items-center justify-center animate-pulse">
+                {unreadCount}
+              </span>
+            )}
+          </button>
+
+          {/* Notification Dropdown Menu */}
+          {showNotifMenu && (
+            <div className="absolute right-0 top-10 w-80 bg-[#111d44] shadow-2xl p-4 space-y-3 z-50">
+              <div className="flex items-center justify-between pb-2">
+                <span className="text-xs font-bold text-white uppercase tracking-wider">
+                  Notifications ({unreadCount} new)
+                </span>
+                <button
+                  onClick={() => setShowNotifMenu(false)}
+                  className="text-[#a6c4eb] hover:text-white cursor-pointer"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {visibleNotifications.length === 0 ? (
+                <p className="text-[#a6c4eb] text-xs py-4 text-center">
+                  No notifications yet.
+                </p>
+              ) : (
+                <div className="max-h-64 overflow-y-auto space-y-2 divide-y divide-[#16285a]">
+                  {visibleNotifications.map((n) => (
+                    <div
+                      key={n.id}
+                      onClick={() => markNotificationRead(n.id)}
+                      className={`pt-2 text-xs cursor-pointer  p-2.5 transition-colors ${
+                        !n.read ? 'bg-[#072e54] text-[#00f0ff]' : 'hover:bg-[#16285a] text-[#cbd5e1]'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-white">{n.title}</span>
+                        <span className="text-[10px] text-[#a6c4eb]">{n.timestamp}</span>
+                      </div>
+                      <p className="text-[#a6c4eb] text-[11px] mt-1 leading-relaxed">
+                        {n.message}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* User Pill */}
+        <div className="flex items-center gap-2 pl-2">
+          <div className="w-8 h-8 bg-[#072e54] text-[#00f0ff] flex items-center justify-center font-bold text-xs">
+            {currentUser.name.split(' ').map((n) => n[0]).join('').slice(0, 2)}
+          </div>
+          <div className="hidden sm:block text-left">
+            <p className="text-xs font-bold text-white leading-none">
+              {currentUser.name}
+            </p>
+            <p className="text-[10px] text-[#a6c4eb] leading-none mt-1">
+              {currentUser.role === 'pastor' ? 'Pastor' : currentUser.assignedCell || 'Shepherd'}
+            </p>
+          </div>
+        </div>
+      </div>
+    </header>
+  );
+};
+
+export default Navbar;

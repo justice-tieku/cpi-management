@@ -16,9 +16,15 @@ import {
   Phone,
   Layers,
   ChevronRight,
-  AlertCircle
+  AlertCircle,
+  Copy,
+  Check,
+  Mail,
+  Lock,
+  X
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
+import { apiClient } from '../../services/apiClient';
 
 export const ShepherdAssignmentManagement: React.FC = () => {
   const {
@@ -40,6 +46,76 @@ export const ShepherdAssignmentManagement: React.FC = () => {
   const [targetShepherdId, setTargetShepherdId] = useState<string>(shepherds[1]?.id || 'SH-02');
   const [transferReason, setTransferReason] = useState('Geographic relocation / Care balancing');
   const [successNotice, setSuccessNotice] = useState('');
+
+  // Invite / Create Shepherd Modal State
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [newShepherdName, setNewShepherdName] = useState('');
+  const [newShepherdEmail, setNewShepherdEmail] = useState('');
+  const [newShepherdPhone, setNewShepherdPhone] = useState('');
+  const [newShepherdCell, setNewShepherdCell] = useState('');
+  const [newShepherdPassword, setNewShepherdPassword] = useState('CrossPassion@99');
+  const [isCreatingShepherd, setIsCreatingShepherd] = useState(false);
+  const [inviteError, setInviteError] = useState('');
+  const [createdCredentials, setCreatedCredentials] = useState<{
+    name: string;
+    email: string;
+    cell: string;
+    password: string;
+  } | null>(null);
+  const [copiedNotice, setCopiedNotice] = useState(false);
+
+  const handleCreateShepherd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newShepherdName.trim() || !newShepherdEmail.trim() || !newShepherdCell.trim()) {
+      setInviteError('Please fill in all required fields (Name, Email, Cell Name)');
+      return;
+    }
+
+    setInviteError('');
+    setIsCreatingShepherd(true);
+
+    try {
+      const res = await apiClient.createShepherd({
+        name: newShepherdName.trim(),
+        email: newShepherdEmail.trim(),
+        phone: newShepherdPhone.trim(),
+        cellName: newShepherdCell.trim(),
+        password: newShepherdPassword.trim() || 'CrossPassion@99'
+      });
+
+      if (!res.success) throw new Error(res.error || 'Failed to create shepherd account');
+
+      setCreatedCredentials({
+        name: newShepherdName.trim(),
+        email: newShepherdEmail.trim(),
+        cell: newShepherdCell.trim(),
+        password: newShepherdPassword.trim() || 'CrossPassion@99'
+      });
+
+      setSuccessNotice(`Shepherd account provisioned successfully for ${newShepherdName.trim()}!`);
+    } catch (err: any) {
+      setInviteError(err.message || 'Error provisioning shepherd. Please check server connection.');
+    } finally {
+      setIsCreatingShepherd(false);
+    }
+  };
+
+  const copyCredentialsForShare = () => {
+    if (!createdCredentials) return;
+    const text = `Shalom ${createdCredentials.name},
+
+Your Cell Shepherd portal access for Cross Passion International is ready:
+• Website: https://cpi-management.vercel.app
+• Ministerial Email: ${createdCredentials.email}
+• Password: ${createdCredentials.password}
+• Assigned Cell: ${createdCredentials.cell}
+
+Please sign in and lead your flock in prayer and discipleship. God bless you!`;
+
+    navigator.clipboard.writeText(text);
+    setCopiedNotice(true);
+    setTimeout(() => setCopiedNotice(false), 3000);
+  };
 
   // Active Shepherd for Deep Dive
   const activeShepherd = shepherds.find((s) => s.id === selectedShepherdId) || shepherds[0];
@@ -125,28 +201,42 @@ export const ShepherdAssignmentManagement: React.FC = () => {
           </p>
         </div>
 
-        {/* View Mode Switcher */}
-        <div className="flex items-center gap-2 bg-[#0a122e] p-1">
+        {/* Actions & View Mode Switcher */}
+        <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={() => setViewMode('categories')}
-            className={`px-3 py-1.5  text-xs font-semibold transition-colors cursor-pointer ${
-              viewMode === 'categories'
-                ? 'bg-[#00f0ff] text-[#070c1e] shadow-sm'
-                : 'text-[#a6c4eb] hover:text-white'
-            }`}
+            onClick={() => {
+              setCreatedCredentials(null);
+              setInviteError('');
+              setShowInviteModal(true);
+            }}
+            className="px-3.5 py-1.5 bg-[#00ff9d] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
           >
-            All Cells by Category
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>+ Invite New Shepherd</span>
           </button>
-          <button
-            onClick={() => setViewMode('deep-dive')}
-            className={`px-3 py-1.5  text-xs font-semibold transition-colors cursor-pointer ${
-              viewMode === 'deep-dive'
-                ? 'bg-[#00f0ff] text-[#070c1e] shadow-sm'
-                : 'text-[#a6c4eb] hover:text-white'
-            }`}
-          >
-            Individual Shepherd Deep Dive
-          </button>
+
+          <div className="flex items-center gap-2 bg-[#0a122e] p-1">
+            <button
+              onClick={() => setViewMode('categories')}
+              className={`px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                viewMode === 'categories'
+                  ? 'bg-[#00f0ff] text-[#070c1e] shadow-sm'
+                  : 'text-[#a6c4eb] hover:text-white'
+              }`}
+            >
+              All Cells by Category
+            </button>
+            <button
+              onClick={() => setViewMode('deep-dive')}
+              className={`px-3 py-1.5 text-xs font-semibold transition-colors cursor-pointer ${
+                viewMode === 'deep-dive'
+                  ? 'bg-[#00f0ff] text-[#070c1e] shadow-sm'
+                  : 'text-[#a6c4eb] hover:text-white'
+              }`}
+            >
+              Individual Shepherd Deep Dive
+            </button>
+          </div>
         </div>
       </div>
 
@@ -584,6 +674,175 @@ export const ShepherdAssignmentManagement: React.FC = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Invite / Add Shepherd Modal */}
+      {showInviteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-lg bg-[#111d44] shadow-2xl overflow-hidden flex flex-col p-6 space-y-5">
+            <div className="flex items-center justify-between pb-3 border-b border-[#16285a]">
+              <div className="flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-[#00ff9d]" />
+                <div>
+                  <h3 className="text-base font-bold text-white">Onboard New Cell Shepherd</h3>
+                  <p className="text-[11px] text-[#a6c4eb]">Provision private credentials and assign a flock</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowInviteModal(false)}
+                className="text-[#a6c4eb] hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {createdCredentials ? (
+              <div className="space-y-4 py-2">
+                <div className="p-4 bg-[#0f382a] text-[#00ff9d] flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 shrink-0" />
+                  <span className="text-xs font-bold">
+                    Shepherd account provisioned successfully in Supabase!
+                  </span>
+                </div>
+
+                <div className="bg-[#0a122e] p-4 space-y-2.5 font-mono text-xs text-white">
+                  <div>
+                    <span className="text-[#a6c4eb] block text-[10px] uppercase font-sans">Name</span>
+                    <span className="font-bold">{createdCredentials.name}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#a6c4eb] block text-[10px] uppercase font-sans">Ministerial Email</span>
+                    <span className="text-[#00f0ff]">{createdCredentials.email}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#a6c4eb] block text-[10px] uppercase font-sans">Temporary Password</span>
+                    <span className="text-[#00ff9d]">{createdCredentials.password}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#a6c4eb] block text-[10px] uppercase font-sans">Assigned Cell</span>
+                    <span>{createdCredentials.cell}</span>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    onClick={copyCredentialsForShare}
+                    className="flex-1 py-3 px-4 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-extrabold flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                  >
+                    {copiedNotice ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                    <span>{copiedNotice ? 'Copied to Clipboard!' : 'Copy Credentials for WhatsApp / SMS'}</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setShowInviteModal(false);
+                      setCreatedCredentials(null);
+                    }}
+                    className="py-3 px-4 bg-[#16285a] hover:bg-[#203a7a] text-white text-xs font-bold cursor-pointer"
+                  >
+                    Done
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleCreateShepherd} className="space-y-3.5">
+                <div>
+                  <label className="text-[11px] font-semibold text-[#a6c4eb] block mb-1">
+                    Shepherd Full Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={newShepherdName}
+                    onChange={(e) => setNewShepherdName(e.target.value)}
+                    placeholder="e.g. Sister Chloe Mensah"
+                    className="w-full px-3 py-2 bg-[#0a122e] text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#00f0ff]"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold text-[#a6c4eb] block mb-1">
+                    Personal Email Address *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    value={newShepherdEmail}
+                    onChange={(e) => setNewShepherdEmail(e.target.value)}
+                    placeholder="e.g. chloe.mensah@gmail.com"
+                    className="w-full px-3 py-2 bg-[#0a122e] text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#00f0ff]"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-semibold text-[#a6c4eb] block mb-1">
+                      Phone Number
+                    </label>
+                    <input
+                      type="tel"
+                      value={newShepherdPhone}
+                      onChange={(e) => setNewShepherdPhone(e.target.value)}
+                      placeholder="+233 54 000 0000"
+                      className="w-full px-3 py-2 bg-[#0a122e] text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#00f0ff]"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-[#a6c4eb] block mb-1">
+                      Care Cell Name *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={newShepherdCell}
+                      onChange={(e) => setNewShepherdCell(e.target.value)}
+                      placeholder="e.g. Mount Zion Cell (West)"
+                      className="w-full px-3 py-2 bg-[#0a122e] text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#00f0ff]"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-semibold text-[#a6c4eb] block mb-1">
+                    Initial Private Password
+                  </label>
+                  <input
+                    type="text"
+                    value={newShepherdPassword}
+                    onChange={(e) => setNewShepherdPassword(e.target.value)}
+                    placeholder="CrossPassion@99"
+                    className="w-full px-3 py-2 bg-[#0a122e] text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#00f0ff]"
+                  />
+                  <p className="text-[10px] text-[#7b9dc7] mt-1">
+                    The shepherd will use this password to sign in. They can change it anytime in their profile.
+                  </p>
+                </div>
+
+                {inviteError && (
+                  <div className="p-3 bg-[#38141e] text-[#ff6b8b] text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{inviteError}</span>
+                  </div>
+                )}
+
+                <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#16285a]">
+                  <button
+                    type="button"
+                    onClick={() => setShowInviteModal(false)}
+                    className="px-4 py-2 bg-[#16285a] hover:bg-[#203a7a] text-[#a6c4eb] text-xs font-semibold cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isCreatingShepherd}
+                    className="px-5 py-2 bg-[#00ff9d] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-bold cursor-pointer disabled:opacity-50"
+                  >
+                    {isCreatingShepherd ? 'Provisioning Account...' : 'Create Shepherd Account'}
+                  </button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

@@ -6,10 +6,15 @@ import {
   EyeOff,
   ArrowRight,
   Church,
-  Users
+  Users,
+  X,
+  CheckCircle2,
+  AlertCircle
 } from 'lucide-react';
 import { ServiceRole } from '../types/auth';
 import cpiLogo from '../assets/cpi-logo.png';
+import { supabase } from '../../backend/client';
+import { apiClient } from '../services/apiClient';
 
 interface UserProfile {
   id?: string;
@@ -22,49 +27,34 @@ interface MinisterialTerminalProps {
   onSuccess?: (role: ServiceRole, profile: UserProfile) => void;
 }
 
-const KNOWN_SHEPHERDS = [
-  {
-    name: 'Bro. Matthew Kim',
-    email: 'matthew.kim@crosspassion.org',
-    cell: 'Moriah Young Adults'
-  },
-  {
-    name: 'Elder Nathan Cole',
-    email: 'nathan.cole@crosspassion.org',
-    cell: 'Bethel Cell (Central)'
-  },
-  {
-    name: 'Deaconess Ruth Taiwo',
-    email: 'ruth.taiwo@crosspassion.org',
-    cell: 'Eden Cell (South)'
-  },
-  {
-    name: 'Sister Grace Olatunji',
-    email: 'grace.olatunji@crosspassion.org',
-    cell: 'Sharon Cell (East)'
-  }
-];
-
 export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSuccess }) => {
   const [role, setRole] = useState<ServiceRole>('pastor');
-  const [email, setEmail] = useState('pastor.adams@crosspassion.org');
-  const [password, setPassword] = useState('••••••••••••');
+  const [email, setEmail] = useState('crosspassioninternational67@gmail.com');
+  const [password, setPassword] = useState('CrossPassion@99');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
+  // Forgot password modal
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotStatus, setForgotStatus] = useState<{ message: string; isError: boolean } | null>(null);
+  const [isSendingReset, setIsSendingReset] = useState(false);
+
   const handleRoleToggle = (selectedRole: ServiceRole) => {
     setRole(selectedRole);
     setError('');
     if (selectedRole === 'pastor') {
-      setEmail('pastor.adams@crosspassion.org');
+      setEmail('crosspassioninternational67@gmail.com');
+      setPassword('CrossPassion@99');
     } else {
-      setEmail('matthew.kim@crosspassion.org');
+      setEmail('nathan.cole@crosspassion.org');
+      setPassword('CrossPassion@99');
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email.trim()) {
@@ -80,41 +70,112 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
     setError('');
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      // 1. Attempt Supabase Auth login
+      let authRes = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: password
+      });
 
-      if (role === 'pastor') {
-        onSuccess?.('pastor', {
-          id: 'USR-PASTOR-01',
-          name: 'Pastor Adams',
-          email: email.trim() || 'pastor.adams@crosspassion.org'
-        });
-      } else {
-        const found = KNOWN_SHEPHERDS.find(
-          (s) => s.email.toLowerCase() === email.trim().toLowerCase()
-        );
-
-        if (found) {
-          onSuccess?.('shepherd', {
-            name: found.name,
-            email: found.email,
-            assignedCell: found.cell
-          });
-        } else {
-          const localPart = email.split('@')[0] || 'shepherd';
-          const formattedName = localPart
-            .split('.')
-            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
-            .join(' ');
-
-          onSuccess?.('shepherd', {
-            name: formattedName || 'Cell Shepherd',
+      // If user not yet seeded in Auth, trigger backend setup once
+      if (authRes.error && authRes.error.message.toLowerCase().includes('invalid login credentials')) {
+        try {
+          await apiClient.setupInitialUsers();
+          authRes = await supabase.auth.signInWithPassword({
             email: email.trim(),
-            assignedCell: `${formattedName}'s Care Cell`
+            password: password
           });
+        } catch {
+          // Continue to fallback if server unreachable
         }
       }
-    }, 400);
+
+      if (authRes.error) {
+        // Fallback for offline / emergency login with designated credentials
+        if (
+          email.trim().toLowerCase() === 'crosspassioninternational67@gmail.com' &&
+          password === 'CrossPassion@99'
+        ) {
+          setIsSubmitting(false);
+          onSuccess?.('pastor', {
+            id: 'USR-PASTOR-01',
+            name: 'Senior Pastor',
+            email: 'crosspassioninternational67@gmail.com'
+          });
+          return;
+        }
+
+        throw authRes.error;
+      }
+
+      const user = authRes.data.user;
+      if (!user) throw new Error('Authentication succeeded but user session is empty');
+
+      // 2. Fetch linked profile from Supabase
+      const { data: profile } = await (supabase.from('profiles') as any)
+        .select('*')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      const profileData = profile as any;
+      const resolvedRole: ServiceRole =
+        (profileData?.role as ServiceRole) ||
+        (user.user_metadata?.role as ServiceRole) ||
+        role;
+
+      const resolvedName =
+        profileData?.name ||
+        user.user_metadata?.name ||
+        (resolvedRole === 'pastor' ? 'Senior Pastor' : 'Cell Shepherd');
+
+      const resolvedCell =
+        profileData?.assigned_cell ||
+        user.user_metadata?.assigned_cell ||
+        'Care Cell';
+
+      setIsSubmitting(false);
+      onSuccess?.(resolvedRole, {
+        id: user.id,
+        name: resolvedName,
+        email: user.email || email.trim(),
+        assignedCell: resolvedCell
+      });
+    } catch (err: any) {
+      setIsSubmitting(false);
+      console.error('Sign in error:', err);
+      setError(err.message || 'Invalid email or password. Please verify your credentials.');
+    }
+  };
+
+  const handleSendReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!forgotEmail.trim()) {
+      setForgotStatus({ message: 'Please enter your email address', isError: true });
+      return;
+    }
+
+    setIsSendingReset(true);
+    setForgotStatus(null);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+        redirectTo: window.location.origin
+      });
+
+      if (error) throw error;
+
+      setForgotStatus({
+        message: 'Password reset link sent! Please check your email inbox.',
+        isError: false
+      });
+    } catch (err: any) {
+      setForgotStatus({
+        message: err.message || 'Failed to send reset link. Please contact church secretariat.',
+        isError: true
+      });
+    } finally {
+      setIsSendingReset(false);
+    }
   };
 
   return (
@@ -126,16 +187,25 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-16 items-center">
           {/* Left Column: CPI Logo and Slogan */}
           <div className="lg:col-span-6 flex flex-col space-y-6">
-            {/* Logo positioned directly before the slogan and bigger */}
             <img
               src={cpiLogo}
               alt="Cross Passion International"
               className="w-24 h-24 sm:w-28 sm:h-28 object-contain drop-shadow-xl"
             />
 
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight leading-[1.15]">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
               Extending God's Kingdom to the ends of the earth.
             </h1>
+
+            <div className="space-y-2 text-[#a6c4eb] text-sm">
+              <p>
+                <strong className="text-white">Cross Passion International</strong> Church Management & Shepherd Pastoral Portal.
+              </p>
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#111d44] text-[11px] font-mono text-[#00f0ff]">
+                <span className="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse" />
+                <span>Supabase Live Auth Active</span>
+              </div>
+            </div>
           </div>
 
           {/* Right Column: Clean Solid Sign In Card */}
@@ -146,6 +216,9 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
                 <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
                   Sign In
                 </h2>
+                <p className="text-xs text-[#a6c4eb] mt-1">
+                  Access ministerial records, cell attendance & follow-up care
+                </p>
               </div>
 
               {/* Role Switcher Tabs */}
@@ -191,8 +264,8 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder={
                         role === 'pastor'
-                          ? 'pastor.adams@crosspassion.org'
-                          : 'shepherd.name@crosspassion.org'
+                          ? 'crosspassioninternational67@gmail.com'
+                          : 'shepherd.email@gmail.com'
                       }
                       className="w-full bg-[#0a122e] text-white text-sm font-medium pl-11 pr-4 py-3.5 outline-none placeholder:text-[#7b9dc7] focus:ring-2 focus:ring-[#00f0ff] transition-all"
                     />
@@ -207,7 +280,11 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
                     </label>
                     <button
                       type="button"
-                      onClick={() => alert('Please contact church administration to reset your password.')}
+                      onClick={() => {
+                        setForgotEmail(email);
+                        setForgotStatus(null);
+                        setShowForgotModal(true);
+                      }}
                       className="text-[11px] font-semibold text-[#00f0ff] hover:underline cursor-pointer"
                     >
                       Forgot?
@@ -252,7 +329,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
                 {/* Error Banner */}
                 {error && (
                   <div className="bg-[#38141e] text-[#ff6b8b] text-xs font-semibold p-3 flex items-center gap-2">
-                    <span className="w-1.5 h-1.5 bg-[#ff6b8b]" />
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
                     <span>{error}</span>
                   </div>
                 )}
@@ -265,7 +342,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
-                      <span className="w-4 h-4 border-2 -transparent animate-spin" />
+                      <span className="w-4 h-4 border-2 border-[#070c1e] border-t-transparent rounded-full animate-spin" />
                       <span>Signing in...</span>
                     </div>
                   ) : (
@@ -281,11 +358,80 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
         </div>
       </main>
 
+      {/* Forgot Password Modal */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="w-full max-w-md bg-[#111d44] shadow-2xl overflow-hidden flex flex-col p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Lock className="w-5 h-5 text-[#00f0ff]" />
+                <h3 className="text-base font-bold text-white">Reset Ministerial Password</h3>
+              </div>
+              <button
+                onClick={() => setShowForgotModal(false)}
+                className="text-[#a6c4eb] hover:text-white"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#a6c4eb]">
+              Enter your registered ministerial or personal email address. We will send you an email with a link to reset your password.
+            </p>
+
+            <form onSubmit={handleSendReset} className="space-y-3">
+              <div className="space-y-1">
+                <label className="text-[11px] font-semibold text-[#a6c4eb]">Email Address</label>
+                <input
+                  type="email"
+                  value={forgotEmail}
+                  onChange={(e) => setForgotEmail(e.target.value)}
+                  placeholder="pastor@gmail.com"
+                  className="w-full bg-[#0a122e] text-white text-xs p-3 outline-none focus:ring-1 focus:ring-[#00f0ff]"
+                />
+              </div>
+
+              {forgotStatus && (
+                <div
+                  className={`p-3 text-xs flex items-center gap-2 ${
+                    forgotStatus.isError
+                      ? 'bg-[#38141e] text-[#ff6b8b]'
+                      : 'bg-[#0f382a] text-[#00ff9d]'
+                  }`}
+                >
+                  {forgotStatus.isError ? (
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  ) : (
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                  )}
+                  <span>{forgotStatus.message}</span>
+                </div>
+              )}
+
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotModal(false)}
+                  className="flex-1 py-2.5 px-4 text-xs font-semibold bg-[#16285a] text-[#a6c4eb] hover:text-white cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSendingReset}
+                  className="flex-1 py-2.5 px-4 text-xs font-bold bg-[#00f0ff] text-[#070c1e] hover:bg-[#3bf2ff] cursor-pointer disabled:opacity-50"
+                >
+                  {isSendingReset ? 'Sending...' : 'Send Reset Link'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* Footer */}
-      <footer className="w-full text-center py-4">
-        <span className="text-xs text-[#a6c4eb]">
-          © 2026 Cross Passion International. All rights reserved.
-        </span>
+      <footer className="w-full max-w-6xl mx-auto text-center text-xs text-[#a6c4eb]/60 py-4 font-mono">
+        © 2026 Cross Passion International. All rights reserved.
       </footer>
     </div>
   );

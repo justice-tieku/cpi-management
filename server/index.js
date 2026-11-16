@@ -278,6 +278,198 @@ app.post('/api/ministerial/broadcast-sms', async (req, res) => {
   }
 });
 
+// ==========================================
+// 8. MINISTERIAL AUTH & SHEPHERD ONBOARDING
+// ==========================================
+
+// Seed / Initialize Pastor & Default Shepherds in Supabase Auth
+app.post('/api/auth/setup-initial-users', async (req, res) => {
+  try {
+    const results = [];
+
+    // 1. Senior Pastor
+    const pastorEmail = 'crosspassioninternational67@gmail.com';
+    const pastorPassword = 'CrossPassion@99';
+
+    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const pastorUser = existingUsers?.users?.find(u => u.email?.toLowerCase() === pastorEmail.toLowerCase());
+
+    let pastorId;
+    if (pastorUser) {
+      // Update password if exists
+      const { data: updated } = await supabase.auth.admin.updateUserById(pastorUser.id, {
+        password: pastorPassword,
+        user_metadata: { name: 'Senior Pastor', role: 'pastor' }
+      });
+      pastorId = pastorUser.id;
+      results.push({ email: pastorEmail, status: 'updated existing pastor' });
+    } else {
+      const { data: created, error } = await supabase.auth.admin.createUser({
+        email: pastorEmail,
+        password: pastorPassword,
+        email_confirm: true,
+        user_metadata: { name: 'Senior Pastor', role: 'pastor' }
+      });
+      if (error) throw error;
+      pastorId = created.user.id;
+      results.push({ email: pastorEmail, status: 'created pastor' });
+    }
+
+    // Upsert pastor profile
+    await supabase.from('profiles').upsert({
+      id: pastorId,
+      email: pastorEmail,
+      name: 'Senior Pastor',
+      role: 'pastor',
+      branch: 'Main Sanctuary — Central Cathedral'
+    });
+
+    // 2. Initial Shepherds
+    const defaultShepherds = [
+      { name: 'Elder Nathan Cole', email: 'nathan.cole@crosspassion.org', cell: 'Bethel Cell (Central)' },
+      { name: 'Deaconess Ruth Taiwo', email: 'ruth.taiwo@crosspassion.org', cell: 'Eden Cell (South)' },
+      { name: 'Bro. Matthew Kim', email: 'matthew.kim@crosspassion.org', cell: 'Moriah Young Adults' },
+      { name: 'Sister Grace Olatunji', email: 'grace.olatunji@crosspassion.org', cell: 'Sharon Cell (East)' },
+      { name: 'Pastor Emmanuel Vance', email: 'emmanuel.vance@crosspassion.org', cell: 'Hebron Cell (North)' }
+    ];
+
+    for (const sh of defaultShepherds) {
+      const existing = existingUsers?.users?.find(u => u.email?.toLowerCase() === sh.email.toLowerCase());
+      let shId;
+
+      if (existing) {
+        await supabase.auth.admin.updateUserById(existing.id, {
+          password: pastorPassword,
+          user_metadata: { name: sh.name, role: 'shepherd', assigned_cell: sh.cell }
+        });
+        shId = existing.id;
+        results.push({ email: sh.email, status: 'updated existing shepherd' });
+      } else {
+        const { data: created, error } = await supabase.auth.admin.createUser({
+          email: sh.email,
+          password: pastorPassword,
+          email_confirm: true,
+          user_metadata: { name: sh.name, role: 'shepherd', assigned_cell: sh.cell }
+        });
+        if (error) {
+          results.push({ email: sh.email, status: `error: ${error.message}` });
+          continue;
+        }
+        shId = created.user.id;
+        results.push({ email: sh.email, status: 'created shepherd' });
+      }
+
+      await supabase.from('profiles').upsert({
+        id: shId,
+        email: sh.email,
+        name: sh.name,
+        role: 'shepherd',
+        assigned_cell: sh.cell,
+        branch: 'Main Sanctuary — Central Cathedral'
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Initial accounts provisioned successfully in Supabase Auth & Profiles',
+      results,
+      timestamp: new Date().toISOString()
+    });
+  } catch (err) {
+    console.error('[SETUP USERS ERROR]', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Pastor Dynamic Shepherd Creation & Onboarding
+app.post('/api/shepherds/create', async (req, res) => {
+  try {
+    const { name, email, phone, cellName, password } = req.body;
+
+    if (!name || !email || !cellName) {
+      return res.status(400).json({ success: false, error: 'Name, email, and care cell are required' });
+    }
+
+    const shepherdPassword = password?.trim() || 'CrossPassion@99';
+
+    // 1. Create or update user in Supabase Auth
+    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const existing = existingUsers?.users?.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
+
+    let userId;
+    if (existing) {
+      const { data: updated, error } = await supabase.auth.admin.updateUserById(existing.id, {
+        password: shepherdPassword,
+        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone }
+      });
+      if (error) throw error;
+      userId = existing.id;
+    } else {
+      const { data: created, error } = await supabase.auth.admin.createUser({
+        email: email.trim(),
+        password: shepherdPassword,
+        email_confirm: true,
+        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone }
+      });
+      if (error) throw error;
+      userId = created.user.id;
+    }
+
+    // 2. Upsert to public.profiles
+    const { data: profile, error: profErr } = await supabase.from('profiles').upsert({
+      id: userId,
+      email: email.trim(),
+      name: name.trim(),
+      role: 'shepherd',
+      assigned_cell: cellName.trim(),
+      phone: phone || null,
+      branch: 'Main Sanctuary — Central Cathedral'
+    }).select().single();
+
+    if (profErr) throw profErr;
+
+    // 3. Ensure care cell exists
+    await supabase.from('care_cells').upsert({
+      name: cellName.trim(),
+      shepherd_id: userId,
+      max_capacity: 35
+    }, { onConflict: 'name' });
+
+    res.status(201).json({
+      success: true,
+      message: `Shepherd account successfully provisioned for ${name}`,
+      shepherd: {
+        id: userId,
+        name: name.trim(),
+        email: email.trim(),
+        cell: cellName.trim(),
+        phone: phone || '',
+        temporaryPassword: shepherdPassword
+      }
+    });
+  } catch (err) {
+    console.error('[CREATE SHEPHERD ERROR]', err);
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Fetch all registered shepherds
+app.get('/api/shepherds', async (req, res) => {
+  try {
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('role', 'shepherd')
+      .order('name', { ascending: true });
+
+    if (error) throw error;
+
+    res.json({ success: true, count: data ? data.length : 0, shepherds: data || [] });
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
 // Error handling fallback
 app.use((err, req, res, next) => {
   console.error('[UNHANDLED ERROR]', err);

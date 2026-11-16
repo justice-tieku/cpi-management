@@ -65,6 +65,58 @@ export const apiClient = {
       console.warn('[CPI Backend API] Failed to fetch finance summary:', err);
       return null;
     }
+  },
+
+  /**
+   * Provision Initial Users (Senior Pastor & Default Shepherds)
+   */
+  async setupInitialUsers() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/auth/setup-initial-users`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('[CPI Backend API] Failed to setup initial users:', err);
+      throw err;
+    }
+  },
+
+  /**
+   * Pastor creates a new Cell Shepherd account with custom personal email & password
+   */
+  async createShepherd(payload: {
+    name: string;
+    email: string;
+    phone?: string;
+    cellName: string;
+    password?: string;
+  }) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/shepherds/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      return await res.json();
+    } catch (err) {
+      console.error('[CPI Backend API] Failed to create shepherd:', err);
+      throw err;
+    }
+  },
+
+  /**
+   * Fetch all registered shepherds from backend
+   */
+  async getShepherds() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/shepherds`);
+      return await res.json();
+    } catch (err) {
+      console.warn('[CPI Backend API] Failed to fetch shepherds:', err);
+      return { success: false, shepherds: [] };
+    }
   }
 };
 

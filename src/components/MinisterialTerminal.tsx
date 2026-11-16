@@ -138,7 +138,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
     } catch (err: any) {
       setIsSubmitting(false);
       console.error('Sign in error:', err);
-      setError(err.message || 'Invalid email or password. Please verify your credentials.');
+      setError('Request unsuccessful. Please try again.');
     }
   };
 

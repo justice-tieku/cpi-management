@@ -55,7 +55,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         setPasswordStatus(null);
       }, 1500);
     } catch (err: any) {
-      setPasswordStatus({ message: err.message || 'Failed to update password', isError: true });
+      setPasswordStatus({ message: 'Request unsuccessful. Please try again.', isError: true });
     } finally {
       setIsUpdatingPassword(false);
     }

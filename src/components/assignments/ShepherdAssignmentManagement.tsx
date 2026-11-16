@@ -94,7 +94,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
 
       setSuccessNotice(`Shepherd account provisioned successfully for ${newShepherdName.trim()}!`);
     } catch (err: any) {
-      setInviteError(err.message || 'Error provisioning shepherd. Please check server connection.');
+      setInviteError('Request unsuccessful. Please try again.');
     } finally {
       setIsCreatingShepherd(false);
     }

@@ -449,7 +449,7 @@ app.post('/api/shepherds/create', async (req, res) => {
     });
   } catch (err) {
     console.error('[CREATE SHEPHERD ERROR]', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 

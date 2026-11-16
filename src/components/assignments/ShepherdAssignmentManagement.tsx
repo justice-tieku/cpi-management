@@ -106,7 +106,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
 
 Your Cell Shepherd portal access for Cross Passion International is ready:
 • Website: https://cpi-management.vercel.app
-• Ministerial Email: ${createdCredentials.email}
+• Email: ${createdCredentials.email}
 • Password: ${createdCredentials.password}
 • Assigned Cell: ${createdCredentials.cell}
 
@@ -712,7 +712,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                     <span className="font-bold">{createdCredentials.name}</span>
                   </div>
                   <div>
-                    <span className="text-[#a6c4eb] block text-[10px] uppercase font-sans">Ministerial Email</span>
+                    <span className="text-[#a6c4eb] block text-[10px] uppercase font-sans">Email</span>
                     <span className="text-[#00f0ff]">{createdCredentials.email}</span>
                   </div>
                   <div>

@@ -29,8 +29,8 @@ interface MinisterialTerminalProps {
 
 export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSuccess }) => {
   const [role, setRole] = useState<ServiceRole>('pastor');
-  const [email, setEmail] = useState('crosspassioninternational67@gmail.com');
-  const [password, setPassword] = useState('CrossPassion@99');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -45,20 +45,15 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
   const handleRoleToggle = (selectedRole: ServiceRole) => {
     setRole(selectedRole);
     setError('');
-    if (selectedRole === 'pastor') {
-      setEmail('crosspassioninternational67@gmail.com');
-      setPassword('CrossPassion@99');
-    } else {
-      setEmail('nathan.cole@crosspassion.org');
-      setPassword('CrossPassion@99');
-    }
+    setEmail('');
+    setPassword('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!email.trim()) {
-      setError('Please provide your ministerial email address.');
+      setError('Please enter your email address.');
       return;
     }
 
@@ -196,16 +191,6 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
             <h1 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight tracking-tight">
               Extending God's Kingdom to the ends of the earth.
             </h1>
-
-            <div className="space-y-2 text-[#a6c4eb] text-sm">
-              <p>
-                <strong className="text-white">Cross Passion International</strong> Church Management & Shepherd Pastoral Portal.
-              </p>
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#111d44] text-[11px] font-mono text-[#00f0ff]">
-                <span className="w-2 h-2 rounded-full bg-[#00ff9d] animate-pulse" />
-                <span>Supabase Live Auth Active</span>
-              </div>
-            </div>
           </div>
 
           {/* Right Column: Clean Solid Sign In Card */}
@@ -254,7 +239,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
                 {/* Email Input */}
                 <div className="space-y-1.5">
                   <label className="text-xs font-semibold text-[#a6c4eb] block">
-                    Ministerial Email
+                    Email
                   </label>
                   <div className="relative flex items-center">
                     <Mail className="w-4 h-4 text-[#a6c4eb] absolute left-4 pointer-events-none" />
@@ -262,11 +247,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder={
-                        role === 'pastor'
-                          ? 'crosspassioninternational67@gmail.com'
-                          : 'shepherd.email@gmail.com'
-                      }
+                      placeholder="Enter your email"
                       className="w-full bg-[#0a122e] text-white text-sm font-medium pl-11 pr-4 py-3.5 outline-none placeholder:text-[#7b9dc7] focus:ring-2 focus:ring-[#00f0ff] transition-all"
                     />
                   </div>

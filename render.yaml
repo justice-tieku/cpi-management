@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: cpi-management-api
+    runtime: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: SUPABASE_URL
+        value: https://cbxcstsuzchmegvrfscm.supabase.co
+      - key: SUPABASE_SECRET_KEY
+        sync: false
+      - key: SUPABASE_ANON_KEY
+        value: sb_publishable_CJ0WbtyykaD0vYB3hxAXjg_DtTyLLVc

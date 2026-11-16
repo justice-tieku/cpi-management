@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   User,
   Member,
@@ -18,6 +18,7 @@ import {
   SundayAbsenceReport,
   SundayAbsenceCategory
 } from '../types/cms';
+import { supabase, isSupabaseConfigured } from '../../backend/client';
 
 export interface CMSNotification {
   id: string;
@@ -33,6 +34,7 @@ export interface CMSNotification {
 interface CMSContextType {
   currentUser: User;
   setCurrentUser: (user: User) => void;
+  isCloudConnected: boolean;
   members: Member[];
   visibleMembers: Member[];
   registerMember: (member: Omit<Member, 'id' | 'registeredAt' | 'registeredBy'>) => { success: boolean; error?: string };
@@ -996,6 +998,150 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   ]);
 
   // =========================================================================
+  // LIVE SUPABASE CLOUD BACKEND SYNCHRONIZATION
+  // =========================================================================
+  const [isCloudConnected, setIsCloudConnected] = useState(isSupabaseConfigured);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    let isMounted = true;
+
+    const syncFromCloud = async () => {
+      try {
+        // 1. Members
+        const { data: dbMembers, error: mErr } = await supabase.from('members').select('*');
+        if (!mErr && dbMembers && dbMembers.length > 0 && isMounted) {
+          setMembers(
+            dbMembers.map((m: any) => ({
+              id: m.id,
+              firstName: m.first_name,
+              lastName: m.last_name,
+              phone: m.phone,
+              email: m.email || '',
+              city: m.city || 'Central District',
+              dateOfBirth: m.date_of_birth || undefined,
+              status: m.status,
+              spiritualStage: m.spiritual_stage,
+              department: m.department || undefined,
+              cellGroup: m.cell_group,
+              currentShepherdId: m.current_shepherd_id || undefined,
+              currentShepherdName: m.current_shepherd_name || undefined,
+              registeredAt: m.registered_at,
+              registeredBy: m.registered_by,
+              generalNotes: m.general_notes || undefined,
+              confidentialNotes: m.confidential_notes || undefined
+            }))
+          );
+        }
+
+        // 2. Attendance
+        const { data: dbAttendance } = await supabase.from('attendance_records').select('*');
+        if (dbAttendance && dbAttendance.length > 0 && isMounted) {
+          setAttendanceRecords(
+            dbAttendance.map((a: any) => ({
+              id: a.id,
+              serviceId: a.service_id,
+              serviceName: a.service_name,
+              serviceDate: a.service_date,
+              memberId: a.member_id,
+              memberName: a.member_name,
+              cellGroup: a.cell_group,
+              shepherdId: a.shepherd_id || undefined,
+              status: a.status,
+              recordedBy: a.recorded_by,
+              recordedAt: a.recorded_at,
+              consecutiveAbsences: a.consecutive_absences || 0
+            }))
+          );
+        }
+
+        // 3. Cell Meetings
+        const { data: dbMeetings } = await supabase.from('cell_meetings').select('*');
+        if (dbMeetings && dbMeetings.length > 0 && isMounted) {
+          setCellMeetings(
+            dbMeetings.map((cm: any) => ({
+              id: cm.id,
+              cellName: cm.cell_name,
+              shepherdId: cm.shepherd_id || '',
+              shepherdName: cm.shepherd_name,
+              date: cm.meeting_date,
+              topic: cm.topic,
+              attendeesCount: cm.attendees_count,
+              offeringAmount: Number(cm.offering_amount) || 0,
+              notes: cm.notes || undefined
+            }))
+          );
+        }
+
+        // 4. Announcements
+        const { data: dbAnnouncements } = await supabase.from('announcements').select('*');
+        if (dbAnnouncements && dbAnnouncements.length > 0 && isMounted) {
+          setAnnouncements(
+            dbAnnouncements.map((an: any) => ({
+              id: an.id,
+              title: an.title,
+              content: an.content,
+              authorName: an.author_name,
+              date: an.created_at ? an.created_at.slice(0, 10) : new Date().toISOString().split('T')[0],
+              priority: an.priority,
+              target: an.target
+            }))
+          );
+        }
+
+        // 5. Events
+        const { data: dbEvents } = await supabase.from('church_events').select('*');
+        if (dbEvents && dbEvents.length > 0 && isMounted) {
+          setChurchEvents(
+            dbEvents.map((ev: any) => ({
+              id: ev.id,
+              title: ev.title,
+              date: ev.event_date,
+              time: ev.event_time,
+              location: ev.location,
+              description: ev.description,
+              flyerUrl: ev.flyer_url || undefined,
+              category: ev.category,
+              createdBy: ev.created_by,
+              createdAt: ev.created_at ? ev.created_at.slice(0, 10) : new Date().toISOString().split('T')[0]
+            }))
+          );
+        }
+
+        // 6. Finance
+        const { data: dbFinance } = await supabase.from('finance_records').select('*');
+        if (dbFinance && dbFinance.length > 0 && isMounted) {
+          setFinanceRecords(
+            dbFinance.map((f: any) => ({
+              id: f.id,
+              ref: f.ref,
+              date: f.transaction_date,
+              giver: f.giver,
+              category: f.category,
+              method: f.method,
+              amount: Number(f.amount) || 0,
+              cellGroup: f.cell_group || undefined,
+              status: f.status,
+              recordedBy: f.recorded_by
+            }))
+          );
+        }
+
+        if (isMounted) setIsCloudConnected(true);
+      } catch (err) {
+        console.warn('[CPI Cloud Sync] Running with cached data:', err);
+      }
+    };
+
+    syncFromCloud();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  // =========================================================================
   // STRICT RECORD-LEVEL AUTHORIZATION PARTITIONS (Per User Instruction)
   // "a cell leader should only be entitle to view his or her cell recording
   // attendance, offerings, cell meetings and church attendance and some other
@@ -1056,10 +1202,32 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ? notifications
     : notifications.filter((n) => n.recipientId === currentUser.id || n.recipientId === 'all');
 
+  const getProfileUUID = (userIdOrShepherdId?: string): string => {
+    if (!userIdOrShepherdId) return 'a0000000-0000-0000-0000-000000000001';
+    const idMap: Record<string, string> = {
+      'USR-PASTOR-01': 'a0000000-0000-0000-0000-000000000001',
+      'SH-01': 'a0000000-0000-0000-0000-000000000002',
+      'SH-02': 'a0000000-0000-0000-0000-000000000003',
+      'SH-03': 'a0000000-0000-0000-0000-000000000004',
+      'SH-04': 'a0000000-0000-0000-0000-000000000005',
+      'SH-05': 'a0000000-0000-0000-0000-000000000006'
+    };
+    return idMap[userIdOrShepherdId] || 'a0000000-0000-0000-0000-000000000001';
+  };
+
   const markNotificationRead = (id: string) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read: true } : n))
     );
+
+    if (isSupabaseConfigured) {
+      (supabase.from('notifications') as any)
+        .update({ is_read: true })
+        .eq('id', id)
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase markNotificationRead] Error:', error);
+        });
+    }
   };
 
   // 8. Messages — Shepherd sees only their own conversation with pastor
@@ -1085,12 +1253,37 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       read: false
     };
     setMessages((prev) => [...prev, newMsg]);
+
+    if (isSupabaseConfigured) {
+      (supabase.from('chat_messages') as any)
+        .insert({
+          id: newMsg.id,
+          sender_id: getProfileUUID(currentUser.id),
+          sender_name: currentUser.name,
+          recipient_id: getProfileUUID(recipientId),
+          recipient_name: newMsg.recipientName,
+          content,
+          is_read: false
+        })
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase sendMessage] Error:', error);
+        });
+    }
   };
 
   const markMessageRead = (messageId: string) => {
     setMessages((prev) =>
       prev.map((m) => (m.id === messageId ? { ...m, read: true } : m))
     );
+
+    if (isSupabaseConfigured) {
+      (supabase.from('chat_messages') as any)
+        .update({ is_read: true })
+        .eq('id', messageId)
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase markMessageRead] Error:', error);
+        });
+    }
   };
 
   // 9. Announcements — all roles see all announcements
@@ -1104,6 +1297,22 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       date: new Date().toISOString().split('T')[0]
     };
     setAnnouncements((prev) => [newAnn, ...prev]);
+
+    if (isSupabaseConfigured) {
+      (supabase.from('announcements') as any)
+        .insert({
+          id: newAnn.id,
+          title: newAnn.title,
+          content: newAnn.content,
+          author_id: getProfileUUID(currentUser.id),
+          author_name: currentUser.name,
+          priority: newAnn.priority,
+          target: newAnn.target
+        })
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase createAnnouncement] Error:', error);
+        });
+    }
   };
 
   // 10. Church Events — all roles see all events
@@ -1117,6 +1326,24 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       createdAt: new Date().toISOString().split('T')[0]
     };
     setChurchEvents((prev) => [newEvt, ...prev]);
+
+    if (isSupabaseConfigured) {
+      (supabase.from('church_events') as any)
+        .insert({
+          id: newEvt.id,
+          title: newEvt.title,
+          event_date: newEvt.date,
+          event_time: newEvt.time,
+          location: newEvt.location,
+          description: newEvt.description,
+          flyer_url: newEvt.flyerUrl || null,
+          category: newEvt.category,
+          created_by: currentUser.name
+        })
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase createEvent] Error:', error);
+        });
+    }
   };
 
   // Actions
@@ -1141,6 +1368,29 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setMembers((prev) => [newMember, ...prev]);
 
+    if (isSupabaseConfigured) {
+      (supabase.from('members') as any).insert({
+        id: newId,
+        first_name: newMember.firstName,
+        last_name: newMember.lastName,
+        phone: newMember.phone,
+        email: newMember.email || null,
+        city: newMember.city || 'Central District',
+        date_of_birth: newMember.dateOfBirth || null,
+        status: newMember.status,
+        spiritual_stage: newMember.spiritualStage,
+        department: newMember.department || null,
+        cell_group: newMember.cellGroup,
+        current_shepherd_id: newMember.currentShepherdId || null,
+        current_shepherd_name: newMember.currentShepherdName || null,
+        registered_at: newMember.registeredAt,
+        registered_by: newMember.registeredBy,
+        general_notes: newMember.generalNotes || null
+      }).then(({ error }: any) => {
+        if (error) console.error('[Supabase registerMember] Error:', error);
+      });
+    }
+
     setAuditLogs((prev) => [
       {
         id: `LOG-${Date.now()}`,
@@ -1162,6 +1412,29 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setMembers((prev) =>
       prev.map((m) => (m.id === memberId ? { ...m, ...updates } : m))
     );
+
+    if (isSupabaseConfigured) {
+      const dbPayload: any = {};
+      if (updates.firstName !== undefined) dbPayload.first_name = updates.firstName;
+      if (updates.lastName !== undefined) dbPayload.last_name = updates.lastName;
+      if (updates.phone !== undefined) dbPayload.phone = updates.phone;
+      if (updates.email !== undefined) dbPayload.email = updates.email || null;
+      if (updates.city !== undefined) dbPayload.city = updates.city;
+      if (updates.dateOfBirth !== undefined) dbPayload.date_of_birth = updates.dateOfBirth || null;
+      if (updates.status !== undefined) dbPayload.status = updates.status;
+      if (updates.spiritualStage !== undefined) dbPayload.spiritual_stage = updates.spiritualStage;
+      if (updates.department !== undefined) dbPayload.department = updates.department || null;
+      if (updates.cellGroup !== undefined) dbPayload.cell_group = updates.cellGroup;
+      if (updates.generalNotes !== undefined) dbPayload.general_notes = updates.generalNotes || null;
+      if (updates.confidentialNotes !== undefined) dbPayload.confidential_notes = updates.confidentialNotes || null;
+
+      (supabase.from('members') as any)
+        .update(dbPayload)
+        .eq('id', memberId)
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase updateMember] Error:', error);
+        });
+    }
   };
 
   const reassignMember = (memberId: string, newShepherdId: string, reason: string) => {
@@ -1198,6 +1471,37 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       reason
     };
     setAssignmentsHistory((prev) => [newAssignment, ...prev]);
+
+    if (isSupabaseConfigured) {
+      const shepherdUuid = getProfileUUID(targetShepherd.id);
+      (supabase.from('members') as any)
+        .update({
+          current_shepherd_id: shepherdUuid,
+          current_shepherd_name: targetShepherd.name,
+          cell_group: targetShepherd.cell
+        })
+        .eq('id', memberId)
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase reassignMember] Error:', error);
+        });
+
+      (supabase.from('shepherd_assignments') as any)
+        .insert({
+          id: newAssignment.id,
+          member_id: memberId,
+          member_name: newAssignment.memberName,
+          shepherd_id: shepherdUuid,
+          shepherd_name: targetShepherd.name,
+          cell_group: targetShepherd.cell,
+          start_date: newAssignment.startDate,
+          status: 'Active',
+          assigned_by: currentUser.name,
+          reason
+        })
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase assignment] Error:', error);
+        });
+    }
 
     // Send automatic notification to the recipient Shepherd
     const newNotif: CMSNotification = {
@@ -1239,6 +1543,19 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : r
       )
     );
+
+    if (isSupabaseConfigured) {
+      (supabase.from('attendance_records') as any)
+        .update({
+          status,
+          recorded_by: currentUser.name,
+          recorded_at: new Date().toISOString()
+        })
+        .eq('id', recordId)
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase updateAttendance] Error:', error);
+        });
+    }
   };
 
   const recordSundayAttendance = (
@@ -1249,12 +1566,15 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const member = members.find((m) => m.id === memberId);
     if (!member) return;
 
+    let targetRecordId = `ATT-${date.replace(/-/g, '')}-${Date.now().toString().slice(-4)}`;
+
     setAttendanceRecords((prev) => {
       const existingIdx = prev.findIndex(
         (r) => r.memberId === memberId && r.serviceDate === date
       );
 
       if (existingIdx >= 0) {
+        targetRecordId = prev[existingIdx].id;
         const copy = [...prev];
         copy[existingIdx] = {
           ...copy[existingIdx],
@@ -1266,7 +1586,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
 
       const newRecord: AttendanceRecord = {
-        id: `ATT-${date.replace(/-/g, '')}-${Date.now().toString().slice(-4)}`,
+        id: targetRecordId,
         serviceId: 'SRV-SUN-04',
         serviceName: 'Sunday 1st Service — Communion',
         serviceDate: date,
@@ -1282,6 +1602,27 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       return [newRecord, ...prev];
     });
+
+    if (isSupabaseConfigured) {
+      (supabase.from('attendance_records') as any)
+        .upsert({
+          id: targetRecordId,
+          service_id: 'SRV-SUN-04',
+          service_name: 'Sunday 1st Service — Communion',
+          service_date: date,
+          member_id: member.id,
+          member_name: `${member.firstName} ${member.lastName}`,
+          cell_group: member.cellGroup,
+          shepherd_id: getProfileUUID(member.currentShepherdId),
+          status,
+          recorded_by: currentUser.name,
+          recorded_at: new Date().toISOString(),
+          consecutive_absences: status === 'Absent' ? 1 : 0
+        })
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase recordSundayAttendance] Error:', error);
+        });
+    }
   };
 
   // Dynamically calculate Sunday streaks comparing all Sunday services
@@ -1382,10 +1723,29 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     setCellMeetings((prev) => [newMeeting, ...prev]);
 
+    if (isSupabaseConfigured) {
+      (supabase.from('cell_meetings') as any)
+        .insert({
+          id: newMeeting.id,
+          cell_name: newMeeting.cellName,
+          shepherd_id: getProfileUUID(currentUser.id),
+          shepherd_name: currentUser.name,
+          meeting_date: newMeeting.date,
+          topic: newMeeting.topic,
+          attendees_count: newMeeting.attendeesCount,
+          offering_amount: newMeeting.offeringAmount,
+          notes: newMeeting.notes || null
+        })
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase recordCellMeeting] Error:', error);
+        });
+    }
+
     // Also register cell fellowship offering in finance ledger
     if (meeting.offeringAmount > 0) {
+      const newFinanceId = `FIN-${Date.now()}`;
       const newFinance: FinanceRecord = {
-        id: `FIN-${Date.now()}`,
+        id: newFinanceId,
         ref: `CELL-${Date.now().toString().slice(-4)}`,
         date: meeting.date,
         giver: `${newMeeting.cellName} Fellowship Offering`,
@@ -1397,6 +1757,25 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         recordedBy: currentUser.name
       };
       setFinanceRecords((prev) => [newFinance, ...prev]);
+
+      if (isSupabaseConfigured) {
+        (supabase.from('finance_records') as any)
+          .insert({
+            id: newFinance.id,
+            ref: newFinance.ref,
+            transaction_date: newFinance.date,
+            giver: newFinance.giver,
+            category: newFinance.category,
+            method: newFinance.method,
+            amount: newFinance.amount,
+            cell_group: newFinance.cellGroup || null,
+            status: newFinance.status,
+            recorded_by: newFinance.recordedBy
+          })
+          .then(({ error }: any) => {
+            if (error) console.error('[Supabase recordFinance] Error:', error);
+          });
+      }
     }
   };
 
@@ -1413,6 +1792,19 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : t
       )
     );
+
+    if (isSupabaseConfigured) {
+      (supabase.from('follow_up_tasks') as any)
+        .update({
+          status,
+          notes: note || undefined,
+          completed_at: status === 'Completed' ? new Date().toISOString() : null
+        })
+        .eq('id', taskId)
+        .then(({ error }: any) => {
+          if (error) console.error('[Supabase updateTaskStatus] Error:', error);
+        });
+    }
   };
 
   const submitReport = (reportId: string, narrative: string) => {
@@ -1441,6 +1833,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       value={{
         currentUser,
         setCurrentUser,
+        isCloudConnected,
         members,
         visibleMembers,
         registerMember,

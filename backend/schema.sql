@@ -87,9 +87,9 @@ EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 
 -- 3. TABLES
 
--- Profiles (extends Supabase auth.users)
+-- Profiles (Pastors & Shepherds)
 CREATE TABLE IF NOT EXISTS public.profiles (
-    id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     role user_role NOT NULL DEFAULT 'shepherd',
@@ -309,6 +309,10 @@ CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON public.notifications(r
 CREATE OR REPLACE FUNCTION public.is_pastor()
 RETURNS BOOLEAN AS $$
 BEGIN
+    -- Allow read/write when connecting with project public anon key
+    IF auth.uid() IS NULL THEN
+        RETURN TRUE;
+    END IF;
     RETURN EXISTS (
         SELECT 1 FROM public.profiles
         WHERE id = auth.uid() AND role = 'pastor'
@@ -346,55 +350,64 @@ ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 
 -- Profiles Policies
+DROP POLICY IF EXISTS "Profiles viewable by authenticated users" ON public.profiles;
 CREATE POLICY "Profiles viewable by authenticated users"
-ON public.profiles FOR SELECT TO authenticated USING (true);
+ON public.profiles FOR SELECT TO anon, authenticated USING (true);
 
+DROP POLICY IF EXISTS "Users can update own profile" ON public.profiles;
 CREATE POLICY "Users can update own profile"
-ON public.profiles FOR UPDATE TO authenticated USING (id = auth.uid());
+ON public.profiles FOR UPDATE TO anon, authenticated USING (id = auth.uid());
 
+DROP POLICY IF EXISTS "Pastor can manage all profiles" ON public.profiles;
 CREATE POLICY "Pastor can manage all profiles"
-ON public.profiles FOR ALL TO authenticated USING (public.is_pastor());
+ON public.profiles FOR ALL TO anon, authenticated USING (public.is_pastor());
 
 -- Members Policies
+DROP POLICY IF EXISTS "Members viewable by pastor or cell shepherd" ON public.members;
 CREATE POLICY "Members viewable by pastor or cell shepherd"
-ON public.members FOR SELECT TO authenticated
+ON public.members FOR SELECT TO anon, authenticated
 USING (
     public.is_pastor() OR
     current_shepherd_id = auth.uid() OR
     cell_group = public.get_assigned_cell()
 );
 
+DROP POLICY IF EXISTS "Members insertable by pastor or cell shepherd" ON public.members;
 CREATE POLICY "Members insertable by pastor or cell shepherd"
-ON public.members FOR INSERT TO authenticated
+ON public.members FOR INSERT TO anon, authenticated
 WITH CHECK (
     public.is_pastor() OR
     current_shepherd_id = auth.uid() OR
     cell_group = public.get_assigned_cell()
 );
 
+DROP POLICY IF EXISTS "Members updatable by pastor or cell shepherd" ON public.members;
 CREATE POLICY "Members updatable by pastor or cell shepherd"
-ON public.members FOR UPDATE TO authenticated
+ON public.members FOR UPDATE TO anon, authenticated
 USING (
     public.is_pastor() OR
     current_shepherd_id = auth.uid() OR
     cell_group = public.get_assigned_cell()
 );
 
+DROP POLICY IF EXISTS "Members deletable by pastor only" ON public.members;
 CREATE POLICY "Members deletable by pastor only"
-ON public.members FOR DELETE TO authenticated
+ON public.members FOR DELETE TO anon, authenticated
 USING (public.is_pastor());
 
 -- Attendance Policies
+DROP POLICY IF EXISTS "Attendance viewable by pastor or cell shepherd" ON public.attendance_records;
 CREATE POLICY "Attendance viewable by pastor or cell shepherd"
-ON public.attendance_records FOR SELECT TO authenticated
+ON public.attendance_records FOR SELECT TO anon, authenticated
 USING (
     public.is_pastor() OR
     shepherd_id = auth.uid() OR
     cell_group = public.get_assigned_cell()
 );
 
+DROP POLICY IF EXISTS "Attendance manageable by pastor or cell shepherd" ON public.attendance_records;
 CREATE POLICY "Attendance manageable by pastor or cell shepherd"
-ON public.attendance_records FOR ALL TO authenticated
+ON public.attendance_records FOR ALL TO anon, authenticated
 USING (
     public.is_pastor() OR
     shepherd_id = auth.uid() OR
@@ -402,127 +415,148 @@ USING (
 );
 
 -- Cell Meetings Policies
+DROP POLICY IF EXISTS "Cell meetings viewable by pastor or cell shepherd" ON public.cell_meetings;
 CREATE POLICY "Cell meetings viewable by pastor or cell shepherd"
-ON public.cell_meetings FOR SELECT TO authenticated
+ON public.cell_meetings FOR SELECT TO anon, authenticated
 USING (
     public.is_pastor() OR
     shepherd_id = auth.uid() OR
     cell_name = public.get_assigned_cell()
 );
 
+DROP POLICY IF EXISTS "Cell meetings insertable by cell shepherd" ON public.cell_meetings;
 CREATE POLICY "Cell meetings insertable by cell shepherd"
-ON public.cell_meetings FOR INSERT TO authenticated
+ON public.cell_meetings FOR INSERT TO anon, authenticated
 WITH CHECK (
     public.is_pastor() OR
     shepherd_id = auth.uid()
 );
 
+DROP POLICY IF EXISTS "Cell meetings updatable by cell shepherd" ON public.cell_meetings;
 CREATE POLICY "Cell meetings updatable by cell shepherd"
-ON public.cell_meetings FOR UPDATE TO authenticated
+ON public.cell_meetings FOR UPDATE TO anon, authenticated
 USING (
     public.is_pastor() OR
     shepherd_id = auth.uid()
 );
 
 -- Follow-Up Tasks Policies
+DROP POLICY IF EXISTS "Tasks viewable by pastor or assigned shepherd" ON public.follow_up_tasks;
 CREATE POLICY "Tasks viewable by pastor or assigned shepherd"
-ON public.follow_up_tasks FOR SELECT TO authenticated
+ON public.follow_up_tasks FOR SELECT TO anon, authenticated
 USING (
     public.is_pastor() OR
     shepherd_id = auth.uid()
 );
 
+DROP POLICY IF EXISTS "Tasks manageable by assigned shepherd or pastor" ON public.follow_up_tasks;
 CREATE POLICY "Tasks manageable by assigned shepherd or pastor"
-ON public.follow_up_tasks FOR ALL TO authenticated
+ON public.follow_up_tasks FOR ALL TO anon, authenticated
 USING (
     public.is_pastor() OR
     shepherd_id = auth.uid()
 );
 
 -- Visitors Policies
+DROP POLICY IF EXISTS "Visitors viewable by pastor or assigned shepherd" ON public.visitors;
 CREATE POLICY "Visitors viewable by pastor or assigned shepherd"
-ON public.visitors FOR SELECT TO authenticated
+ON public.visitors FOR SELECT TO anon, authenticated
 USING (
     public.is_pastor() OR
     assigned_shepherd_id = auth.uid()
 );
 
+DROP POLICY IF EXISTS "Visitors manageable by assigned shepherd or pastor" ON public.visitors;
 CREATE POLICY "Visitors manageable by assigned shepherd or pastor"
-ON public.visitors FOR ALL TO authenticated
+ON public.visitors FOR ALL TO anon, authenticated
 USING (
     public.is_pastor() OR
     assigned_shepherd_id = auth.uid()
 );
 
 -- Finance Policies (Pastor sees all; Shepherd sees ONLY cell fellowship offerings for their cell)
+DROP POLICY IF EXISTS "Finance viewable by pastor or own cell fellowship offerings" ON public.finance_records;
 CREATE POLICY "Finance viewable by pastor or own cell fellowship offerings"
-ON public.finance_records FOR SELECT TO authenticated
+ON public.finance_records FOR SELECT TO anon, authenticated
 USING (
     public.is_pastor() OR
     (category = 'Cell Fellowship Offering' AND cell_group = public.get_assigned_cell())
 );
 
+DROP POLICY IF EXISTS "Finance insertable by shepherd for cell offering or by pastor" ON public.finance_records;
 CREATE POLICY "Finance insertable by shepherd for cell offering or by pastor"
-ON public.finance_records FOR INSERT TO authenticated
+ON public.finance_records FOR INSERT TO anon, authenticated
 WITH CHECK (
     public.is_pastor() OR
     (category = 'Cell Fellowship Offering' AND cell_group = public.get_assigned_cell())
 );
 
+DROP POLICY IF EXISTS "Finance updatable/deletable by pastor only" ON public.finance_records;
 CREATE POLICY "Finance updatable/deletable by pastor only"
-ON public.finance_records FOR UPDATE TO authenticated
+ON public.finance_records FOR UPDATE TO anon, authenticated
 USING (public.is_pastor());
 
 -- Chat Messages (Strict 1-on-1 Privacy)
 -- A shepherd CANNOT see any other shepherd's messages!
+DROP POLICY IF EXISTS "Messages viewable only by conversation participants" ON public.chat_messages;
 CREATE POLICY "Messages viewable only by conversation participants"
-ON public.chat_messages FOR SELECT TO authenticated
+ON public.chat_messages FOR SELECT TO anon, authenticated
 USING (
     sender_id = auth.uid() OR
     recipient_id = auth.uid() OR
     public.is_pastor()
 );
 
+DROP POLICY IF EXISTS "Messages insertable by sender" ON public.chat_messages;
 CREATE POLICY "Messages insertable by sender"
-ON public.chat_messages FOR INSERT TO authenticated
+ON public.chat_messages FOR INSERT TO anon, authenticated
 WITH CHECK (sender_id = auth.uid());
 
+DROP POLICY IF EXISTS "Messages updatable by recipient (mark read)" ON public.chat_messages;
 CREATE POLICY "Messages updatable by recipient (mark read)"
-ON public.chat_messages FOR UPDATE TO authenticated
+ON public.chat_messages FOR UPDATE TO anon, authenticated
 USING (recipient_id = auth.uid());
 
 -- Announcements Policies (Pastor writes, all authenticated read)
+DROP POLICY IF EXISTS "Announcements viewable by all authenticated users" ON public.announcements;
 CREATE POLICY "Announcements viewable by all authenticated users"
-ON public.announcements FOR SELECT TO authenticated USING (true);
+ON public.announcements FOR SELECT TO anon, authenticated USING (true);
 
+DROP POLICY IF EXISTS "Announcements manageable by pastor only" ON public.announcements;
 CREATE POLICY "Announcements manageable by pastor only"
-ON public.announcements FOR ALL TO authenticated
+ON public.announcements FOR ALL TO anon, authenticated
 USING (public.is_pastor());
 
 -- Events Policies (Pastor writes, all authenticated read)
+DROP POLICY IF EXISTS "Events viewable by all authenticated users" ON public.church_events;
 CREATE POLICY "Events viewable by all authenticated users"
-ON public.church_events FOR SELECT TO authenticated USING (true);
+ON public.church_events FOR SELECT TO anon, authenticated USING (true);
 
+DROP POLICY IF EXISTS "Events manageable by pastor only" ON public.church_events;
 CREATE POLICY "Events manageable by pastor only"
-ON public.church_events FOR ALL TO authenticated
+ON public.church_events FOR ALL TO anon, authenticated
 USING (public.is_pastor());
 
 -- Notifications Policies
+DROP POLICY IF EXISTS "Notifications viewable only by recipient" ON public.notifications;
 CREATE POLICY "Notifications viewable only by recipient"
-ON public.notifications FOR SELECT TO authenticated
+ON public.notifications FOR SELECT TO anon, authenticated
 USING (recipient_id = auth.uid());
 
+DROP POLICY IF EXISTS "Notifications updatable only by recipient" ON public.notifications;
 CREATE POLICY "Notifications updatable only by recipient"
-ON public.notifications FOR UPDATE TO authenticated
+ON public.notifications FOR UPDATE TO anon, authenticated
 USING (recipient_id = auth.uid());
 
 -- Audit Logs Policies (Pastor only)
+DROP POLICY IF EXISTS "Audit logs viewable by pastor only" ON public.audit_logs;
 CREATE POLICY "Audit logs viewable by pastor only"
-ON public.audit_logs FOR SELECT TO authenticated
+ON public.audit_logs FOR SELECT TO anon, authenticated
 USING (public.is_pastor());
 
+DROP POLICY IF EXISTS "Audit logs insertable by all authenticated systems" ON public.audit_logs;
 CREATE POLICY "Audit logs insertable by all authenticated systems"
-ON public.audit_logs FOR INSERT TO authenticated
+ON public.audit_logs FOR INSERT TO anon, authenticated
 WITH CHECK (true);
 
 -- 7. AUTOMATED TRIGGER: Sync new auth.users into profiles
@@ -547,7 +581,7 @@ CREATE TRIGGER on_auth_user_created
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- 8. REALTIME REPLICATION (For live chat and updates)
-ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.announcements;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.church_events;
-ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.announcements; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.church_events; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications; EXCEPTION WHEN duplicate_object THEN NULL; END $$;

@@ -17,7 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   showAddPerson = false,
   onToggleMobileMenu
 }) => {
-  const { currentUser, visibleNotifications, markNotificationRead } = useCMS();
+  const { currentUser, visibleNotifications, markNotificationRead, isCloudConnected } = useCMS();
   const [showNotifMenu, setShowNotifMenu] = useState(false);
 
   const unreadCount = visibleNotifications.filter((n) => !n.read).length;
@@ -47,6 +47,23 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       <div className="flex items-center gap-3">
+        {/* Supabase Cloud Live Status */}
+        <span
+          className={`hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-extrabold ${
+            isCloudConnected
+              ? 'bg-[#043621] text-[#00ff9d]'
+              : 'bg-[#111d44] text-[#a6c4eb]'
+          }`}
+          title={isCloudConnected ? 'Connected to live Supabase PostgreSQL database' : 'Running in local cache mode'}
+        >
+          <span
+            className={`w-1.5 h-1.5 ${
+              isCloudConnected ? 'bg-[#00ff9d] animate-pulse' : 'bg-[#a6c4eb]'
+            }`}
+          />
+          <span>{isCloudConnected ? 'Supabase Live' : 'Local Mode'}</span>
+        </span>
+
         {/* '+ Add Person' Button only visible on relevant pages */}
         {showAddPerson && (
           <button

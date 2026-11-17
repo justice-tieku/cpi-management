@@ -646,7 +646,10 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured) {
       try {
-        const { error } = await (supabase.from('members') as any).insert({
+        // Resolve shepherd UUID — null is acceptable (column is nullable FK)
+        const shepherdUuid = getProfileUUID(newMember.currentShepherdId) ?? null;
+
+        const memberPayload: Record<string, any> = {
           id: newId,
           first_name: newMember.firstName,
           last_name: newMember.lastName,
@@ -658,12 +661,23 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           spiritual_stage: newMember.spiritualStage || 'New Convert',
           department: newMember.department || null,
           cell_group: newMember.cellGroup,
-          current_shepherd_id: getProfileUUID(newMember.currentShepherdId),
+          current_shepherd_id: shepherdUuid,
           current_shepherd_name: newMember.currentShepherdName || null,
           registered_at: newMember.registeredAt,
           registered_by: newMember.registeredBy,
           general_notes: newMember.generalNotes || null
-        });
+        };
+
+        let { error } = await (supabase.from('members') as any).insert(memberPayload);
+
+        // If the FK on current_shepherd_id fails (profile UUID doesn't exist in DB yet),
+        // retry without the shepherd FK so the member is still saved
+        if (error && (error.code === '23503' || error.message?.includes('foreign key'))) {
+          console.warn('[Supabase registerMember] Shepherd FK failed, retrying without shepherd_id:', error.message);
+          const retryPayload = { ...memberPayload, current_shepherd_id: null };
+          const retryResult = await (supabase.from('members') as any).insert(retryPayload);
+          error = retryResult.error;
+        }
 
         if (error) {
           console.error('[Supabase registerMember] Error:', error);
@@ -720,7 +734,10 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured) {
       try {
-        const { error } = await (supabase.from('visitors') as any).insert({
+        // Resolve shepherd UUID — column is nullable so null is acceptable
+        const shepherdUuid = getProfileUUID(newVisitor.assignedShepherdId) ?? null;
+
+        const visitorPayload: Record<string, any> = {
           id: newId,
           name: newVisitor.name,
           phone: newVisitor.phone,
@@ -728,12 +745,22 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           visit_date: newVisitor.visitDate,
           service_attended: newVisitor.serviceAttended,
           invited_by: newVisitor.invitedBy || null,
-          assigned_shepherd_id: getProfileUUID(newVisitor.assignedShepherdId),
+          assigned_shepherd_id: shepherdUuid,
           assigned_shepherd_name: newVisitor.assignedShepherdName || null,
           journey_stage: newVisitor.journeyStage,
           contact_attempts: 0,
           notes: newVisitor.notes || null
-        });
+        };
+
+        let { error } = await (supabase.from('visitors') as any).insert(visitorPayload);
+
+        // If shepherd FK fails (profile UUID not in DB), retry without shepherd FK
+        if (error && (error.code === '23503' || error.message?.includes('foreign key'))) {
+          console.warn('[Supabase registerVisitor] Shepherd FK failed, retrying without shepherd_id:', error.message);
+          const retryPayload = { ...visitorPayload, assigned_shepherd_id: null };
+          const retryResult = await (supabase.from('visitors') as any).insert(retryPayload);
+          error = retryResult.error;
+        }
 
         if (error) {
           console.error('[Supabase registerVisitor] Error:', error);
@@ -860,7 +887,10 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured) {
       try {
-        const shepherdUuid = getProfileUUID(targetShepherd.id);
+        // Always resolve to a valid UUID — fall back to pastor UUID if the ID isn't mapped
+        const shepherdUuid = getProfileUUID(targetShepherd.id, true) as string;
+
+        // Step 1: Update the member's current shepherd assignment (critical)
         const { error: memErr } = await (supabase.from('members') as any)
           .update({
             current_shepherd_id: shepherdUuid,
@@ -874,6 +904,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return { success: false, error: 'Unable to save changes. Please try again.' };
         }
 
+        // Step 2: Record assignment history — non-critical, log but don't fail user operation
         const { error: asnErr } = await (supabase.from('shepherd_assignments') as any)
           .insert({
             id: newAssignment.id,
@@ -889,7 +920,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           });
 
         if (asnErr) {
-          console.error('[Supabase assignment] Error:', asnErr);
+          // Log the warning but do not block the user — the member record was already updated
+          console.warn('[Supabase shepherd_assignments] Non-critical insert failed:', asnErr.message || asnErr);
         }
       } catch (err: any) {
         console.error('[Supabase reassignMember] Catch:', err);

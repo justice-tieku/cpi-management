@@ -671,10 +671,6 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                 />
               </div>
 
-              <div className="p-3 bg-[#072e54] text-[11px] text-[#00f0ff] leading-relaxed">
-                When confirmed, the recipient shepherd will receive an automatic notification on their dashboard and navbar bell with the new member details.
-              </div>
-
               {reassignError && (
                 <div className="p-3 bg-[#38141e] text-[#ff6b8b] text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />

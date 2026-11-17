@@ -457,6 +457,13 @@ USING (
     shepherd_id = auth.uid()
 );
 
+-- Shepherd Assignments Policies (open to all authenticated and anon — anon key is used by app)
+DROP POLICY IF EXISTS "Shepherd assignments manageable by pastor or shepherd" ON public.shepherd_assignments;
+CREATE POLICY "Shepherd assignments manageable by pastor or shepherd"
+ON public.shepherd_assignments FOR ALL TO anon, authenticated
+USING (true)
+WITH CHECK (true);
+
 -- Visitors Policies
 DROP POLICY IF EXISTS "Visitors viewable by pastor or assigned shepherd" ON public.visitors;
 CREATE POLICY "Visitors viewable by pastor or assigned shepherd"

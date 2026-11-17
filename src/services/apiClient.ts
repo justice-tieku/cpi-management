@@ -84,6 +84,22 @@ export const apiClient = {
   },
 
   /**
+   * Apply missing database RLS policies (idempotent — safe to call multiple times)
+   */
+  async applyRlsMigrations() {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/apply-rls-migrations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      return await res.json();
+    } catch (err) {
+      console.warn('[CPI Backend API] RLS migration call failed (non-critical):', err);
+      return { success: false };
+    }
+  },
+
+  /**
    * Pastor creates a new Cell Shepherd account with custom personal email & password
    */
   async createShepherd(payload: {

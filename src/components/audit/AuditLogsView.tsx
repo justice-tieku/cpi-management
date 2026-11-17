@@ -2,12 +2,7 @@ import React, { useState } from 'react';
 import {
   ShieldCheck,
   Search,
-  Filter,
-  Lock,
-  Download,
-  Clock,
-  User,
-  Activity
+  Download
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 
@@ -21,6 +16,21 @@ export const AuditLogsView: React.FC = () => {
       l.action.toLowerCase().includes(searchTerm.toLowerCase()) ||
       l.details.toLowerCase().includes(searchTerm.toLowerCase())
   );
+
+  const handleExport = () => {
+    if (auditLogs.length === 0) {
+      alert('There is no audit data to export.');
+      return;
+    }
+    const json = JSON.stringify(auditLogs, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cpi-audit-log-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="p-8 space-y-6 max-w-7xl mx-auto">
@@ -36,7 +46,7 @@ export const AuditLogsView: React.FC = () => {
         </div>
 
         <button
-          onClick={() => alert('Exporting cryptographic audit log signature...')}
+          onClick={handleExport}
           className="px-3.5 py-2 bg-[#111d44] hover:bg-[#16285a] text-xs text-slate-300 flex items-center gap-2 cursor-pointer transition-colors"
         >
           <Download className="w-3.5 h-3.5 text-[#00f0ff]" />
@@ -79,40 +89,38 @@ export const AuditLogsView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-xs">
-              {filteredLogs.map((log) => (
-                <tr key={log.id} className="hover:bg-[#16285a]/40 transition-colors font-mono">
               {filteredLogs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-[#7b9dc7] text-xs">
-                    No data recorded yet
+                    {searchTerm ? 'No matching audit events found.' : 'No audit events recorded yet.'}
                   </td>
                 </tr>
               ) : (
                 filteredLogs.map((log) => (
                   <tr key={log.id} className="hover:bg-[#16285a]/40 transition-colors font-mono">
-                  <td className="py-3 px-4 text-slate-400 text-[11px]">
-                    {log.timestamp}
-                  </td>
-                  <td className="py-3 px-4 font-sans font-semibold text-white">
-                    {log.actorName}
-                    <span className="block text-[10px] font-mono text-[#00f0ff] font-normal">
-                      {log.actorRole}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4">
-                    <span className="px-2 py-0.5 bg-[#072e54] text-[#00f0ff] text-[10px] font-semibold">
-                      {log.action}
-                    </span>
-                  </td>
-                  <td className="py-3 px-4 text-slate-300 text-[11px]">
-                    {log.entityType} ({log.entityId})
-                  </td>
-                  <td className="py-3 px-4 font-sans text-slate-300 text-xs">
-                    {log.details}
-                  </td>
-                </tr>
-              ))}
-              )))}
+                    <td className="py-3 px-4 text-slate-400 text-[11px]">
+                      {log.timestamp}
+                    </td>
+                    <td className="py-3 px-4 font-sans font-semibold text-white">
+                      {log.actorName}
+                      <span className="block text-[10px] font-mono text-[#00f0ff] font-normal">
+                        {log.actorRole}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="px-2 py-0.5 bg-[#072e54] text-[#00f0ff] text-[10px] font-semibold">
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-slate-300 text-[11px]">
+                      {log.entityType} ({log.entityId})
+                    </td>
+                    <td className="py-3 px-4 font-sans text-slate-300 text-xs">
+                      {log.details}
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -122,5 +130,3 @@ export const AuditLogsView: React.FC = () => {
 };
 
 export default AuditLogsView;
-
-

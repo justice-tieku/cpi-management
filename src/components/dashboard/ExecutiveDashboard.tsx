@@ -354,7 +354,7 @@ export const ExecutiveDashboard: React.FC = () => {
                 <div className="bg-[#0a122e] divide-y divide-[#16285a]">
                   {selectedShepherdMembers.length === 0 ? (
                     <div className="p-4 text-xs text-[#a6c4eb] text-center">
-                      No members assigned to this cell yet.
+                      No data recorded yet
                     </div>
                   ) : (
                     selectedShepherdMembers.map((m) => (
@@ -387,7 +387,7 @@ export const ExecutiveDashboard: React.FC = () => {
                 <div className="bg-[#0a122e] divide-y divide-[#16285a]">
                   {selectedShepherdMeetings.length === 0 ? (
                     <div className="p-4 text-xs text-[#a6c4eb] text-center">
-                      No cell meetings recorded by this shepherd yet.
+                      No data recorded yet
                     </div>
                   ) : (
                     selectedShepherdMeetings.map((cm) => (
@@ -416,7 +416,7 @@ export const ExecutiveDashboard: React.FC = () => {
                 <div className="bg-[#0a122e] divide-y divide-[#16285a]">
                   {selectedShepherdTasks.length === 0 ? (
                     <div className="p-4 text-xs text-[#a6c4eb] text-center">
-                      No follow-up tasks recorded.
+                      No data recorded yet
                     </div>
                   ) : (
                     selectedShepherdTasks.map((t) => (

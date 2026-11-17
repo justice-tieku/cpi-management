@@ -224,7 +224,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
 
             {visibleCellMeetings.length === 0 ? (
               <div className="py-8 text-center text-[#a6c4eb] text-xs">
-                No cell meetings recorded yet. Go to <strong className="text-[#00f0ff]">Cell Meetings</strong> to record your first session.
+                No data recorded yet
               </div>
             ) : (
               <div className="space-y-2.5">
@@ -283,36 +283,44 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#16285a]">
-                  {visibleMembers.map((m) => {
-                    const record = visibleAttendance.find((a) => a.memberId === m.id);
-                    const isPresent = record?.status === 'Present';
-                    return (
-                      <tr key={m.id} className="hover:bg-[#16285a] transition-colors">
-                        <td className="py-2.5 px-3 font-bold text-white">
-                          {m.firstName} {m.lastName}
-                        </td>
-                        <td className="py-2.5 px-3 text-slate-300 font-mono">
-                          {m.phone}
-                        </td>
-                        <td className="py-2.5 px-3">
-                          <span className="px-2 py-0.5 text-[10px] bg-[#16285a] text-[#00f0ff] font-semibold">
-                            {m.spiritualStage}
-                          </span>
-                        </td>
-                        <td className="py-2.5 px-3 text-right">
-                          <span
-                            className={`px-2 py-0.5  text-[10px] font-bold ${
-                              isPresent
-                                ? 'bg-[#043621] text-[#00ff9d]'
-                                : 'bg-[#38141e] text-[#ff6b8b]'
-                            }`}
-                          >
-                            {record?.status || 'Not Checked'}
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
+                  {visibleMembers.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="py-8 text-center text-[#a6c4eb] text-xs">
+                        No data recorded yet
+                      </td>
+                    </tr>
+                  ) : (
+                    visibleMembers.map((m) => {
+                      const record = visibleAttendance.find((a) => a.memberId === m.id);
+                      const isPresent = record?.status === 'Present';
+                      return (
+                        <tr key={m.id} className="hover:bg-[#16285a] transition-colors">
+                          <td className="py-2.5 px-3 font-bold text-white">
+                            {m.firstName} {m.lastName}
+                          </td>
+                          <td className="py-2.5 px-3 text-slate-300 font-mono">
+                            {m.phone}
+                          </td>
+                          <td className="py-2.5 px-3">
+                            <span className="px-2 py-0.5 text-[10px] bg-[#16285a] text-[#00f0ff] font-semibold">
+                              {m.spiritualStage}
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-right">
+                            <span
+                              className={`px-2 py-0.5  text-[10px] font-bold ${
+                                isPresent
+                                  ? 'bg-[#043621] text-[#00ff9d]'
+                                  : 'bg-[#38141e] text-[#ff6b8b]'
+                              }`}
+                            >
+                              {record?.status || 'Not Checked'}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
                 </tbody>
               </table>
             </div>
@@ -377,7 +385,12 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
               Quick Member Contact
             </h3>
             <div className="space-y-2 max-h-56 overflow-y-auto">
-              {visibleMembers.map((m) => (
+              {visibleMembers.length === 0 ? (
+                <div className="py-4 text-center text-[#a6c4eb] text-xs">
+                  No data recorded yet
+                </div>
+              ) : (
+                visibleMembers.map((m) => (
                 <div
                   key={m.id}
                   className="p-3 bg-[#0a122e] flex items-center justify-between gap-2 text-xs"
@@ -405,7 +418,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
                     </a>
                   </div>
                 </div>
-              ))}
+              )))}
             </div>
           </div>
         </div>

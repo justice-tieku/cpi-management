@@ -570,7 +570,13 @@ BEGIN
         COALESCE(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
         COALESCE((new.raw_user_meta_data->>'role')::user_role, 'shepherd'),
         new.raw_user_meta_data->>'assigned_cell'
-    );
+    )
+    ON CONFLICT (email) DO UPDATE SET
+        id = EXCLUDED.id,
+        name = COALESCE(EXCLUDED.name, public.profiles.name),
+        role = COALESCE(EXCLUDED.role, public.profiles.role),
+        assigned_cell = COALESCE(EXCLUDED.assigned_cell, public.profiles.assigned_cell),
+        updated_at = timezone('utc', now());
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

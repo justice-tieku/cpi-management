@@ -23,6 +23,7 @@ export const CellMeetingsView: React.FC = () => {
 
   const [showForm, setShowForm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [form, setForm] = useState({
     date: new Date().toISOString().split('T')[0],
     topic: '',
@@ -39,35 +40,46 @@ export const CellMeetingsView: React.FC = () => {
   const avgAttendees =
     totalMeetings > 0 ? Math.round(totalAttendees / totalMeetings) : 0;
 
-  const handleSubmit = () => {
-    if (!form.topic.trim()) {
-      setError('Please enter a meeting topic.');
+  const handleSubmit = async () => {
+    if (!form.topic.trim() || !form.attendeesCount) {
+      setError('Please enter the required information.');
       return;
     }
-    if (!form.attendeesCount || isNaN(Number(form.attendeesCount))) {
+    if (isNaN(Number(form.attendeesCount))) {
       setError('Please enter a valid attendees count.');
       return;
     }
     setError('');
+    setIsSubmitting(true);
 
-    recordCellMeeting({
-      date: form.date,
-      topic: form.topic.trim(),
-      attendeesCount: Number(form.attendeesCount),
-      offeringAmount: Number(form.offeringAmount) || 0,
-      notes: form.notes.trim()
-    });
+    try {
+      const result = await recordCellMeeting({
+        date: form.date,
+        topic: form.topic.trim(),
+        attendeesCount: Number(form.attendeesCount),
+        offeringAmount: Number(form.offeringAmount) || 0,
+        notes: form.notes.trim()
+      });
 
-    setForm({
-      date: new Date().toISOString().split('T')[0],
-      topic: '',
-      attendeesCount: '',
-      offeringAmount: '',
-      notes: ''
-    });
-    setSubmitted(true);
-    setShowForm(false);
-    setTimeout(() => setSubmitted(false), 4000);
+      if (result.success) {
+        setForm({
+          date: new Date().toISOString().split('T')[0],
+          topic: '',
+          attendeesCount: '',
+          offeringAmount: '',
+          notes: ''
+        });
+        setSubmitted(true);
+        setShowForm(false);
+        setTimeout(() => setSubmitted(false), 4000);
+      } else {
+        setError(result.error || 'Unable to save the record. Please try again.');
+      }
+    } catch (err: any) {
+      setError('Unable to save the record. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -166,10 +178,7 @@ export const CellMeetingsView: React.FC = () => {
         {visibleCellMeetings.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-[#7b9dc7]">
             <BookOpen className="w-8 h-8 mb-2 opacity-40" />
-            <p className="text-sm">No cell meetings recorded yet.</p>
-            {!isPastor && (
-              <p className="text-xs mt-1">Click "Record Meeting" to add the first entry.</p>
-            )}
+            <p className="text-sm">No data recorded yet</p>
           </div>
         ) : (
           <div className="divide-y divide-[#16285a]">
@@ -331,10 +340,11 @@ export const CellMeetingsView: React.FC = () => {
               </button>
               <button
                 onClick={handleSubmit}
-                className="flex items-center gap-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold px-5 py-2 transition-colors"
+                disabled={isSubmitting}
+                className="flex items-center gap-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold px-5 py-2 transition-colors disabled:opacity-50"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                Save Meeting Record
+                <span>{isSubmitting ? 'Saving...' : 'Save Meeting Record'}</span>
               </button>
             </div>
           </div>

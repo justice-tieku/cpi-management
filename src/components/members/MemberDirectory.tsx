@@ -160,7 +160,14 @@ export const MemberDirectory: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-[#16285a]">
-              {filteredMembers.map((member) => (
+              {filteredMembers.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-[#a6c4eb] text-sm">
+                    No data recorded yet
+                  </td>
+                </tr>
+              ) : (
+                filteredMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-[#16285a] transition-colors">
                   <td className="py-3 px-4">
                     <p className="font-bold text-white">
@@ -259,7 +266,7 @@ export const MemberDirectory: React.FC = () => {
                     </div>
                   </td>
                 </tr>
-              ))}
+              )))}
             </tbody>
           </table>
         </div>

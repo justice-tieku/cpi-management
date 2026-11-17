@@ -167,7 +167,7 @@ export const FirstTimersTracking: React.FC = () => {
       <div className="space-y-3">
         {filteredVisitors.length === 0 ? (
           <div className="p-8 text-center text-[#7b9dc7] text-xs bg-[#111d44]">
-            No guests found matching your filter criteria.
+            No data recorded yet
           </div>
         ) : (
           filteredVisitors.map((v) => (

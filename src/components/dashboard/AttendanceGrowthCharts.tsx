@@ -157,7 +157,13 @@ export const AttendanceGrowthCharts: React.FC = () => {
         })}
       </div>
 
-      {/* ── TAB 1: ATTENDANCE ── */}
+      {members.length === 0 ? (
+        <div className="py-16 text-center text-[#a6c4eb] text-sm">
+          No data recorded yet
+        </div>
+      ) : (
+        <>
+          {/* ── TAB 1: ATTENDANCE ── */}
       {activeTab === 'attendance' && (
         <div className="p-5 space-y-5">
           {/* Legend */}
@@ -452,6 +458,8 @@ export const AttendanceGrowthCharts: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

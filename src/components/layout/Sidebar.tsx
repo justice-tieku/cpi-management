@@ -66,7 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'shepherds' as ActiveScreen,
-      label: 'Shepherds & Cells',
+      label: 'Shepherds',
       icon: UserCheck,
       roles: ['pastor']
     },
@@ -169,7 +169,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         {/* Current User Badge in Sidebar */}
         <div className="mx-3 mt-3 px-3 py-2 bg-[#111d44] shadow-sm">
           <p className="text-[10px] uppercase font-bold text-[#00f0ff] tracking-wider">
-            {isPastor ? 'Pastor' : 'Cell Shepherd'}
+            {isPastor ? 'Pastor' : 'Shepherd'}
           </p>
           <p className="text-xs font-bold text-white truncate mt-0.5">{currentUser.name}</p>
           {!isPastor && currentUser.assignedCell && (

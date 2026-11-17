@@ -66,9 +66,14 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
     setIsSubmitting(true);
 
     try {
+      const cleanEmail = email.trim().toLowerCase();
+      const isDesignatedPastor =
+        cleanEmail === 'crosspassioninternational67@gmail.com' &&
+        password === 'CrossPassion@99';
+
       // 1. Attempt Supabase Auth login
       let authRes = await supabase.auth.signInWithPassword({
-        email: email.trim(),
+        email: cleanEmail,
         password: password
       });
 
@@ -77,7 +82,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
         try {
           await apiClient.setupInitialUsers();
           authRes = await supabase.auth.signInWithPassword({
-            email: email.trim(),
+            email: cleanEmail,
             password: password
           });
         } catch {
@@ -87,10 +92,12 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
 
       if (authRes.error) {
         // Fallback for offline / emergency login with designated credentials
-        if (
-          email.trim().toLowerCase() === 'crosspassioninternational67@gmail.com' &&
-          password === 'CrossPassion@99'
-        ) {
+        if (isDesignatedPastor) {
+          if (role !== 'pastor') {
+            setIsSubmitting(false);
+            setError('Invalid login credentials.');
+            return;
+          }
           setIsSubmitting(false);
           onSuccess?.('pastor', {
             id: 'USR-PASTOR-01',
@@ -100,7 +107,9 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
           return;
         }
 
-        throw authRes.error;
+        setError('Invalid login credentials.');
+        setIsSubmitting(false);
+        return;
       }
 
       const user = authRes.data.user;
@@ -113,32 +122,54 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
         .maybeSingle();
 
       const profileData = profile as any;
-      const resolvedRole: ServiceRole =
-        (profileData?.role as ServiceRole) ||
-        (user.user_metadata?.role as ServiceRole) ||
-        role;
+      const userMeta = user.user_metadata || {};
+
+      // Determine true role: pastor only if designated email or role explicitly set to pastor
+      const isPastorUser =
+        cleanEmail === 'crosspassioninternational67@gmail.com' ||
+        profileData?.role === 'pastor' ||
+        userMeta?.role === 'pastor';
+
+      const resolvedRole: ServiceRole = isPastorUser ? 'pastor' : 'shepherd';
+
+      // STRICT TAB ROLE ENFORCEMENT:
+      // If user selected 'pastor' tab, but is not a pastor:
+      if (role === 'pastor' && resolvedRole !== 'pastor') {
+        await supabase.auth.signOut();
+        setIsSubmitting(false);
+        setError('Invalid login credentials.');
+        return;
+      }
+
+      // If user selected 'shepherd' tab, but is a pastor:
+      if (role === 'shepherd' && resolvedRole === 'pastor') {
+        await supabase.auth.signOut();
+        setIsSubmitting(false);
+        setError('Invalid login credentials.');
+        return;
+      }
 
       const resolvedName =
         profileData?.name ||
-        user.user_metadata?.name ||
-        (resolvedRole === 'pastor' ? 'Senior Pastor' : 'Cell Shepherd');
+        userMeta?.name ||
+        (resolvedRole === 'pastor' ? 'Senior Pastor' : 'Shepherd');
 
       const resolvedCell =
         profileData?.assigned_cell ||
-        user.user_metadata?.assigned_cell ||
+        userMeta?.assigned_cell ||
         'Care Cell';
 
       setIsSubmitting(false);
       onSuccess?.(resolvedRole, {
         id: user.id,
         name: resolvedName,
-        email: user.email || email.trim(),
+        email: user.email || cleanEmail,
         assignedCell: resolvedCell
       });
     } catch (err: any) {
       setIsSubmitting(false);
       console.error('Sign in error:', err);
-      setError('Request unsuccessful. Please try again.');
+      setError('Invalid login credentials.');
     }
   };
 
@@ -165,7 +196,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
       });
     } catch (err: any) {
       setForgotStatus({
-        message: err.message || 'Failed to send reset link. Please contact church secretariat.',
+        message: 'Request unsuccessful. Please try again.',
         isError: true
       });
     } finally {
@@ -202,7 +233,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
                   Sign In
                 </h2>
                 <p className="text-xs text-[#a6c4eb] mt-1">
-                  Access ministerial records, cell attendance & follow-up care
+                  Access ministerial records, attendance & follow-up care
                 </p>
               </div>
 
@@ -230,7 +261,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
                   }`}
                 >
                   <Users className="w-3.5 h-3.5" />
-                  <span>Cell Shepherd</span>
+                  <span>Shepherd</span>
                 </button>
               </div>
 

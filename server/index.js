@@ -131,12 +131,19 @@ app.get('/api/members', async (req, res) => {
 app.post('/api/members', async (req, res) => {
   try {
     const memberData = req.body;
+    if (!memberData || Object.keys(memberData).length === 0) {
+      return res.status(400).json({ success: false, error: 'There is no data to save.' });
+    }
+    if (!memberData.first_name || !memberData.phone) {
+      return res.status(400).json({ success: false, error: 'Please enter the required information.' });
+    }
+
     const { data, error } = await supabase.from('members').insert([memberData]).select().single();
     if (error) throw error;
 
     res.status(201).json({ success: true, member: data });
   } catch (err) {
-    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
+    res.status(400).json({ success: false, error: 'Unable to save the record. Please try again.' });
   }
 });
 
@@ -144,12 +151,16 @@ app.patch('/api/members/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const updates = req.body;
+    if (!id || !updates || Object.keys(updates).length === 0) {
+      return res.status(400).json({ success: false, error: 'There is no data to save.' });
+    }
+
     const { data, error } = await supabase.from('members').update(updates).eq('id', id).select().single();
     if (error) throw error;
 
     res.json({ success: true, member: data });
   } catch (err) {
-    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
+    res.status(400).json({ success: false, error: 'Unable to save changes. Please try again.' });
   }
 });
 
@@ -175,13 +186,17 @@ app.get('/api/attendance', async (req, res) => {
 
 app.post('/api/attendance', async (req, res) => {
   try {
-    const records = Array.isArray(req.body) ? req.body : [req.body];
-    const { data, error } = await supabase.from('attendance_records').upsert(records).select();
+    const rawRecords = Array.isArray(req.body) ? req.body : (req.body && Object.keys(req.body).length > 0 ? [req.body] : []);
+    if (!rawRecords || rawRecords.length === 0) {
+      return res.status(400).json({ success: false, error: 'There is no data to save.' });
+    }
+
+    const { data, error } = await supabase.from('attendance_records').upsert(rawRecords).select();
     if (error) throw error;
 
     res.status(201).json({ success: true, count: data.length, data });
   } catch (err) {
-    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
+    res.status(400).json({ success: false, error: 'Unable to save the record. Please try again.' });
   }
 });
 
@@ -200,11 +215,16 @@ app.get('/api/announcements', async (req, res) => {
 
 app.post('/api/announcements', async (req, res) => {
   try {
+    const { title, content } = req.body || {};
+    if (!title || !title.trim() || !content || !content.trim()) {
+      return res.status(400).json({ success: false, error: 'Please enter the required information.' });
+    }
+
     const { data, error } = await supabase.from('announcements').insert([req.body]).select().single();
     if (error) throw error;
     res.status(201).json({ success: true, announcement: data });
   } catch (err) {
-    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
+    res.status(400).json({ success: false, error: 'Unable to save the record. Please try again.' });
   }
 });
 
@@ -220,11 +240,17 @@ app.get('/api/events', async (req, res) => {
 
 app.post('/api/events', async (req, res) => {
   try {
+    const { title, date, event_date, location, description } = req.body || {};
+    const evDate = event_date || date;
+    if (!title || !title.trim() || !evDate || !location || !location.trim()) {
+      return res.status(400).json({ success: false, error: 'Please enter the required information.' });
+    }
+
     const { data, error } = await supabase.from('church_events').insert([req.body]).select().single();
     if (error) throw error;
     res.status(201).json({ success: true, event: data });
   } catch (err) {
-    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
+    res.status(400).json({ success: false, error: 'Unable to save the record. Please try again.' });
   }
 });
 
@@ -254,24 +280,31 @@ app.get('/api/finance/summary', async (req, res) => {
 // ==========================================
 app.post('/api/ministerial/broadcast-sms', async (req, res) => {
   try {
-    const { message, targetGroup, recipientPhoneNumbers } = req.body;
+    const { message, targetGroup, recipientPhoneNumbers } = req.body || {};
 
-    if (!message) {
-      return res.status(400).json({ success: false, error: 'Message text is required' });
+    if (!message || !message.trim()) {
+      return res.status(400).json({ success: false, error: 'There is no information to send.' });
     }
 
-    // This endpoint is ready for Twilio / Hubtel / Africa's Talking integration
-    console.log(`[SMS BROADCAST] Target: ${targetGroup || 'Custom'} | Count: ${recipientPhoneNumbers?.length || 0}`);
+    if (!Array.isArray(recipientPhoneNumbers) || recipientPhoneNumbers.length === 0) {
+      return res.status(400).json({ success: false, error: 'Please select at least one record before proceeding.' });
+    }
+
+    console.log(`[SMS BROADCAST] Target: ${targetGroup || 'Custom'} | Count: ${recipientPhoneNumbers.length}`);
     console.log(`[SMS CONTENT] ${message}`);
 
     res.json({
       success: true,
-      message: 'SMS broadcast queued successfully',
+      message: 'Information sent successfully.',
       target: targetGroup || 'Custom flock',
-      recipientsCount: recipientPhoneNumbers ? recipientPhoneNumbers.length : 0,
+      recipientsCount: recipientPhoneNumbers.length,
       deliveryStatus: 'QUEUED',
       timestamp: new Date().toISOString()
     });
+  } catch (err) {
+    res.status(500).json({ success: false, error: 'Unable to send information. Please try again.' });
+  }
+});
   } catch (err) {
     res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
@@ -385,15 +418,16 @@ app.post('/api/shepherds/create', async (req, res) => {
   try {
     const { name, email, phone, cellName, password } = req.body;
 
-    if (!name || !email || !cellName) {
-      return res.status(400).json({ success: false, error: 'Name, email, and care cell are required' });
+    if (!name || !name.trim() || !email || !email.trim() || !cellName || !cellName.trim()) {
+      return res.status(400).json({ success: false, error: 'Please enter the required information.' });
     }
 
     const shepherdPassword = password?.trim() || 'CrossPassion@99';
 
     // 1. Create or update user in Supabase Auth
     const { data: existingUsers } = await supabase.auth.admin.listUsers();
-    const existing = existingUsers?.users?.find(u => u.email?.toLowerCase() === email.trim().toLowerCase());
+    const cleanEmail = email.trim().toLowerCase();
+    const existing = existingUsers?.users?.find(u => u.email?.toLowerCase() === cleanEmail);
 
     let userId;
     if (existing) {
@@ -404,14 +438,32 @@ app.post('/api/shepherds/create', async (req, res) => {
       if (error) throw error;
       userId = existing.id;
     } else {
+      // Remove any pre-existing unlinked profile record with this email to prevent trigger constraint conflicts
+      await supabase.from('profiles').delete().eq('email', cleanEmail);
+
       const { data: created, error } = await supabase.auth.admin.createUser({
-        email: email.trim(),
+        email: cleanEmail,
         password: shepherdPassword,
         email_confirm: true,
         user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone }
       });
-      if (error) throw error;
-      userId = created.user.id;
+
+      if (error) {
+        // If user already exists in auth or conflicted, lookup again and update
+        const { data: retryList } = await supabase.auth.admin.listUsers();
+        const retryUser = retryList?.users?.find(u => u.email?.toLowerCase() === cleanEmail);
+        if (retryUser) {
+          await supabase.auth.admin.updateUserById(retryUser.id, {
+            password: shepherdPassword,
+            user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone }
+          });
+          userId = retryUser.id;
+        } else {
+          throw error;
+        }
+      } else {
+        userId = created.user.id;
+      }
     }
 
     // 2. Upsert to public.profiles

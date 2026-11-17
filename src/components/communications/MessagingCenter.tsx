@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, MessageSquare, Search, CheckCheck, Clock } from 'lucide-react';
+import { Send, MessageSquare, Search, CheckCheck, Clock, AlertCircle } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 
 export const MessagingCenter: React.FC = () => {
@@ -15,6 +15,8 @@ export const MessagingCenter: React.FC = () => {
   const [selectedConvId, setSelectedConvId] = useState<string>(conversations[0]?.id || '');
   const [draftText, setDraftText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSending, setIsSending] = useState(false);
+  const [sendNotice, setSendNotice] = useState<{ message: string; isError: boolean } | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
   const selectedConv = conversations.find((c) => c.id === selectedConvId);
@@ -45,11 +47,32 @@ export const MessagingCenter: React.FC = () => {
     });
   }, [selectedConvId, threadMessages.length]);
 
-  const handleSend = () => {
+  const handleSend = async () => {
     const text = draftText.trim();
-    if (!text || !selectedConvId) return;
-    sendMessage(selectedConvId, text);
-    setDraftText('');
+    if (!selectedConvId) {
+      setSendNotice({ message: 'Please select at least one record before proceeding.', isError: true });
+      return;
+    }
+    if (!text) {
+      setSendNotice({ message: 'There is no information to send.', isError: true });
+      return;
+    }
+
+    setSendNotice(null);
+    setIsSending(true);
+
+    try {
+      const res = await sendMessage(selectedConvId, text);
+      if (res.success) {
+        setDraftText('');
+      } else {
+        setSendNotice({ message: res.error || 'Unable to save the record. Please try again.', isError: true });
+      }
+    } catch (err: any) {
+      setSendNotice({ message: 'Unable to save the record. Please try again.', isError: true });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -186,12 +209,7 @@ export const MessagingCenter: React.FC = () => {
               {threadMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <MessageSquare className="w-10 h-10 text-slate-700 mb-3" />
-                  <p className="text-[#7b9dc7] text-sm font-medium">No messages yet</p>
-                  <p className="text-slate-600 text-xs mt-1">
-                    {isPastor
-                      ? `Send a message to ${selectedConv.name}`
-                      : 'Send a message to Pastor Adams'}
-                  </p>
+                  <p className="text-[#7b9dc7] text-sm font-medium">No data recorded yet</p>
                 </div>
               ) : (
                 threadMessages.map((msg) => {
@@ -234,6 +252,12 @@ export const MessagingCenter: React.FC = () => {
 
             {/* Message Input */}
             <div className="px-6 py-4 bg-[#0a122e]">
+              {sendNotice && (
+                <div className="mb-2 p-2.5 bg-[#38141e] text-[#ff6b8b] text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{sendNotice.message}</span>
+                </div>
+              )}
               <div className="flex items-end gap-3">
                 <textarea
                   rows={2}
@@ -249,7 +273,7 @@ export const MessagingCenter: React.FC = () => {
                 />
                 <button
                   onClick={handleSend}
-                  disabled={!draftText.trim()}
+                  disabled={!draftText.trim() || isSending}
                   className="shrink-0 w-10 h-10 bg-[#00f0ff] hover:bg-[#3bf2ff] disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center justify-center cursor-pointer"
                 >
                   <Send className="w-4 h-4 text-white" />

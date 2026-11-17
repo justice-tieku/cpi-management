@@ -37,30 +37,31 @@ interface CMSContextType {
   isCloudConnected: boolean;
   members: Member[];
   visibleMembers: Member[];
-  registerMember: (member: Omit<Member, 'id' | 'registeredAt' | 'registeredBy'>) => { success: boolean; error?: string };
-  updateMember: (memberId: string, updates: Partial<Member>) => void;
-  reassignMember: (memberId: string, newShepherdId: string, reason: string) => void;
+  registerMember: (member: Omit<Member, 'id' | 'registeredAt' | 'registeredBy'>) => Promise<{ success: boolean; error?: string; member?: Member }>;
+  updateMember: (memberId: string, updates: Partial<Member>) => Promise<{ success: boolean; error?: string }>;
+  reassignMember: (memberId: string, newShepherdId: string, reason: string) => Promise<{ success: boolean; error?: string }>;
   shepherds: { id: string; name: string; cell: string; assignedCount: number; maxCapacity: number }[];
   recordShepherdLogin: (name: string, cellName?: string) => { id: string; name: string; cell: string; email: string };
   assignmentsHistory: ShepherdAssignment[];
   attendanceRecords: AttendanceRecord[];
   visibleAttendance: AttendanceRecord[];
   updateAttendance: (recordId: string, status: AttendanceStatus) => void;
-  recordSundayAttendance: (memberId: string, status: AttendanceStatus, date?: string) => void;
+  recordSundayAttendance: (memberId: string, status: AttendanceStatus, date?: string) => Promise<{ success: boolean; error?: string }>;
+  batchSaveAttendance: (records: { memberId: string; status: AttendanceStatus; date: string }[]) => Promise<{ success: boolean; error?: string; count?: number }>;
   sundayAbsenceReports: SundayAbsenceReport[];
   visibleSundayAbsenceReports: SundayAbsenceReport[];
   redListMembers: SundayAbsenceReport[];
   criticalAbsenteeMembers: SundayAbsenceReport[];
   cellMeetings: CellMeeting[];
   visibleCellMeetings: CellMeeting[];
-  recordCellMeeting: (meeting: Omit<CellMeeting, 'id' | 'shepherdId' | 'shepherdName' | 'cellName'>) => void;
+  recordCellMeeting: (meeting: Omit<CellMeeting, 'id' | 'shepherdId' | 'shepherdName' | 'cellName'>) => Promise<{ success: boolean; error?: string }>;
   followUpTasks: FollowUpTask[];
   visibleTasks: FollowUpTask[];
-  updateTaskStatus: (taskId: string, status: FollowUpStatus, note?: string) => void;
+  updateTaskStatus: (taskId: string, status: FollowUpStatus, note?: string) => Promise<{ success: boolean; error?: string }>;
   visitors: VisitorRecord[];
   visibleVisitors: VisitorRecord[];
   shepherdReports: ShepherdReport[];
-  submitReport: (reportId: string, narrative: string) => void;
+  submitReport: (reportId: string, narrative: string) => Promise<{ success: boolean; error?: string }>;
   approveReport: (reportId: string) => void;
   financeRecords: FinanceRecord[];
   visibleFinance: FinanceRecord[];
@@ -70,14 +71,14 @@ interface CMSContextType {
   markNotificationRead: (id: string) => void;
   messages: ChatMessage[];
   visibleMessages: ChatMessage[];
-  sendMessage: (recipientId: string, content: string) => void;
+  sendMessage: (recipientId: string, content: string) => Promise<{ success: boolean; error?: string }>;
   markMessageRead: (messageId: string) => void;
   announcements: ChurchAnnouncement[];
   visibleAnnouncements: ChurchAnnouncement[];
-  createAnnouncement: (data: Omit<ChurchAnnouncement, 'id' | 'authorName' | 'date'>) => void;
+  createAnnouncement: (data: Omit<ChurchAnnouncement, 'id' | 'authorName' | 'date'>) => Promise<{ success: boolean; error?: string }>;
   churchEvents: ChurchEvent[];
   visibleEvents: ChurchEvent[];
-  createEvent: (data: Omit<ChurchEvent, 'id' | 'createdBy' | 'createdAt'>) => void;
+  createEvent: (data: Omit<ChurchEvent, 'id' | 'createdBy' | 'createdAt'>) => Promise<{ success: boolean; error?: string }>;
 }
 
 const CMSContext = createContext<CMSContextType | undefined>(undefined);
@@ -416,7 +417,14 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         (m) => m.senderId === currentUser.id || m.recipientId === currentUser.id
       );
 
-  const sendMessage = (recipientId: string, content: string) => {
+  const sendMessage = async (recipientId: string, content: string): Promise<{ success: boolean; error?: string }> => {
+    if (!recipientId) {
+      return { success: false, error: 'Please select a recipient before sending.' };
+    }
+    if (!content || !content.trim()) {
+      return { success: false, error: 'There is no information to send.' };
+    }
+
     const target = shepherds.find((s) => s.id === recipientId);
     const newMsg: ChatMessage = {
       id: `MSG-${Date.now()}`,
@@ -427,27 +435,36 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recipientName: isPastor
         ? (target?.name || 'Shepherd')
         : 'Pastor Adams',
-      content,
+      content: content.trim(),
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' — just now',
       read: false
     };
-    setMessages((prev) => [...prev, newMsg]);
 
     if (isSupabaseConfigured) {
-      (supabase.from('chat_messages') as any)
-        .insert({
-          id: newMsg.id,
-          sender_id: getProfileUUID(currentUser.id),
-          sender_name: currentUser.name,
-          recipient_id: getProfileUUID(recipientId),
-          recipient_name: newMsg.recipientName,
-          content,
-          is_read: false
-        })
-        .then(({ error }: any) => {
-          if (error) console.error('[Supabase sendMessage] Error:', error);
-        });
+      try {
+        const { error } = await (supabase.from('chat_messages') as any)
+          .insert({
+            id: newMsg.id,
+            sender_id: getProfileUUID(currentUser.id),
+            sender_name: currentUser.name,
+            recipient_id: getProfileUUID(recipientId),
+            recipient_name: newMsg.recipientName,
+            content: newMsg.content,
+            is_read: false
+          });
+
+        if (error) {
+          console.error('[Supabase sendMessage] Error:', error);
+          return { success: false, error: 'Unable to send message. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase sendMessage] Catch:', err);
+        return { success: false, error: 'Unable to send message. Please try again.' };
+      }
     }
+
+    setMessages((prev) => [...prev, newMsg]);
+    return { success: true };
   };
 
   const markMessageRead = (messageId: string) => {
@@ -468,69 +485,99 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   // 9. Announcements — all roles see all announcements
   const visibleAnnouncements = announcements;
 
-  const createAnnouncement = (data: Omit<ChurchAnnouncement, 'id' | 'authorName' | 'date'>) => {
+  const createAnnouncement = async (data: Omit<ChurchAnnouncement, 'id' | 'authorName' | 'date'>): Promise<{ success: boolean; error?: string }> => {
+    if (!data || !data.title?.trim() || !data.content?.trim()) {
+      return { success: false, error: 'Please enter the required information.' };
+    }
+
     const newAnn: ChurchAnnouncement = {
       ...data,
       id: `ANN-${Date.now()}`,
       authorName: currentUser.name,
       date: new Date().toISOString().split('T')[0]
     };
-    setAnnouncements((prev) => [newAnn, ...prev]);
 
     if (isSupabaseConfigured) {
-      (supabase.from('announcements') as any)
-        .insert({
-          id: newAnn.id,
-          title: newAnn.title,
-          content: newAnn.content,
-          author_id: getProfileUUID(currentUser.id),
-          author_name: currentUser.name,
-          priority: newAnn.priority,
-          target: newAnn.target
-        })
-        .then(({ error }: any) => {
-          if (error) console.error('[Supabase createAnnouncement] Error:', error);
-        });
+      try {
+        const { error } = await (supabase.from('announcements') as any)
+          .insert({
+            id: newAnn.id,
+            title: newAnn.title,
+            content: newAnn.content,
+            author_id: getProfileUUID(currentUser.id),
+            author_name: currentUser.name,
+            priority: newAnn.priority,
+            target: newAnn.target
+          });
+
+        if (error) {
+          console.error('[Supabase createAnnouncement] Error:', error);
+          return { success: false, error: 'Unable to save the record. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase createAnnouncement] Catch:', err);
+        return { success: false, error: 'Unable to save the record. Please try again.' };
+      }
     }
+
+    setAnnouncements((prev) => [newAnn, ...prev]);
+    return { success: true };
   };
 
   // 10. Church Events — all roles see all events
   const visibleEvents = churchEvents;
 
-  const createEvent = (data: Omit<ChurchEvent, 'id' | 'createdBy' | 'createdAt'>) => {
+  const createEvent = async (data: Omit<ChurchEvent, 'id' | 'createdBy' | 'createdAt'>): Promise<{ success: boolean; error?: string }> => {
+    if (!data || !data.title?.trim() || !data.date?.trim() || !data.location?.trim()) {
+      return { success: false, error: 'Please enter the required information.' };
+    }
+
     const newEvt: ChurchEvent = {
       ...data,
       id: `EVT-${Date.now()}`,
       createdBy: currentUser.name,
       createdAt: new Date().toISOString().split('T')[0]
     };
-    setChurchEvents((prev) => [newEvt, ...prev]);
 
     if (isSupabaseConfigured) {
-      (supabase.from('church_events') as any)
-        .insert({
-          id: newEvt.id,
-          title: newEvt.title,
-          event_date: newEvt.date,
-          event_time: newEvt.time,
-          location: newEvt.location,
-          description: newEvt.description,
-          flyer_url: newEvt.flyerUrl || null,
-          category: newEvt.category,
-          created_by: currentUser.name
-        })
-        .then(({ error }: any) => {
-          if (error) console.error('[Supabase createEvent] Error:', error);
-        });
+      try {
+        const { error } = await (supabase.from('church_events') as any)
+          .insert({
+            id: newEvt.id,
+            title: newEvt.title,
+            event_date: newEvt.date,
+            event_time: newEvt.time,
+            location: newEvt.location,
+            description: newEvt.description,
+            flyer_url: newEvt.flyerUrl || null,
+            category: newEvt.category,
+            created_by: currentUser.name
+          });
+
+        if (error) {
+          console.error('[Supabase createEvent] Error:', error);
+          return { success: false, error: 'Unable to save the record. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase createEvent] Catch:', err);
+        return { success: false, error: 'Unable to save the record. Please try again.' };
+      }
     }
+
+    setChurchEvents((prev) => [newEvt, ...prev]);
+    return { success: true };
   };
 
   // Actions
-  const registerMember = (newMemData: Omit<Member, 'id' | 'registeredAt' | 'registeredBy'>) => {
+  const registerMember = async (newMemData: Omit<Member, 'id' | 'registeredAt' | 'registeredBy'>): Promise<{ success: boolean; error?: string; member?: Member }> => {
+    if (!newMemData || !newMemData.firstName?.trim() || !newMemData.phone?.trim()) {
+      return { success: false, error: 'Please enter the required information.' };
+    }
+
     const isDuplicate = members.some(
       (m) =>
-        m.phone === newMemData.phone ||
-        (newMemData.email && m.email.toLowerCase() === newMemData.email.toLowerCase())
+        m.phone === newMemData.phone.trim() ||
+        (newMemData.email && m.email && m.email.toLowerCase() === newMemData.email.trim().toLowerCase())
     );
 
     if (isDuplicate) {
@@ -540,35 +587,47 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newId = `CPI-M-${1035 + members.length}`;
     const newMember: Member = {
       ...newMemData,
+      firstName: newMemData.firstName.trim(),
+      lastName: newMemData.lastName?.trim() || '',
+      phone: newMemData.phone.trim(),
+      email: newMemData.email?.trim() || '',
       id: newId,
       registeredAt: new Date().toISOString().split('T')[0],
       registeredBy: currentUser.name
     };
 
-    setMembers((prev) => [newMember, ...prev]);
-
     if (isSupabaseConfigured) {
-      (supabase.from('members') as any).insert({
-        id: newId,
-        first_name: newMember.firstName,
-        last_name: newMember.lastName,
-        phone: newMember.phone,
-        email: newMember.email || null,
-        city: newMember.city || 'Central District',
-        date_of_birth: newMember.dateOfBirth || null,
-        status: newMember.status,
-        spiritual_stage: newMember.spiritualStage,
-        department: newMember.department || null,
-        cell_group: newMember.cellGroup,
-        current_shepherd_id: newMember.currentShepherdId || null,
-        current_shepherd_name: newMember.currentShepherdName || null,
-        registered_at: newMember.registeredAt,
-        registered_by: newMember.registeredBy,
-        general_notes: newMember.generalNotes || null
-      }).then(({ error }: any) => {
-        if (error) console.error('[Supabase registerMember] Error:', error);
-      });
+      try {
+        const { error } = await (supabase.from('members') as any).insert({
+          id: newId,
+          first_name: newMember.firstName,
+          last_name: newMember.lastName,
+          phone: newMember.phone,
+          email: newMember.email || null,
+          city: newMember.city || 'Central District',
+          date_of_birth: newMember.dateOfBirth || null,
+          status: newMember.status,
+          spiritual_stage: newMember.spiritualStage,
+          department: newMember.department || null,
+          cell_group: newMember.cellGroup,
+          current_shepherd_id: newMember.currentShepherdId || null,
+          current_shepherd_name: newMember.currentShepherdName || null,
+          registered_at: newMember.registeredAt,
+          registered_by: newMember.registeredBy,
+          general_notes: newMember.generalNotes || null
+        });
+
+        if (error) {
+          console.error('[Supabase registerMember] Error:', error);
+          return { success: false, error: 'Unable to save the record. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase registerMember] Catch:', err);
+        return { success: false, error: 'Unable to save the record. Please try again.' };
+      }
     }
+
+    setMembers((prev) => [newMember, ...prev]);
 
     setAuditLogs((prev) => [
       {
@@ -584,44 +643,122 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       ...prev
     ]);
 
-    return { success: true };
+    return { success: true, member: newMember };
   };
 
-  const updateMember = (memberId: string, updates: Partial<Member>) => {
+  const updateMember = async (memberId: string, updates: Partial<Member>): Promise<{ success: boolean; error?: string }> => {
+    if (!memberId || !updates || Object.keys(updates).length === 0) {
+      return { success: false, error: 'There is no data to save.' };
+    }
+
+    if (isSupabaseConfigured) {
+      try {
+        const dbPayload: any = {};
+        if (updates.firstName !== undefined) dbPayload.first_name = updates.firstName.trim();
+        if (updates.lastName !== undefined) dbPayload.last_name = updates.lastName.trim();
+        if (updates.phone !== undefined) dbPayload.phone = updates.phone.trim();
+        if (updates.email !== undefined) dbPayload.email = updates.email.trim() || null;
+        if (updates.city !== undefined) dbPayload.city = updates.city;
+        if (updates.dateOfBirth !== undefined) dbPayload.date_of_birth = updates.dateOfBirth || null;
+        if (updates.status !== undefined) dbPayload.status = updates.status;
+        if (updates.spiritualStage !== undefined) dbPayload.spiritual_stage = updates.spiritualStage;
+        if (updates.department !== undefined) dbPayload.department = updates.department || null;
+        if (updates.cellGroup !== undefined) dbPayload.cell_group = updates.cellGroup;
+        if (updates.generalNotes !== undefined) dbPayload.general_notes = updates.generalNotes || null;
+        if (updates.confidentialNotes !== undefined) dbPayload.confidential_notes = updates.confidentialNotes || null;
+
+        const { error } = await (supabase.from('members') as any)
+          .update(dbPayload)
+          .eq('id', memberId);
+
+        if (error) {
+          console.error('[Supabase updateMember] Error:', error);
+          return { success: false, error: 'Unable to save changes. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase updateMember] Catch:', err);
+        return { success: false, error: 'Unable to save changes. Please try again.' };
+      }
+    }
+
     setMembers((prev) =>
       prev.map((m) => (m.id === memberId ? { ...m, ...updates } : m))
     );
 
-    if (isSupabaseConfigured) {
-      const dbPayload: any = {};
-      if (updates.firstName !== undefined) dbPayload.first_name = updates.firstName;
-      if (updates.lastName !== undefined) dbPayload.last_name = updates.lastName;
-      if (updates.phone !== undefined) dbPayload.phone = updates.phone;
-      if (updates.email !== undefined) dbPayload.email = updates.email || null;
-      if (updates.city !== undefined) dbPayload.city = updates.city;
-      if (updates.dateOfBirth !== undefined) dbPayload.date_of_birth = updates.dateOfBirth || null;
-      if (updates.status !== undefined) dbPayload.status = updates.status;
-      if (updates.spiritualStage !== undefined) dbPayload.spiritual_stage = updates.spiritualStage;
-      if (updates.department !== undefined) dbPayload.department = updates.department || null;
-      if (updates.cellGroup !== undefined) dbPayload.cell_group = updates.cellGroup;
-      if (updates.generalNotes !== undefined) dbPayload.general_notes = updates.generalNotes || null;
-      if (updates.confidentialNotes !== undefined) dbPayload.confidential_notes = updates.confidentialNotes || null;
-
-      (supabase.from('members') as any)
-        .update(dbPayload)
-        .eq('id', memberId)
-        .then(({ error }: any) => {
-          if (error) console.error('[Supabase updateMember] Error:', error);
-        });
-    }
+    return { success: true };
   };
 
-  const reassignMember = (memberId: string, newShepherdId: string, reason: string) => {
+  const reassignMember = async (memberId: string, newShepherdId: string, reason: string): Promise<{ success: boolean; error?: string }> => {
+    if (!memberId) {
+      return { success: false, error: 'Please select at least one record before proceeding.' };
+    }
+    if (!newShepherdId) {
+      return { success: false, error: 'Please select a target shepherd.' };
+    }
+
     const targetShepherd = shepherds.find((s) => s.id === newShepherdId);
-    if (!targetShepherd) return;
+    if (!targetShepherd) {
+      return { success: false, error: 'Target shepherd not found.' };
+    }
 
     const targetMember = members.find((m) => m.id === memberId);
-    const oldShepherdId = targetMember?.currentShepherdId;
+    if (!targetMember) {
+      return { success: false, error: 'Member not found.' };
+    }
+    const oldShepherdId = targetMember.currentShepherdId;
+
+    // Record assignment history
+    const newAssignment: ShepherdAssignment = {
+      id: `ASN-${Date.now()}`,
+      memberId,
+      memberName: `${targetMember.firstName} ${targetMember.lastName}`,
+      shepherdId: targetShepherd.id,
+      shepherdName: targetShepherd.name,
+      cellGroup: targetShepherd.cell,
+      startDate: new Date().toISOString().split('T')[0],
+      status: 'Active',
+      assignedBy: currentUser.name,
+      reason: reason || 'Geographic relocation / Care balancing'
+    };
+
+    if (isSupabaseConfigured) {
+      try {
+        const shepherdUuid = getProfileUUID(targetShepherd.id);
+        const { error: memErr } = await (supabase.from('members') as any)
+          .update({
+            current_shepherd_id: shepherdUuid,
+            current_shepherd_name: targetShepherd.name,
+            cell_group: targetShepherd.cell
+          })
+          .eq('id', memberId);
+
+        if (memErr) {
+          console.error('[Supabase reassignMember memErr] Error:', memErr);
+          return { success: false, error: 'Unable to save changes. Please try again.' };
+        }
+
+        const { error: asnErr } = await (supabase.from('shepherd_assignments') as any)
+          .insert({
+            id: newAssignment.id,
+            member_id: memberId,
+            member_name: newAssignment.memberName,
+            shepherd_id: shepherdUuid,
+            shepherd_name: targetShepherd.name,
+            cell_group: targetShepherd.cell,
+            start_date: newAssignment.startDate,
+            status: 'Active',
+            assigned_by: currentUser.name,
+            reason: newAssignment.reason
+          });
+
+        if (asnErr) {
+          console.error('[Supabase assignment] Error:', asnErr);
+        }
+      } catch (err: any) {
+        console.error('[Supabase reassignMember] Catch:', err);
+        return { success: false, error: 'Unable to save changes. Please try again.' };
+      }
+    }
 
     setMembers((prev) =>
       prev.map((m) =>
@@ -635,52 +772,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           : m
       )
     );
-
-    // Record assignment history
-    const newAssignment: ShepherdAssignment = {
-      id: `ASN-${Date.now()}`,
-      memberId,
-      memberName: targetMember ? `${targetMember.firstName} ${targetMember.lastName}` : 'Member',
-      shepherdId: targetShepherd.id,
-      shepherdName: targetShepherd.name,
-      cellGroup: targetShepherd.cell,
-      startDate: new Date().toISOString().split('T')[0],
-      status: 'Active',
-      assignedBy: currentUser.name,
-      reason
-    };
     setAssignmentsHistory((prev) => [newAssignment, ...prev]);
-
-    if (isSupabaseConfigured) {
-      const shepherdUuid = getProfileUUID(targetShepherd.id);
-      (supabase.from('members') as any)
-        .update({
-          current_shepherd_id: shepherdUuid,
-          current_shepherd_name: targetShepherd.name,
-          cell_group: targetShepherd.cell
-        })
-        .eq('id', memberId)
-        .then(({ error }: any) => {
-          if (error) console.error('[Supabase reassignMember] Error:', error);
-        });
-
-      (supabase.from('shepherd_assignments') as any)
-        .insert({
-          id: newAssignment.id,
-          member_id: memberId,
-          member_name: newAssignment.memberName,
-          shepherd_id: shepherdUuid,
-          shepherd_name: targetShepherd.name,
-          cell_group: targetShepherd.cell,
-          start_date: newAssignment.startDate,
-          status: 'Active',
-          assigned_by: currentUser.name,
-          reason
-        })
-        .then(({ error }: any) => {
-          if (error) console.error('[Supabase assignment] Error:', error);
-        });
-    }
 
     // Send automatic notification to the recipient Shepherd
     const newNotif: CMSNotification = {
@@ -737,15 +829,53 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const recordSundayAttendance = (
+  const recordSundayAttendance = async (
     memberId: string,
     status: AttendanceStatus,
     date = '2026-11-08'
-  ) => {
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!memberId || !status) {
+      return { success: false, error: 'Please enter the required information.' };
+    }
     const member = members.find((m) => m.id === memberId);
-    if (!member) return;
+    if (!member) {
+      return { success: false, error: 'Member not found.' };
+    }
 
     let targetRecordId = `ATT-${date.replace(/-/g, '')}-${Date.now().toString().slice(-4)}`;
+    const existing = attendanceRecords.find(
+      (r) => r.memberId === memberId && r.serviceDate === date
+    );
+    if (existing) {
+      targetRecordId = existing.id;
+    }
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await (supabase.from('attendance_records') as any).upsert({
+          id: targetRecordId,
+          service_id: 'SRV-SUN-04',
+          service_name: 'Sunday 1st Service — Communion',
+          service_date: date,
+          member_id: member.id,
+          member_name: `${member.firstName} ${member.lastName}`,
+          cell_group: member.cellGroup,
+          shepherd_id: getProfileUUID(member.currentShepherdId),
+          status,
+          recorded_by: currentUser.name,
+          recorded_at: new Date().toISOString(),
+          consecutive_absences: status === 'Absent' ? 1 : 0
+        });
+
+        if (error) {
+          console.error('[Supabase recordSundayAttendance] Error:', error);
+          return { success: false, error: 'Unable to save the record. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase recordSundayAttendance] Catch:', err);
+        return { success: false, error: 'Unable to save the record. Please try again.' };
+      }
+    }
 
     setAttendanceRecords((prev) => {
       const existingIdx = prev.findIndex(
@@ -753,7 +883,6 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       );
 
       if (existingIdx >= 0) {
-        targetRecordId = prev[existingIdx].id;
         const copy = [...prev];
         copy[existingIdx] = {
           ...copy[existingIdx],
@@ -782,26 +911,81 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return [newRecord, ...prev];
     });
 
-    if (isSupabaseConfigured) {
-      (supabase.from('attendance_records') as any)
-        .upsert({
-          id: targetRecordId,
-          service_id: 'SRV-SUN-04',
-          service_name: 'Sunday 1st Service — Communion',
-          service_date: date,
-          member_id: member.id,
-          member_name: `${member.firstName} ${member.lastName}`,
-          cell_group: member.cellGroup,
-          shepherd_id: getProfileUUID(member.currentShepherdId),
-          status,
-          recorded_by: currentUser.name,
-          recorded_at: new Date().toISOString(),
-          consecutive_absences: status === 'Absent' ? 1 : 0
-        })
-        .then(({ error }: any) => {
-          if (error) console.error('[Supabase recordSundayAttendance] Error:', error);
-        });
+    return { success: true };
+  };
+
+  const batchSaveAttendance = async (
+    recordsToSave: { memberId: string; status: AttendanceStatus; date: string }[]
+  ): Promise<{ success: boolean; error?: string; count?: number }> => {
+    if (!recordsToSave || recordsToSave.length === 0) {
+      return { success: false, error: 'There is no data to save.' };
     }
+
+    const payload = recordsToSave.map((rec) => {
+      const member = members.find((m) => m.id === rec.memberId);
+      const existing = attendanceRecords.find(
+        (a) => a.memberId === rec.memberId && a.serviceDate === rec.date
+      );
+      const id = existing?.id || `ATT-${rec.date.replace(/-/g, '')}-${Date.now().toString().slice(-4)}-${Math.floor(Math.random() * 1000)}`;
+
+      return {
+        id,
+        service_id: 'SRV-SUN-04',
+        service_name: 'Sunday 1st Service — Communion',
+        service_date: rec.date,
+        member_id: rec.memberId,
+        member_name: member ? `${member.firstName} ${member.lastName}` : 'Member',
+        cell_group: member?.cellGroup || 'General',
+        shepherd_id: member ? getProfileUUID(member.currentShepherdId) : null,
+        status: rec.status,
+        recorded_by: currentUser.name,
+        recorded_at: new Date().toISOString(),
+        consecutive_absences: rec.status === 'Absent' ? 1 : 0
+      };
+    });
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await (supabase.from('attendance_records') as any).upsert(payload);
+        if (error) {
+          console.error('[Supabase batchSaveAttendance] Error:', error);
+          return { success: false, error: 'Unable to save the record. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase batchSaveAttendance] Catch:', err);
+        return { success: false, error: 'Unable to save the record. Please try again.' };
+      }
+    }
+
+    // Update local state
+    setAttendanceRecords((prev) => {
+      const updated = [...prev];
+      payload.forEach((p) => {
+        const idx = updated.findIndex((r) => r.memberId === p.member_id && r.serviceDate === p.service_date);
+        const localRec: AttendanceRecord = {
+          id: p.id,
+          serviceId: p.service_id,
+          serviceName: p.service_name,
+          serviceDate: p.service_date,
+          memberId: p.member_id,
+          memberName: p.member_name,
+          cellGroup: p.cell_group,
+          shepherdId: p.shepherd_id || undefined,
+          status: p.status as AttendanceStatus,
+          recordedBy: p.recorded_by,
+          recordedAt: new Date().toISOString().replace('T', ' ').slice(0, 19),
+          consecutiveAbsences: p.consecutive_absences
+        };
+        if (idx >= 0) {
+          updated[idx] = localRec;
+        } else {
+          updated.unshift(localRec);
+        }
+      });
+      return updated;
+    });
+
+    return { success: true, count: payload.length };
   };
 
   // Dynamically calculate Sunday streaks comparing all Sunday services
@@ -891,20 +1075,26 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     );
   }, [visibleSundayAbsenceReports]);
 
-  const recordCellMeeting = (meeting: Omit<CellMeeting, 'id' | 'shepherdId' | 'shepherdName' | 'cellName'>) => {
+  const recordCellMeeting = async (
+    meeting: Omit<CellMeeting, 'id' | 'shepherdId' | 'shepherdName' | 'cellName'>
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!meeting || !meeting.topic?.trim() || !meeting.date) {
+      return { success: false, error: 'Please enter the required information.' };
+    }
+
     const newMeeting: CellMeeting = {
       ...meeting,
+      topic: meeting.topic.trim(),
+      notes: meeting.notes?.trim() || '',
       id: `CELL-MTG-${Date.now()}`,
       cellName: currentUser.assignedCell || 'My Cell',
       shepherdId: currentUser.id,
       shepherdName: currentUser.name
     };
 
-    setCellMeetings((prev) => [newMeeting, ...prev]);
-
     if (isSupabaseConfigured) {
-      (supabase.from('cell_meetings') as any)
-        .insert({
+      try {
+        const { error } = await (supabase.from('cell_meetings') as any).insert({
           id: newMeeting.id,
           cell_name: newMeeting.cellName,
           shepherd_id: getProfileUUID(currentUser.id),
@@ -914,13 +1104,37 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           attendees_count: newMeeting.attendeesCount,
           offering_amount: newMeeting.offeringAmount,
           notes: newMeeting.notes || null
-        })
-        .then(({ error }: any) => {
-          if (error) console.error('[Supabase recordCellMeeting] Error:', error);
         });
+
+        if (error) {
+          console.error('[Supabase recordCellMeeting] Error:', error);
+          return { success: false, error: 'Unable to save the record. Please try again.' };
+        }
+
+        // Also register cell fellowship offering in finance ledger
+        if (meeting.offeringAmount > 0) {
+          const newFinanceId = `FIN-${Date.now()}`;
+          await (supabase.from('finance_records') as any).insert({
+            id: newFinanceId,
+            ref: `CELL-${Date.now().toString().slice(-4)}`,
+            transaction_date: meeting.date,
+            giver: `${newMeeting.cellName} Fellowship Offering`,
+            category: 'Cell Fellowship Offering',
+            method: 'Cash / Envelope',
+            amount: meeting.offeringAmount,
+            cell_group: newMeeting.cellName,
+            status: 'Submitted',
+            recorded_by: currentUser.name
+          });
+        }
+      } catch (err: any) {
+        console.error('[Supabase recordCellMeeting] Catch:', err);
+        return { success: false, error: 'Unable to save the record. Please try again.' };
+      }
     }
 
-    // Also register cell fellowship offering in finance ledger
+    setCellMeetings((prev) => [newMeeting, ...prev]);
+
     if (meeting.offeringAmount > 0) {
       const newFinanceId = `FIN-${Date.now()}`;
       const newFinance: FinanceRecord = {
@@ -936,29 +1150,40 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         recordedBy: currentUser.name
       };
       setFinanceRecords((prev) => [newFinance, ...prev]);
-
-      if (isSupabaseConfigured) {
-        (supabase.from('finance_records') as any)
-          .insert({
-            id: newFinance.id,
-            ref: newFinance.ref,
-            transaction_date: newFinance.date,
-            giver: newFinance.giver,
-            category: newFinance.category,
-            method: newFinance.method,
-            amount: newFinance.amount,
-            cell_group: newFinance.cellGroup || null,
-            status: newFinance.status,
-            recorded_by: newFinance.recordedBy
-          })
-          .then(({ error }: any) => {
-            if (error) console.error('[Supabase recordFinance] Error:', error);
-          });
-      }
     }
+
+    return { success: true };
   };
 
-  const updateTaskStatus = (taskId: string, status: FollowUpStatus, note?: string) => {
+  const updateTaskStatus = async (
+    taskId: string,
+    status: FollowUpStatus,
+    note?: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!taskId) {
+      return { success: false, error: 'There is no data to save.' };
+    }
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await (supabase.from('follow_up_tasks') as any)
+          .update({
+            status,
+            notes: note || undefined,
+            completed_at: status === 'Completed' ? new Date().toISOString() : null
+          })
+          .eq('id', taskId);
+
+        if (error) {
+          console.error('[Supabase updateTaskStatus] Error:', error);
+          return { success: false, error: 'Unable to save changes. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase updateTaskStatus] Catch:', err);
+        return { success: false, error: 'Unable to save changes. Please try again.' };
+      }
+    }
+
     setFollowUpTasks((prev) =>
       prev.map((t) =>
         t.id === taskId
@@ -972,33 +1197,68 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       )
     );
 
-    if (isSupabaseConfigured) {
-      (supabase.from('follow_up_tasks') as any)
-        .update({
-          status,
-          notes: note || undefined,
-          completed_at: status === 'Completed' ? new Date().toISOString() : null
-        })
-        .eq('id', taskId)
-        .then(({ error }: any) => {
-          if (error) console.error('[Supabase updateTaskStatus] Error:', error);
-        });
-    }
+    return { success: true };
   };
 
-  const submitReport = (reportId: string, narrative: string) => {
-    setShepherdReports((prev) =>
-      prev.map((r) =>
-        r.id === reportId
-          ? {
-              ...r,
-              narrative,
-              status: 'Submitted',
-              submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 19)
-            }
-          : r
-      )
-    );
+  const submitReport = async (
+    reportId: string,
+    narrative: string
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!narrative || !narrative.trim()) {
+      return { success: false, error: 'Please enter the required information.' };
+    }
+
+    const id = reportId || `RPT-${Date.now()}`;
+    const targetCell = currentUser.assignedCell || 'Cell Fellowship';
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await (supabase.from('shepherd_reports') as any).upsert({
+          id,
+          shepherd_id: getProfileUUID(currentUser.id),
+          shepherd_name: currentUser.name,
+          cell_name: targetCell,
+          narrative: narrative.trim(),
+          status: 'Submitted',
+          submitted_at: new Date().toISOString()
+        });
+
+        if (error) {
+          console.error('[Supabase submitReport] Error:', error);
+          return { success: false, error: 'Unable to submit report. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase submitReport] Catch:', err);
+        return { success: false, error: 'Unable to submit report. Please try again.' };
+      }
+    }
+
+    setShepherdReports((prev) => {
+      const idx = prev.findIndex((r) => r.id === id);
+      const updatedReport: ShepherdReport = {
+        id,
+        shepherdId: currentUser.id,
+        shepherdName: currentUser.name,
+        cellName: targetCell,
+        period: new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+        assignedSoulsCount: members.filter((m) => m.currentShepherdId === currentUser.id).length,
+        attendanceAvgRate: 85,
+        followUpsCompleted: followUpTasks.filter((t) => t.shepherdId === currentUser.id && t.status === 'Completed').length,
+        overdueTasks: 0,
+        narrative: narrative.trim(),
+        status: 'Submitted',
+        submittedAt: new Date().toISOString().replace('T', ' ').slice(0, 19)
+      };
+
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = { ...copy[idx], narrative: narrative.trim(), status: 'Submitted', submittedAt: updatedReport.submittedAt };
+        return copy;
+      }
+      return [updatedReport, ...prev];
+    });
+
+    return { success: true };
   };
 
   const approveReport = (reportId: string) => {
@@ -1025,6 +1285,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         visibleAttendance,
         updateAttendance,
         recordSundayAttendance,
+        batchSaveAttendance,
         sundayAbsenceReports,
         visibleSundayAbsenceReports,
         redListMembers,

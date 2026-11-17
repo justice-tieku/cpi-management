@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import {
   CheckCircle2,
+  AlertCircle,
   Send,
   Plus,
   FileCheck,
@@ -13,6 +14,8 @@ export const ShepherdReports: React.FC = () => {
   const [narrativeInput, setNarrativeInput] = useState('');
   const [showSubmitModal, setShowSubmitModal] = useState(false);
   const [submittedNotice, setSubmittedNotice] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusError, setStatusError] = useState<string | null>(null);
 
   const isPastor = currentUser.role === 'pastor';
 
@@ -20,17 +23,33 @@ export const ShepherdReports: React.FC = () => {
     ? shepherdReports
     : shepherdReports.filter((r) => r.shepherdId === currentUser.id);
 
-  const handleShepherdSubmit = (e: React.FormEvent) => {
+  const handleShepherdSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!narrativeInput.trim()) return;
+    if (!narrativeInput.trim()) {
+      setStatusError('Please enter the required information.');
+      return;
+    }
 
-    submitReport(displayedReports[0]?.id || 'RPT-OCT-01', narrativeInput.trim());
-    setSubmittedNotice(true);
-    setTimeout(() => {
-      setSubmittedNotice(false);
-      setShowSubmitModal(false);
-      setNarrativeInput('');
-    }, 1500);
+    setStatusError(null);
+    setIsSubmitting(true);
+
+    try {
+      const res = await submitReport(displayedReports[0]?.id || 'RPT-OCT-01', narrativeInput.trim());
+      if (res.success) {
+        setSubmittedNotice(true);
+        setTimeout(() => {
+          setSubmittedNotice(false);
+          setShowSubmitModal(false);
+          setNarrativeInput('');
+        }, 1500);
+      } else {
+        setStatusError(res.error || 'Unable to save the record. Please try again.');
+      }
+    } catch (err: any) {
+      setStatusError('Unable to save the record. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -81,7 +100,7 @@ export const ShepherdReports: React.FC = () => {
       <div className="space-y-4">
         {displayedReports.length === 0 ? (
           <div className="p-10 bg-[#111d44] text-center text-[#7b9dc7] text-xs">
-            No reports filed for this period yet.
+            No data recorded yet
           </div>
         ) : (
           displayedReports.map((rpt) => (
@@ -185,20 +204,28 @@ export const ShepherdReports: React.FC = () => {
                 />
               </div>
 
+              {statusError && (
+                <div className="p-3 bg-[#38141e] text-[#ff6b8b] text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{statusError}</span>
+                </div>
+              )}
+
               <div className="flex items-center justify-end gap-2.5 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowSubmitModal(false)}
+                  onClick={() => { setShowSubmitModal(false); setStatusError(null); }}
                   className="px-4 py-2 bg-[#16285a] hover:bg-[#072e54] text-slate-300 text-xs font-medium cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold shadow-sm flex items-center gap-1.5 cursor-pointer"
+                  disabled={isSubmitting}
+                  className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold shadow-sm flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
                 >
                   <Send className="w-3.5 h-3.5" />
-                  <span>Submit to Pastor</span>
+                  <span>{isSubmitting ? 'Submitting...' : 'Submit to Pastor'}</span>
                 </button>
               </div>
             </form>

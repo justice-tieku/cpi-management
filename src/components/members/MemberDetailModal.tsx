@@ -49,8 +49,9 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
 }) => {
   const { updateMember, attendanceRecords, followUpTasks } = useCMS();
   const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'attendance' | 'tasks'>('profile');
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [saveNotice, setSaveNotice] = useState<{ message: string; isError: boolean } | null>(null);
 
   // Editable form state
   const [form, setForm] = useState({
@@ -79,7 +80,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
         generalNotes: member.generalNotes || ''
       });
       setIsEditing(false);
-      setSaveSuccess(false);
+      setSaveNotice(null);
     }
   }, [member, isOpen]);
 
@@ -107,27 +108,43 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
     return age;
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.firstName.trim() || !form.phone.trim()) return;
+    if (!form.firstName.trim() || !form.phone.trim()) {
+      setSaveNotice({ message: 'Please enter the required information.', isError: true });
+      return;
+    }
 
-    updateMember(member.id, {
-      firstName: form.firstName.trim(),
-      lastName: form.lastName.trim(),
-      phone: form.phone.trim(),
-      email: form.email.trim(),
-      city: form.city.trim(),
-      dateOfBirth: form.dateOfBirth.trim() || undefined,
-      spiritualStage: form.spiritualStage,
-      status: form.status,
-      generalNotes: form.generalNotes.trim()
-    });
+    setIsSaving(true);
+    setSaveNotice(null);
 
-    setSaveSuccess(true);
-    setTimeout(() => {
-      setSaveSuccess(false);
-      setIsEditing(false);
-    }, 1200);
+    try {
+      const result = await updateMember(member.id, {
+        firstName: form.firstName.trim(),
+        lastName: form.lastName.trim(),
+        phone: form.phone.trim(),
+        email: form.email.trim(),
+        city: form.city.trim(),
+        dateOfBirth: form.dateOfBirth.trim() || undefined,
+        spiritualStage: form.spiritualStage,
+        status: form.status,
+        generalNotes: form.generalNotes.trim()
+      });
+
+      if (result.success) {
+        setSaveNotice({ message: 'Changes updated successfully.', isError: false });
+        setTimeout(() => {
+          setSaveNotice(null);
+          setIsEditing(false);
+        }, 1200);
+      } else {
+        setSaveNotice({ message: result.error || 'Unable to save the record. Please try again.', isError: true });
+      }
+    } catch (err: any) {
+      setSaveNotice({ message: 'Unable to save the record. Please try again.', isError: true });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const initials = `${member.firstName?.[0] || ''}${member.lastName?.[0] || ''}`.toUpperCase();
@@ -234,11 +251,13 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
           </button>
         </div>
 
-        {/* Success feedback alert */}
-        {saveSuccess && (
-          <div className="mx-5 mt-4 p-3 bg-emerald-950/40 text-emerald-300 text-xs flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-            <span>Member profile successfully updated and synchronized.</span>
+        {/* Status feedback alert */}
+        {saveNotice && (
+          <div className={`mx-5 mt-4 p-3 text-xs flex items-center gap-2 ${
+            saveNotice.isError ? 'bg-[#38141e] text-[#ff6b8b]' : 'bg-[#0f382a] text-[#00ff9d]'
+          }`}>
+            {saveNotice.isError ? <AlertCircle className="w-4 h-4 shrink-0" /> : <CheckCircle2 className="w-4 h-4 shrink-0" />}
+            <span>{saveNotice.message}</span>
           </div>
         )}
 
@@ -486,10 +505,11 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-md"
+                  disabled={isSaving}
+                  className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-md disabled:opacity-50"
                 >
                   <Save className="w-3.5 h-3.5" />
-                  <span>Save Profile</span>
+                  <span>{isSaving ? 'Saving...' : 'Save Profile'}</span>
                 </button>
               </div>
             </form>

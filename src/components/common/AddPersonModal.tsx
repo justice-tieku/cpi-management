@@ -22,21 +22,20 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose 
   );
 
   const [feedback, setFeedback] = useState<{ type: 'error' | 'success'; message: string } | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFeedback(null);
 
-    if (!fullName.trim()) {
-      setFeedback({ type: 'error', message: 'Please provide the name of the person.' });
+    if (!fullName.trim() || !phone.trim()) {
+      setFeedback({ type: 'error', message: 'Please enter the required information.' });
       return;
     }
-    if (!phone.trim()) {
-      setFeedback({ type: 'error', message: 'Please provide a contact phone number.' });
-      return;
-    }
+
+    setIsSubmitting(true);
 
     // Split name into first and last
     const nameParts = fullName.trim().split(' ');
@@ -49,37 +48,43 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose 
         ? { id: currentUser.id, name: currentUser.name, cell: currentUser.assignedCell || 'My Cell' }
         : shepherds.find((s) => s.id === selectedShepherdId) || shepherds[0];
 
-    const result = registerMember({
-      firstName,
-      lastName,
-      phone: phone.trim(),
-      email: email.trim(),
-      city: location.trim() || 'Central',
-      dateOfBirth: dob.trim() || undefined,
-      status: 'New Member',
-      spiritualStage: 'New Convert',
-      cellGroup: assignedShepherd.cell,
-      currentShepherdId: assignedShepherd.id,
-      currentShepherdName: assignedShepherd.name,
-      generalNotes: dob ? `Date of Birth: ${dob}` : ''
-    });
-
-    if (result.success) {
-      setFeedback({
-        type: 'success',
-        message: `${fullName} has been successfully added to ${assignedShepherd.name}'s care flock.`
+    try {
+      const result = await registerMember({
+        firstName,
+        lastName,
+        phone: phone.trim(),
+        email: email.trim(),
+        city: location.trim() || 'Central',
+        dateOfBirth: dob.trim() || undefined,
+        status: 'New Member',
+        spiritualStage: 'New Convert',
+        cellGroup: assignedShepherd ? assignedShepherd.cell : 'Central Cathedral',
+        currentShepherdId: assignedShepherd ? assignedShepherd.id : undefined,
+        currentShepherdName: assignedShepherd ? assignedShepherd.name : undefined,
+        generalNotes: dob ? `Date of Birth: ${dob}` : ''
       });
-      setTimeout(() => {
-        onClose();
-        setFullName('');
-        setPhone('');
-        setDob('');
-        setLocation('');
-        setEmail('');
-        setFeedback(null);
-      }, 1200);
-    } else {
-      setFeedback({ type: 'error', message: result.error || 'Failed to add person.' });
+
+      if (result.success) {
+        setFeedback({
+          type: 'success',
+          message: 'Record saved successfully.'
+        });
+        setTimeout(() => {
+          onClose();
+          setFullName('');
+          setPhone('');
+          setDob('');
+          setLocation('');
+          setEmail('');
+          setFeedback(null);
+        }, 1200);
+      } else {
+        setFeedback({ type: 'error', message: result.error || 'Unable to save the record. Please try again.' });
+      }
+    } catch (err: any) {
+      setFeedback({ type: 'error', message: 'Unable to save the record. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -242,10 +247,11 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose 
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold shadow-md transition-colors cursor-pointer flex items-center gap-1.5"
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold shadow-md transition-colors cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
             >
               <UserPlus className="w-3.5 h-3.5" />
-              <span>Add Person</span>
+              <span>{isSubmitting ? 'Saving...' : 'Add Person'}</span>
             </button>
           </div>
         </form>

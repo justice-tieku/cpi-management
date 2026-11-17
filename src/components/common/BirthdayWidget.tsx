@@ -148,7 +148,7 @@ export const BirthdayWidget: React.FC<BirthdayWidgetProps> = ({
       {filteredList.length === 0 ? (
         <div className="py-8 text-center text-[#a6c4eb] text-xs">
           <Cake className="w-8 h-8 mx-auto mb-2 text-[#a6c4eb] opacity-50" />
-          No birthdays found for this timeframe.
+          No data recorded yet
         </div>
       ) : (
         <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">

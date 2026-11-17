@@ -45,6 +45,8 @@ export const ShepherdAssignmentManagement: React.FC = () => {
   const [reassignMemberId, setReassignMemberId] = useState<string>('');
   const [targetShepherdId, setTargetShepherdId] = useState<string>(shepherds[1]?.id || 'SH-02');
   const [transferReason, setTransferReason] = useState('Geographic relocation / Care balancing');
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [reassignError, setReassignError] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState('');
 
   // Invite / Create Shepherd Modal State
@@ -67,7 +69,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
   const handleCreateShepherd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newShepherdName.trim() || !newShepherdEmail.trim() || !newShepherdCell.trim()) {
-      setInviteError('Please fill in all required fields (Name, Email, Cell Name)');
+      setInviteError('Please enter the required information.');
       return;
     }
 
@@ -92,7 +94,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
         password: newShepherdPassword.trim()
       });
 
-      setSuccessNotice(`Shepherd account successfully created for ${newShepherdName.trim()}!`);
+      // Success is shown inside the modal via createdCredentials panel
     } catch (err: any) {
       setInviteError('Request unsuccessful. Please try again.');
     } finally {
@@ -104,7 +106,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
     if (!createdCredentials) return;
     const text = `Shalom ${createdCredentials.name},
 
-Your Cell Shepherd portal access for Cross Passion International is ready:
+Your Shepherd portal access for Cross Passion International is ready:
 • Website: https://cpi-management.vercel.app
 • Email: ${createdCredentials.email}
 • Password: ${createdCredentials.password}
@@ -169,20 +171,34 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
     setShowReassignModal(true);
   };
 
-  const handleExecuteTransfer = (e: React.FormEvent) => {
+  const handleExecuteTransfer = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reassignMemberId || !targetShepherdId) return;
+    if (!reassignMemberId) {
+      setReassignError('Please select at least one record before proceeding.');
+      return;
+    }
+    if (!targetShepherdId) {
+      setReassignError('Please select a target shepherd.');
+      return;
+    }
 
-    const member = members.find((m) => m.id === reassignMemberId);
-    const target = shepherds.find((s) => s.id === targetShepherdId);
+    setReassignError(null);
+    setIsTransferring(true);
 
-    reassignMember(reassignMemberId, targetShepherdId, transferReason);
-
-    setSuccessNotice(
-      `Successfully assigned ${member?.firstName} ${member?.lastName} to ${target?.name} (${target?.cell}). A notification has been sent to their portal.`
-    );
-    setShowReassignModal(false);
-    setTimeout(() => setSuccessNotice(''), 5000);
+    try {
+      const res = await reassignMember(reassignMemberId, targetShepherdId, transferReason);
+      if (res.success) {
+        setSuccessNotice('Changes updated successfully.');
+        setShowReassignModal(false);
+        setTimeout(() => setSuccessNotice(''), 5000);
+      } else {
+        setReassignError(res.error || 'Unable to save the record. Please try again.');
+      }
+    } catch (err: any) {
+      setReassignError('Unable to save the record. Please try again.');
+    } finally {
+      setIsTransferring(false);
+    }
   };
 
   return (
@@ -514,7 +530,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                     {activeMembers.length === 0 ? (
                       <tr>
                         <td colSpan={5} className="py-6 text-center text-[#7b9dc7]">
-                          No members currently in this cell. Click "Assign / Transfer Soul" above.
+                          No data recorded yet
                         </td>
                       </tr>
                     ) : (
@@ -558,7 +574,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
               <div className="overflow-x-auto bg-[#0a122e] divide-y divide-[#16285a]">
                 {activeMeetings.length === 0 ? (
                   <p className="p-5 text-center text-[#7b9dc7] text-xs">
-                    No cell meetings recorded yet by this shepherd.
+                    No data recorded yet
                   </p>
                 ) : (
                   activeMeetings.map((cm) => (
@@ -658,19 +674,27 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                 When confirmed, the recipient shepherd will receive an automatic notification on their dashboard and navbar bell with the new member details.
               </div>
 
+              {reassignError && (
+                <div className="p-3 bg-[#38141e] text-[#ff6b8b] text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{reassignError}</span>
+                </div>
+              )}
+
               <div className="flex items-center justify-end gap-2.5 pt-2">
                 <button
                   type="button"
-                  onClick={() => setShowReassignModal(false)}
+                  onClick={() => { setShowReassignModal(false); setReassignError(null); }}
                   className="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold shadow-md cursor-pointer transition-colors"
+                  disabled={isTransferring}
+                  className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold shadow-md cursor-pointer transition-colors disabled:opacity-50"
                 >
-                  Confirm Assignment
+                  {isTransferring ? 'Transferring...' : 'Confirm Assignment'}
                 </button>
               </div>
             </form>
@@ -685,7 +709,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
               <div className="flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-[#00ff9d]" />
                 <div>
-                  <h3 className="text-base font-bold text-white">Onboard New Cell Shepherd</h3>
+                  <h3 className="text-base font-bold text-white">Onboard New Shepherd</h3>
                   <p className="text-[11px] text-[#a6c4eb]">Provision private credentials and assign a flock</p>
                 </div>
               </div>
@@ -702,7 +726,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                 <div className="p-4 bg-[#0f382a] text-[#00ff9d] flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 shrink-0" />
                   <span className="text-xs font-bold">
-                    Shepherd account successfully created for {createdCredentials.name}!
+                    Shepherd account successfully created for {createdCredentials.name}.
                   </span>
                 </div>
 

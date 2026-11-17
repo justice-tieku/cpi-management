@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Send, Phone, Copy, Check, MessageSquare } from 'lucide-react';
+import { X, Send, Phone, Copy, Check, MessageSquare, AlertCircle } from 'lucide-react';
 
 interface DirectOutreachModalProps {
   isOpen: boolean;
@@ -53,6 +53,8 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
     }
   }, [recipientName, category, consecutiveMissed]);
 
+  const [errorNotice, setErrorNotice] = useState<string | null>(null);
+
   if (!isOpen) return null;
 
   // Clean phone number for WhatsApp link
@@ -60,6 +62,11 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
   const cleanPhone = phone.replace(/[^0-9+]/g, '').replace(/^\+/, '');
 
   const handleWhatsAppSend = () => {
+    if (!message.trim()) {
+      setErrorNotice('There is no information to send.');
+      return;
+    }
+    setErrorNotice(null);
     const encodedText = encodeURIComponent(message);
     const waUrl = cleanPhone
       ? `https://wa.me/${cleanPhone}?text=${encodedText}`
@@ -68,6 +75,15 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
   };
 
   const handleSmsSend = () => {
+    if (!message.trim()) {
+      setErrorNotice('There is no information to send.');
+      return;
+    }
+    if (!cleanPhone) {
+      setErrorNotice('Please enter the required information.');
+      return;
+    }
+    setErrorNotice(null);
     const encodedText = encodeURIComponent(message);
     const smsUrl = `sms:${cleanPhone}?body=${encodedText}`;
     window.location.href = smsUrl;
@@ -151,6 +167,13 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
               className="w-full p-3 bg-[#0a122e] text-xs text-white placeholder-[#7b9dc7] focus:outline-none focus:ring-2 focus:ring-[#00f0ff] leading-relaxed resize-none"
             />
           </div>
+
+          {errorNotice && (
+            <div className="p-3 bg-[#38141e] text-[#ff6b8b] text-xs flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{errorNotice}</span>
+            </div>
+          )}
 
           {/* Action Buttons */}
           <div className="grid grid-cols-2 gap-3 pt-2">

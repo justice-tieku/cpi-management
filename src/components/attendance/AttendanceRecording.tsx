@@ -17,6 +17,8 @@ import {
   Shield,
   ArrowRight,
   RotateCcw,
+  RefreshCw,
+  AlertCircle,
   MessageSquare
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
@@ -31,6 +33,7 @@ export const AttendanceRecording: React.FC = () => {
     visibleAttendance,
     updateAttendance,
     recordSundayAttendance,
+    batchSaveAttendance,
     redListMembers,
     criticalAbsenteeMembers
   } = useCMS();
@@ -44,7 +47,8 @@ export const AttendanceRecording: React.FC = () => {
   const [serviceName, setServiceName] = useState('Sunday 1st Service — Communion');
   const [searchTerm, setSearchTerm] = useState('');
   const [cellFilter, setCellFilter] = useState('all');
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saveNotice, setSaveNotice] = useState<{ message: string; isError: boolean } | null>(null);
   const [outreachTarget, setOutreachTarget] = useState<{
     isOpen: boolean;
     name: string;
@@ -98,9 +102,36 @@ export const AttendanceRecording: React.FC = () => {
     recordSundayAttendance(memberId, mapped, serviceDate);
   };
 
-  const handleSave = () => {
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3500);
+  const handleSave = async () => {
+    if (displayedMembers.length === 0) {
+      setSaveNotice({ message: 'There is no data to save.', isError: true });
+      setTimeout(() => setSaveNotice(null), 4000);
+      return;
+    }
+
+    setIsSaving(true);
+    setSaveNotice(null);
+
+    const records = displayedMembers.map((m) => {
+      const statusStr = localStatuses[m.id];
+      const status: 'Present' | 'Absent' | 'Excused' =
+        statusStr === 'absent' ? 'Absent' : statusStr === 'excused' ? 'Excused' : 'Present';
+      return {
+        memberId: m.id,
+        status,
+        date: serviceDate
+      };
+    });
+
+    const result = await batchSaveAttendance(records);
+    setIsSaving(false);
+
+    if (result.success) {
+      setSaveNotice({ message: 'Record saved successfully.', isError: false });
+    } else {
+      setSaveNotice({ message: result.error || 'Unable to save the record. Please try again.', isError: true });
+    }
+    setTimeout(() => setSaveNotice(null), 4000);
   };
 
   const handleExportCSV = () => {
@@ -186,18 +217,25 @@ export const AttendanceRecording: React.FC = () => {
           </button>
           <button
             onClick={handleSave}
-            className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors shadow-md shadow-black/40"
+            disabled={isSaving}
+            className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold flex items-center gap-2 cursor-pointer transition-colors shadow-md shadow-black/40 disabled:opacity-50"
           >
-            <Save className="w-3.5 h-3.5" />
-            <span>Save Attendance</span>
+            {isSaving ? (
+              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Save className="w-3.5 h-3.5" />
+            )}
+            <span>{isSaving ? 'Saving Roster...' : 'Save Attendance'}</span>
           </button>
         </div>
       </div>
 
-      {saveSuccess && (
-        <div className="flex items-center gap-2 bg-emerald-950/40 text-emerald-300 text-xs px-4 py-3">
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
-          <span>Attendance records updated and Sunday streaks recalculated.</span>
+      {saveNotice && (
+        <div className={`flex items-center gap-2 text-xs px-4 py-3 ${
+          saveNotice.isError ? 'bg-[#38141e] text-[#ff6b8b]' : 'bg-[#0f382a] text-[#00ff9d]'
+        }`}>
+          {saveNotice.isError ? <AlertCircle className="w-4 h-4 shrink-0" /> : <CheckCircle2 className="w-4 h-4 shrink-0" />}
+          <span>{saveNotice.message}</span>
         </div>
       )}
 
@@ -392,7 +430,7 @@ export const AttendanceRecording: React.FC = () => {
                   {displayedMembers.length === 0 ? (
                     <tr>
                       <td colSpan={isPastor ? 5 : 4} className="py-8 text-center text-[#7b9dc7]">
-                        No members found matching your search.
+                        No data recorded yet
                       </td>
                     </tr>
                   ) : (

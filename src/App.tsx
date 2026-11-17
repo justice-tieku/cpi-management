@@ -70,8 +70,8 @@ const CMSApp: React.FC = () => {
       subtitle: isPastor ? 'Church directory' : 'Cell member roster'
     },
     shepherds: {
-      title: 'Shepherds & Cells',
-      subtitle: 'Shepherd assignments & care cells'
+      title: 'Shepherds',
+      subtitle: 'Shepherd assignments & flocks'
     },
     attendance: {
       title: 'Attendance & Red List',

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Megaphone, Plus, X, ChevronDown } from 'lucide-react';
+import { Megaphone, Plus, X, ChevronDown, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { ChurchAnnouncement } from '../../types/cms';
 
@@ -15,34 +15,72 @@ export const AnnouncementsBoard: React.FC = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [filterPriority, setFilterPriority] = useState<'All' | ChurchAnnouncement['priority']>('All');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [bannerNotice, setBannerNotice] = useState<{ message: string; isError: boolean } | null>(null);
+  const [formError, setFormError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<{ title?: string; content?: string }>({});
   const [form, setForm] = useState({
     title: '',
     content: '',
     priority: 'Normal' as ChurchAnnouncement['priority'],
     target: 'all_shepherds' as ChurchAnnouncement['target']
   });
-  const [errors, setErrors] = useState<{ title?: string; content?: string }>({});
 
   const filtered = visibleAnnouncements.filter(
     (a) => filterPriority === 'All' || a.priority === filterPriority
   );
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const errs: { title?: string; content?: string } = {};
     if (!form.title.trim()) errs.title = 'Title is required';
     if (!form.content.trim()) errs.content = 'Message is required';
-    if (Object.keys(errs).length) { setErrors(errs); return; }
 
-    createAnnouncement({ title: form.title.trim(), content: form.content.trim(), priority: form.priority, target: form.target });
-    setForm({ title: '', content: '', priority: 'Normal', target: 'all_shepherds' });
+    if (Object.keys(errs).length > 0) {
+      setErrors(errs);
+      setFormError('Please enter the required information.');
+      return;
+    }
+
     setErrors({});
-    setShowModal(false);
+    setFormError(null);
+    setIsSubmitting(true);
+
+    try {
+      const res = await createAnnouncement({
+        title: form.title.trim(),
+        content: form.content.trim(),
+        priority: form.priority,
+        target: form.target
+      });
+
+      if (res.success) {
+        setForm({ title: '', content: '', priority: 'Normal', target: 'all_shepherds' });
+        setShowModal(false);
+        setBannerNotice({ message: 'Information sent successfully.', isError: false });
+        setTimeout(() => setBannerNotice(null), 4000);
+      } else {
+        setFormError(res.error || 'Unable to save the record. Please try again.');
+      }
+    } catch (err: any) {
+      setFormError('Unable to save the record. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const urgentCount = visibleAnnouncements.filter((a) => a.priority === 'Urgent').length;
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-4xl mx-auto space-y-4">
+      {bannerNotice && (
+        <div className={`p-4 text-xs font-semibold flex items-center gap-2 ${
+          bannerNotice.isError ? 'bg-[#38141e] text-[#ff6b8b]' : 'bg-[#0f382a] text-[#00ff9d]'
+        }`}>
+          {bannerNotice.isError ? <AlertCircle className="w-4 h-4 shrink-0" /> : <CheckCircle2 className="w-4 h-4 shrink-0" />}
+          <span>{bannerNotice.message}</span>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
@@ -95,10 +133,7 @@ export const AnnouncementsBoard: React.FC = () => {
       {filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center">
           <Megaphone className="w-10 h-10 text-slate-700 mb-3" />
-          <p className="text-[#7b9dc7] text-sm font-medium">No announcements</p>
-          <p className="text-slate-600 text-xs mt-1">
-            {isPastor ? 'Post an announcement to notify all shepherds.' : 'No announcements from the pastor yet.'}
-          </p>
+          <p className="text-[#7b9dc7] text-sm font-medium">No data recorded yet</p>
         </div>
       ) : (
         <div className="space-y-4">
@@ -208,21 +243,29 @@ export const AnnouncementsBoard: React.FC = () => {
                   </select>
                 </div>
               </div>
+
+              {formError && (
+                <div className="p-3 bg-[#38141e] text-[#ff6b8b] text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
             </div>
 
             {/* Modal Footer */}
             <div className="flex items-center justify-end gap-3 p-5">
               <button
-                onClick={() => { setShowModal(false); setErrors({}); }}
+                onClick={() => { setShowModal(false); setFormError(null); }}
                 className="px-4 py-2 text-xs font-medium text-[#a6c4eb] hover:text-slate-200 hover:bg-slate-700/40 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSubmit}
-                className="px-5 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-xs font-semibold text-[#070c1e] transition-colors cursor-pointer"
+                disabled={isSubmitting}
+                className="px-5 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-xs font-semibold text-[#070c1e] transition-colors cursor-pointer disabled:opacity-50"
               >
-                Post Announcement
+                {isSubmitting ? 'Posting...' : 'Post Announcement'}
               </button>
             </div>
           </div>

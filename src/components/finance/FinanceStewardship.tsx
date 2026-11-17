@@ -187,7 +187,7 @@ export const FinanceStewardship: React.FC = () => {
         {filteredTransactions.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-[#7b9dc7]">
             <CircleDollarSign className="w-8 h-8 mb-2 opacity-30" />
-            <p className="text-sm">No records found.</p>
+            <p className="text-sm">No data recorded yet</p>
           </div>
         ) : (
           <div className="overflow-x-auto">

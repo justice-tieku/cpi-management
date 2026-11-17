@@ -45,22 +45,13 @@ export const ShepherdWorkspace: React.FC = () => {
   });
   const [newNote, setNewNote] = useState('');
   const [selectedMemberId, setSelectedMemberId] = useState(visibleMembers[0]?.id || '');
-  const [notesList, setNotesList] = useState([
-    {
-      id: 'N-1',
-      member: 'Sister Sarah Jenkins',
-      shepherd: 'Deaconess Ruth Taiwo',
-      date: '2026-11-04',
-      text: 'Visited member at home. Experiencing family relocation transition. Requested prayer for new employment.'
-    },
-    {
-      id: 'N-2',
-      member: 'Bro. Christian Okon',
-      shepherd: 'Bro. Matthew Kim',
-      date: '2026-11-03',
-      text: 'Passed university exams with flying colors. Desires to join the youth choir instrumental team.'
-    }
-  ]);
+  const [notesList, setNotesList] = useState<Array<{
+    id: string;
+    member: string;
+    shepherd: string;
+    date: string;
+    text: string;
+  }>>([]);
 
   // Filter tasks if pastor wants to see a specific shepherd
   const displayedTasks = visibleTasks.filter((t) => {
@@ -68,18 +59,27 @@ export const ShepherdWorkspace: React.FC = () => {
     return t.shepherdId === selectedShepherdFilter;
   });
 
+  const [noteNotice, setNoteNotice] = useState<{ message: string; isError: boolean } | null>(null);
+
   const openTasksCount = displayedTasks.filter((t) => t.status === 'Open').length;
   const completedTasksCount = displayedTasks.filter((t) => t.status === 'Completed').length;
 
-  const handleToggleTask = (taskId: string, currentStatus: string) => {
-    updateTaskStatus(
+  const handleToggleTask = async (taskId: string, currentStatus: string) => {
+    await updateTaskStatus(
       taskId,
       currentStatus === 'Completed' ? 'Open' : 'Completed'
     );
   };
 
   const handleAddNote = () => {
-    if (!newNote.trim()) return;
+    if (!selectedMemberId) {
+      setNoteNotice({ message: 'Please select at least one record before proceeding.', isError: true });
+      return;
+    }
+    if (!newNote.trim()) {
+      setNoteNotice({ message: 'Please enter the required information.', isError: true });
+      return;
+    }
     const member = visibleMembers.find((m) => m.id === selectedMemberId);
     setNotesList((prev) => [
       {
@@ -92,6 +92,8 @@ export const ShepherdWorkspace: React.FC = () => {
       ...prev
     ]);
     setNewNote('');
+    setNoteNotice({ message: 'Record saved successfully.', isError: false });
+    setTimeout(() => setNoteNotice(null), 3500);
   };
 
   return (
@@ -179,7 +181,7 @@ export const ShepherdWorkspace: React.FC = () => {
           <div className="lg:col-span-8 space-y-3">
             {displayedTasks.length === 0 ? (
               <div className="p-10 bg-[#111d44] text-center text-[#7b9dc7] text-xs">
-                No care tasks currently registered.
+                No data recorded yet
               </div>
             ) : (
               displayedTasks.map((task) => (
@@ -291,7 +293,12 @@ export const ShepherdWorkspace: React.FC = () => {
               </p>
 
               <div className="space-y-2 pt-1 max-h-72 overflow-y-auto">
-                {visibleMembers.map((m) => (
+                {visibleMembers.length === 0 ? (
+                  <div className="py-4 text-center text-[#a6c4eb] text-xs">
+                    No data recorded yet
+                  </div>
+                ) : (
+                  visibleMembers.map((m) => (
                   <div
                     key={m.id}
                     className="p-2.5 bg-[#070c1e] flex items-center justify-between gap-2"
@@ -345,7 +352,7 @@ export const ShepherdWorkspace: React.FC = () => {
                       </a>
                     </div>
                   </div>
-                ))}
+                )))}
               </div>
             </div>
           </div>
@@ -354,18 +361,24 @@ export const ShepherdWorkspace: React.FC = () => {
         /* Notes Tab */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           <div className="lg:col-span-7 space-y-3">
-            {notesList.map((n) => (
-              <div key={n.id} className="p-4 bg-[#111d44] space-y-2">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-semibold text-white">{n.member}</span>
-                    <span className="text-[10px] text-[#a6c4eb] ml-2">Recorded by {n.shepherd}</span>
-                  </div>
-                  <span className="text-[10px] text-[#7b9dc7] font-mono">{n.date}</span>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed">{n.text}</p>
+            {notesList.length === 0 ? (
+              <div className="p-8 bg-[#111d44] text-center text-[#7b9dc7] text-xs">
+                No data recorded yet
               </div>
-            ))}
+            ) : (
+              notesList.map((n) => (
+                <div key={n.id} className="p-4 bg-[#111d44] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-xs font-semibold text-white">{n.member}</span>
+                      <span className="text-[10px] text-[#a6c4eb] ml-2">Recorded by {n.shepherd}</span>
+                    </div>
+                    <span className="text-[10px] text-[#7b9dc7] font-mono">{n.date}</span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">{n.text}</p>
+                </div>
+              ))
+            )}
           </div>
 
           <div className="lg:col-span-5 p-4 bg-[#111d44] space-y-3">
@@ -401,6 +414,15 @@ export const ShepherdWorkspace: React.FC = () => {
                 className="w-full p-3 bg-[#070c1e] text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f0ff] resize-none"
               />
             </div>
+
+            {noteNotice && (
+              <div className={`p-2.5 text-xs flex items-center gap-2 ${
+                noteNotice.isError ? 'bg-[#38141e] text-[#ff6b8b]' : 'bg-[#0f382a] text-[#00ff9d]'
+              }`}>
+                {noteNotice.isError ? <AlertCircle className="w-4 h-4 shrink-0" /> : <CheckCircle2 className="w-4 h-4 shrink-0" />}
+                <span>{noteNotice.message}</span>
+              </div>
+            )}
 
             <button
               type="button"

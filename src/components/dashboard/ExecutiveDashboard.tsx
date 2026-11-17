@@ -113,7 +113,7 @@ export const ExecutiveDashboard: React.FC = () => {
           </button>
           <span className="px-3 py-1.5 bg-[#072e54] text-[#00f0ff] text-xs font-bold flex items-center gap-1.5">
             <span className="w-2 h-2 bg-[#00ff9d]" />
-            5 Care Cells Active
+            5 Shepherd Groups Active
           </span>
         </div>
       </div>
@@ -155,7 +155,7 @@ export const ExecutiveDashboard: React.FC = () => {
         <BirthdayWidget
           members={members}
           title="Church Birthday Roster"
-          subtitle="Upcoming celebrations across all care cells"
+          subtitle="Upcoming celebrations across all shepherd groups"
         />
       </div>
 
@@ -167,7 +167,7 @@ export const ExecutiveDashboard: React.FC = () => {
               Weekly Shepherd Activity
             </h3>
             <p className="text-xs text-[#a6c4eb]">
-              Compiled weekly reports submitted by cell shepherds
+              Compiled weekly reports submitted by shepherds
             </p>
           </div>
           <span className="text-xs text-[#00f0ff] bg-[#072e54] px-3 py-1 font-bold">
@@ -180,7 +180,7 @@ export const ExecutiveDashboard: React.FC = () => {
             <thead>
               <tr className="text-[10px] uppercase tracking-wider text-[#a6c4eb] font-bold bg-[#0a122e]">
                 <th className="py-3 px-3">Shepherd</th>
-                <th className="py-3 px-3">Care Cell</th>
+                <th className="py-3 px-3">Shepherd Group</th>
                 <th className="py-3 px-3">Flock Count</th>
                 <th className="py-3 px-3">Cell Meeting Held</th>
                 <th className="py-3 px-3">Cell Offering</th>

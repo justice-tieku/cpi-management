@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { Member, SpiritualStage, MemberStatus } from '../../types/cms';
 import { useCMS } from '../../context/CMSContext';
+import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
 
 interface MemberDetailModalProps {
   member: Member | null;
@@ -71,7 +72,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
       setForm({
         firstName: member.firstName || '',
         lastName: member.lastName || '',
-        phone: member.phone || '',
+        phone: formatGhanaianPhone(member.phone || ''),
         email: member.email || '',
         city: member.city || '',
         dateOfBirth: member.dateOfBirth || '',
@@ -122,7 +123,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
       const result = await updateMember(member.id, {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
-        phone: form.phone.trim(),
+        phone: formatGhanaianPhone(form.phone.trim()),
         email: form.email.trim(),
         city: form.city.trim(),
         dateOfBirth: form.dateOfBirth.trim() || undefined,
@@ -274,20 +275,20 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                   </div>
                   <div>
                     <span className="text-[10px] text-[#a6c4eb] block font-mono">Telephone</span>
-                    <span className="font-bold text-white text-sm font-mono">{member.phone}</span>
+                    <span className="font-bold text-white text-sm font-mono">{formatGhanaianPhone(member.phone)}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
                   <a
-                    href={`tel:${member.phone}`}
+                    href={`tel:${getCleanDialPhone(member.phone)}`}
                     className="px-3 py-1.5 bg-emerald-900/40 hover:bg-emerald-800/60 text-emerald-300 font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <Phone className="w-3.5 h-3.5" />
                     <span>Call</span>
                   </a>
                   <a
-                    href={`sms:${member.phone}`}
+                    href={`sms:${getCleanDialPhone(member.phone)}`}
                     className="px-3 py-1.5 bg-[#16285a] hover:bg-[#00f0ff] hover:text-[#070c1e] text-[#00f0ff] font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                   >
                     <MessageSquare className="w-3.5 h-3.5" />
@@ -403,6 +404,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                     required
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                    placeholder="+233 24 000 0000"
                     className="w-full px-3 py-2 bg-[#0a122e] text-white focus:outline-none font-mono"
                   />
                 </div>

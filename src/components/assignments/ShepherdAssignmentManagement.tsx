@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { apiClient } from '../../services/apiClient';
+import { formatGhanaianPhone } from '../../utils/phone';
 
 export const ShepherdAssignmentManagement: React.FC = () => {
   const {
@@ -80,7 +81,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
       const res = await apiClient.createShepherd({
         name: newShepherdName.trim(),
         email: newShepherdEmail.trim(),
-        phone: newShepherdPhone.trim(),
+        phone: formatGhanaianPhone(newShepherdPhone.trim()),
         cellName: newShepherdCell.trim(),
         password: newShepherdPassword.trim()
       });
@@ -210,10 +211,10 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
             Pastoral Administration • Cross Passion International
           </span>
           <h2 className="text-xl font-bold text-white tracking-tight mt-0.5">
-            Shepherds &amp; Care Cells Management
+            Shepherds Management
           </h2>
           <p className="text-xs text-[#a6c4eb] mt-0.5">
-            Cell assignments and flock allocations
+            Shepherd group assignments and flock allocations
           </p>
         </div>
 
@@ -313,7 +314,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                 {members.length} Souls Enrolled
               </p>
               <p className="text-[11px] text-[#a6c4eb]">
-                Across 5 care cells • {Math.round((members.length / 150) * 100)}% capacity utilized
+                Across 5 shepherd groups • {Math.round((members.length / 150) * 100)}% capacity utilized
               </p>
             </div>
 
@@ -339,10 +340,10 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div>
                 <h3 className="text-sm font-bold text-white uppercase tracking-wider">
-                  All Care Cells — Category Breakdown
+                  All Shepherd Groups — Category Breakdown
                 </h3>
                 <p className="text-xs text-[#a6c4eb] mt-0.5">
-                  Click any cell to view members
+                  Click any shepherd group to view members
                 </p>
               </div>
 
@@ -359,7 +360,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
                   <tr className="text-[10px] uppercase tracking-wider text-[#a6c4eb] font-semibold bg-[#0a122e]">
-                    <th className="py-3 px-3">Shepherd &amp; Care Cell</th>
+                    <th className="py-3 px-3">Shepherd &amp; Group</th>
                     <th className="py-3 px-3 font-mono">Flock / Capacity</th>
                     <th className="py-3 px-3">Sunday Attendance</th>
                     <th className="py-3 px-3">Cell Meeting Rate</th>
@@ -460,7 +461,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                   </span>
                 </div>
                 <p className="text-xs text-slate-300 mt-0.5">
-                  Care Cell: <strong className="text-white">{activeShepherd.cell}</strong>
+                  Shepherd Group: <strong className="text-white">{activeShepherd.cell}</strong>
                 </p>
               </div>
 
@@ -539,7 +540,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                           <td className="py-2.5 px-3 font-semibold text-white">
                             {m.firstName} {m.lastName}
                           </td>
-                          <td className="py-2.5 px-3 text-slate-300 font-mono">{m.phone}</td>
+                          <td className="py-2.5 px-3 text-slate-300 font-mono">{formatGhanaianPhone(m.phone)}</td>
                           <td className="py-2.5 px-3">
                             <span className="px-2 py-0.5 text-[10px] bg-slate-800 text-slate-300">
                               {m.spiritualStage}
@@ -813,7 +814,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                   </div>
                   <div>
                     <label className="text-[11px] font-semibold text-[#a6c4eb] block mb-1">
-                      Care Cell Name *
+                      Shepherd Group Name *
                     </label>
                     <input
                       type="text"

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { DirectOutreachModal } from '../common/DirectOutreachModal';
+import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
 
 type AttendanceStatusType = 'present' | 'absent' | 'excused';
 
@@ -135,10 +136,10 @@ export const AttendanceRecording: React.FC = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ['Member Name', 'Telephone', 'Cell Group', 'Shepherd', 'Spiritual Stage', 'Service Date', 'Service Session', 'Status'];
+    const headers = ['Member Name', 'Telephone', 'Shepherd Group', 'Shepherd', 'Spiritual Stage', 'Service Date', 'Service Session', 'Status'];
     const rows = displayedMembers.map((m) => [
       `"${m.firstName} ${m.lastName}"`,
-      `"${m.phone}"`,
+      `"${formatGhanaianPhone(m.phone)}"`,
       `"${m.cellGroup}"`,
       `"${m.currentShepherdName || ''}"`,
       `"${m.spiritualStage}"`,
@@ -382,13 +383,13 @@ export const AttendanceRecording: React.FC = () => {
 
             {isPastor && (
               <div>
-                <label className="text-[10px] font-semibold text-[#a6c4eb] block mb-1">Care Cell</label>
+                <label className="text-[10px] font-semibold text-[#a6c4eb] block mb-1">Shepherd Group</label>
                 <select
                   value={cellFilter}
                   onChange={(e) => setCellFilter(e.target.value)}
                   className="px-3 py-1.5 bg-[#070c1e] text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00f0ff] cursor-pointer"
                 >
-                  <option value="all">All Care Cells</option>
+                  <option value="all">All Shepherd Groups</option>
                   {uniqueCells.map((c) => (
                     <option key={c} value={c}>
                       {c}
@@ -421,7 +422,7 @@ export const AttendanceRecording: React.FC = () => {
                   <tr className="text-[10px] uppercase tracking-wider text-[#00f0ff] font-extrabold bg-[#0a122e]">
                     <th className="py-3 px-4">Member Name</th>
                     <th className="py-3 px-4">Telephone</th>
-                    {isPastor && <th className="py-3 px-4">Cell &amp; Shepherd</th>}
+                    {isPastor && <th className="py-3 px-4">Shepherd Group</th>}
                     <th className="py-3 px-4">Sunday Attendance Risk</th>
                     <th className="py-3 px-4 text-center">Mark Attendance</th>
                   </tr>
@@ -449,7 +450,7 @@ export const AttendanceRecording: React.FC = () => {
                           </td>
                           <td className="py-3 px-4 text-slate-300 font-mono">
                             <div className="flex items-center gap-2">
-                              <span>{member.phone}</span>
+                              <span>{formatGhanaianPhone(member.phone)}</span>
                               <button
                                 type="button"
                                 onClick={() => {
@@ -465,7 +466,7 @@ export const AttendanceRecording: React.FC = () => {
                                   setOutreachTarget({
                                     isOpen: true,
                                     name: `${member.firstName} ${member.lastName}`,
-                                    phone: member.phone,
+                                    phone: formatGhanaianPhone(member.phone),
                                     category: cat,
                                     consecutiveMissed: crit ? crit.consecutiveMissedSundays : red ? red.consecutiveMissedSundays : 0,
                                     cellGroup: member.cellGroup
@@ -592,7 +593,7 @@ export const AttendanceRecording: React.FC = () => {
                   <tr className="text-[10px] uppercase tracking-wider text-[#00f0ff] font-extrabold bg-[#0a122e]">
                     <th className="py-3 px-4">Member Name</th>
                     <th className="py-3 px-4">Contact</th>
-                    <th className="py-3 px-4">Care Cell &amp; Shepherd</th>
+                    <th className="py-3 px-4">Shepherd Group</th>
                     <th className="py-3 px-4">Consecutive Misses</th>
                     <th className="py-3 px-4">Last Attended Sunday</th>
                     <th className="py-3 px-4">Recommended Action</th>
@@ -619,11 +620,11 @@ export const AttendanceRecording: React.FC = () => {
 
                         <td className="py-3.5 px-4 font-mono text-slate-300">
                           <a
-                            href={`tel:${record.phone}`}
+                            href={`tel:${getCleanDialPhone(record.phone)}`}
                             className="flex items-center gap-1.5 text-[#00f0ff] hover:underline"
                           >
                             <Phone className="w-3 h-3" />
-                            <span>{record.phone}</span>
+                            <span>{formatGhanaianPhone(record.phone)}</span>
                           </a>
                         </td>
 
@@ -672,7 +673,7 @@ export const AttendanceRecording: React.FC = () => {
                                 setOutreachTarget({
                                   isOpen: true,
                                   name: record.memberName,
-                                  phone: record.phone,
+                                  phone: formatGhanaianPhone(record.phone),
                                   category: record.consecutiveMissedSundays === 1 ? 'red_list_1' : 'red_list_2',
                                   consecutiveMissed: record.consecutiveMissedSundays,
                                   cellGroup: record.cellGroup,
@@ -740,7 +741,7 @@ export const AttendanceRecording: React.FC = () => {
                   <tr className="text-[10px] uppercase tracking-wider text-[#00f0ff] font-extrabold bg-[#0a122e]">
                     <th className="py-3 px-4">Member Name</th>
                     <th className="py-3 px-4">Contact</th>
-                    <th className="py-3 px-4">Care Cell &amp; Shepherd</th>
+                    <th className="py-3 px-4">Shepherd Group</th>
                     <th className="py-3 px-4">Consecutive Sunday Absences</th>
                     <th className="py-3 px-4">Last Attended Sunday</th>
                     <th className="py-3 px-4">Pastoral Action</th>
@@ -767,11 +768,11 @@ export const AttendanceRecording: React.FC = () => {
 
                         <td className="py-3.5 px-4 font-mono text-slate-300">
                           <a
-                            href={`tel:${record.phone}`}
+                            href={`tel:${getCleanDialPhone(record.phone)}`}
                             className="flex items-center gap-1.5 text-[#00f0ff] hover:underline"
                           >
                             <Phone className="w-3 h-3" />
-                            <span>{record.phone}</span>
+                            <span>{formatGhanaianPhone(record.phone)}</span>
                           </a>
                         </td>
 
@@ -813,7 +814,7 @@ export const AttendanceRecording: React.FC = () => {
                                 setOutreachTarget({
                                   isOpen: true,
                                   name: record.memberName,
-                                  phone: record.phone,
+                                  phone: formatGhanaianPhone(record.phone),
                                   category: 'critical',
                                   consecutiveMissed: record.consecutiveMissedSundays,
                                   cellGroup: record.cellGroup,

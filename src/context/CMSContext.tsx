@@ -19,6 +19,8 @@ import {
   SundayAbsenceCategory
 } from '../types/cms';
 import { supabase, isSupabaseConfigured } from '../../backend/client';
+import { formatGhanaianPhone } from '../utils/phone';
+import { getStoredSession } from '../utils/session';
 
 export interface CMSNotification {
   id: string;
@@ -85,12 +87,16 @@ const CMSContext = createContext<CMSContextType | undefined>(undefined);
 
 export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Current active user
-  const [currentUser, setCurrentUser] = useState<User>({
-    id: 'USR-PASTOR-01',
-    name: 'Pastor Adams',
-    email: 'pastor.adams@crosspassion.org',
-    role: 'pastor',
-    branch: 'Main Sanctuary — Central Cathedral'
+  const [currentUser, setCurrentUser] = useState<User>(() => {
+    const session = getStoredSession();
+    if (session?.user) return session.user;
+    return {
+      id: 'USR-PASTOR-01',
+      name: 'Pastor Adams',
+      email: 'pastor.adams@crosspassion.org',
+      role: 'pastor',
+      branch: 'Main Sanctuary — Central Cathedral'
+    };
   });
 
   // Cell Shepherds definition
@@ -119,7 +125,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const newId = `SH-0${shepherds.length + 1}`;
-    const cell = cellName?.trim() || `${trimmed}'s Care Cell`;
+    const cell = cellName?.trim() || `${trimmed}'s Shepherd Group`;
     const newShepherd = {
       id: newId,
       name: trimmed,
@@ -197,7 +203,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               id: m.id,
               firstName: m.first_name,
               lastName: m.last_name,
-              phone: m.phone,
+              phone: formatGhanaianPhone(m.phone),
               email: m.email || '',
               city: m.city || 'Central District',
               dateOfBirth: m.date_of_birth || undefined,
@@ -585,11 +591,12 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const newId = `CPI-M-${1035 + members.length}`;
+    const formattedPhone = formatGhanaianPhone(newMemData.phone.trim());
     const newMember: Member = {
       ...newMemData,
       firstName: newMemData.firstName.trim(),
       lastName: newMemData.lastName?.trim() || '',
-      phone: newMemData.phone.trim(),
+      phone: formattedPhone,
       email: newMemData.email?.trim() || '',
       id: newId,
       registeredAt: new Date().toISOString().split('T')[0],
@@ -656,7 +663,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const dbPayload: any = {};
         if (updates.firstName !== undefined) dbPayload.first_name = updates.firstName.trim();
         if (updates.lastName !== undefined) dbPayload.last_name = updates.lastName.trim();
-        if (updates.phone !== undefined) dbPayload.phone = updates.phone.trim();
+        if (updates.phone !== undefined) {
+          const gPhone = formatGhanaianPhone(updates.phone.trim());
+          dbPayload.phone = gPhone;
+          updates.phone = gPhone;
+        }
         if (updates.email !== undefined) dbPayload.email = updates.email.trim() || null;
         if (updates.city !== undefined) dbPayload.city = updates.city;
         if (updates.dateOfBirth !== undefined) dbPayload.date_of_birth = updates.dateOfBirth || null;
@@ -778,8 +789,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newNotif: CMSNotification = {
       id: `NOTIF-${Date.now()}`,
       recipientId: targetShepherd.id,
-      title: 'New Member Assigned to Your Cell',
-      message: `${targetMember ? `${targetMember.firstName} ${targetMember.lastName}` : 'A new member'} has been assigned to your care cell (${targetShepherd.cell}) by Pastor Adams. Transfer reason: ${reason}.`,
+      title: 'New Member Assigned to Your Shepherd Group',
+      message: `${targetMember ? `${targetMember.firstName} ${targetMember.lastName}` : 'A new member'} has been assigned to your shepherd group (${targetShepherd.cell}) by Pastor Adams. Transfer reason: ${reason}.`,
       timestamp: 'Just now',
       read: false,
       type: 'assignment',
@@ -1041,7 +1052,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return {
         memberId: m.id,
         memberName: `${m.firstName} ${m.lastName}`,
-        phone: m.phone,
+        phone: formatGhanaianPhone(m.phone),
         cellGroup: m.cellGroup,
         shepherdName: m.currentShepherdName || 'Unassigned',
         shepherdId: m.currentShepherdId,

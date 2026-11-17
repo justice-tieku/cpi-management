@@ -18,6 +18,7 @@ import { useCMS } from '../../context/CMSContext';
 import { AddPersonModal } from '../common/AddPersonModal';
 import { MemberDetailModal } from './MemberDetailModal';
 import { DirectOutreachModal } from '../common/DirectOutreachModal';
+import { formatGhanaianPhone } from '../../utils/phone';
 
 export const MemberDirectory: React.FC = () => {
   const { visibleMembers, currentUser, redListMembers, criticalAbsenteeMembers } = useCMS();
@@ -44,12 +45,12 @@ export const MemberDirectory: React.FC = () => {
   const critMap = new Map(criticalAbsenteeMembers.map((r) => [r.memberId, r]));
 
   const handleExportCSV = () => {
-    const headers = ['ID', 'First Name', 'Last Name', 'Phone', 'Email', 'City', 'Cell Group', 'Shepherd', 'Stage', 'Date of Birth'];
+    const headers = ['ID', 'First Name', 'Last Name', 'Phone', 'Email', 'City', 'Shepherd Group', 'Shepherd', 'Stage', 'Date of Birth'];
     const rows = filteredMembers.map((m) => [
       `"${m.id}"`,
       `"${m.firstName}"`,
       `"${m.lastName}"`,
-      `"${m.phone}"`,
+      `"${formatGhanaianPhone(m.phone)}"`,
       `"${m.email || ''}"`,
       `"${m.city || ''}"`,
       `"${m.cellGroup || ''}"`,
@@ -134,7 +135,7 @@ export const MemberDirectory: React.FC = () => {
               onChange={(e) => setSelectedCell(e.target.value)}
               className="py-2 px-3 bg-[#0a122e] text-xs text-white focus:outline-none focus:ring-2 focus:ring-[#00f0ff] cursor-pointer transition-all"
             >
-              <option value="all">All Care Cells</option>
+              <option value="all">All Shepherd Groups</option>
               <option value="Bethel">Bethel Cell (Central)</option>
               <option value="Eden">Eden Cell (South)</option>
               <option value="Moriah">Moriah Young Adults</option>
@@ -153,7 +154,7 @@ export const MemberDirectory: React.FC = () => {
               <tr className="text-[11px] uppercase tracking-wider text-[#00f0ff] font-extrabold bg-[#0a122e]">
                 <th className="py-3 px-4">Member</th>
                 <th className="py-3 px-4">Contact</th>
-                <th className="py-3 px-4">Care Cell &amp; Shepherd</th>
+                <th className="py-3 px-4">Shepherd Group</th>
                 <th className="py-3 px-4">Spiritual Stage</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4 text-right">Actions</th>
@@ -179,7 +180,7 @@ export const MemberDirectory: React.FC = () => {
                   <td className="py-3 px-4 space-y-0.5">
                     <p className="flex items-center gap-1.5 text-slate-300">
                       <Phone className="w-3 h-3 text-[#a6c4eb]" />
-                      <span>{member.phone}</span>
+                      <span>{formatGhanaianPhone(member.phone)}</span>
                     </p>
                     {member.email && (
                       <p className="flex items-center gap-1.5 text-[#a6c4eb] text-[11px]">
@@ -242,7 +243,7 @@ export const MemberDirectory: React.FC = () => {
                           setOutreachMember({
                             isOpen: true,
                             name: `${member.firstName} ${member.lastName}`,
-                            phone: member.phone,
+                            phone: formatGhanaianPhone(member.phone),
                             category: cat,
                             consecutiveMissed: red ? red.consecutiveMissedSundays : crit ? crit.consecutiveMissedSundays : 0,
                             cellGroup: member.cellGroup

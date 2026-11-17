@@ -53,12 +53,12 @@ export const FinanceStewardship: React.FC = () => {
       {/* Header */}
       <div>
         <h2 className="text-lg font-bold text-white">
-          {isPastor ? 'Kingdom Stewardship' : 'Cell Offering Records'}
+          {isPastor ? 'Kingdom Stewardship' : 'Shepherd Group Offerings'}
         </h2>
         <p className="text-xs text-[#a6c4eb] mt-0.5">
           {isPastor
             ? 'Financial stewardship & offering ledger'
-            : `${currentUser.assignedCell} fellowship offerings`}
+            : `${currentUser.assignedCell} shepherd group offerings`}
         </p>
       </div>
 
@@ -154,8 +154,8 @@ export const FinanceStewardship: React.FC = () => {
         <div className="flex items-start gap-2 bg-indigo-900/20 px-4 py-3 text-xs text-indigo-300">
           <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-indigo-400" />
           <span>
-            You can only see cell fellowship offering records for <strong>{currentUser.assignedCell}</strong>.
-            To submit an offering, record a cell meeting from the <strong>Cell Meetings</strong> screen.
+            You can only see shepherd group offering records for <strong>{currentUser.assignedCell}</strong>.
+            To submit an offering, record a shepherd meeting from the <strong>Shepherd Meetings</strong> screen.
           </span>
         </div>
       )}
@@ -199,7 +199,7 @@ export const FinanceStewardship: React.FC = () => {
                   <th className="py-3 px-4">Giver / Channel</th>
                   <th className="py-3 px-4">Category</th>
                   <th className="py-3 px-4">Method</th>
-                  {isPastor && <th className="py-3 px-4">Cell Group</th>}
+                  {isPastor && <th className="py-3 px-4">Shepherd Group</th>}
                   <th className="py-3 px-4">Amount</th>
                   <th className="py-3 px-4 text-right">Status</th>
                 </tr>

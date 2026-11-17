@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'cell-meetings' as ActiveScreen,
-      label: 'Cell Meetings',
+      label: 'Shepherd Meetings',
       icon: BookOpen,
       roles: ['shepherd', 'pastor']
     },

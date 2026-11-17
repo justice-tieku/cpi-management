@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Send, Phone, Copy, Check, MessageSquare, AlertCircle } from 'lucide-react';
+import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
 
 interface DirectOutreachModalProps {
   isOpen: boolean;
@@ -57,9 +58,8 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Clean phone number for WhatsApp link
-  // Handles numbers like +1 (555) 777-1234 or +233 24 123 4567 or 0241234567
-  const cleanPhone = phone.replace(/[^0-9+]/g, '').replace(/^\+/, '');
+  // Clean Ghanaian phone number for WhatsApp link (+233 format without +)
+  const cleanPhone = getCleanDialPhone(phone);
 
   const handleWhatsAppSend = () => {
     if (!message.trim()) {
@@ -107,7 +107,7 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
             <h2 className="text-base font-bold text-white tracking-tight mt-0.5">
               Contact {recipientName}
             </h2>
-            <p className="text-xs text-[#a6c4eb] font-mono mt-0.5">{phone}</p>
+            <p className="text-xs text-[#a6c4eb] font-mono mt-0.5">{formatGhanaianPhone(phone)}</p>
           </div>
           <button
             onClick={onClose}
@@ -122,7 +122,7 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
           {/* Context Tag */}
           <div className="p-3 bg-[#0a122e] flex items-center justify-between text-xs">
             <div>
-              <span className="text-[#a6c4eb] block text-[10px] uppercase font-semibold">Care Cell</span>
+              <span className="text-[#a6c4eb] block text-[10px] uppercase font-semibold">Shepherd Group</span>
               <span className="text-white font-bold">{cellGroup || 'Main Congregation'}</span>
             </div>
             {category.startsWith('red_list') && (

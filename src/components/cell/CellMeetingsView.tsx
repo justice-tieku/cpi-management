@@ -88,11 +88,11 @@ export const CellMeetingsView: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-lg font-bold text-white">
-            {isPastor ? 'All Cell Meetings' : 'My Cell Meetings'}
+            {isPastor ? 'All Shepherd Meetings' : 'My Shepherd Meetings'}
           </h2>
           <p className="text-xs text-[#a6c4eb] mt-0.5">
             {isPastor
-              ? 'Weekly cell fellowship logs & offerings'
+              ? 'Weekly shepherd fellowship logs & offerings'
               : `${currentUser.assignedCell} meetings & offerings`}
           </p>
         </div>
@@ -255,7 +255,7 @@ export const CellMeetingsView: React.FC = () => {
             <div className="p-5 space-y-4">
               {/* Cell name (read-only) */}
               <div>
-                <label className={labelCls}>Cell Group</label>
+                <label className={labelCls}>Shepherd Group</label>
                 <div className="bg-[#070c1e] px-3 py-2 text-sm text-[#a6c4eb]">
                   {currentUser.assignedCell}
                 </div>

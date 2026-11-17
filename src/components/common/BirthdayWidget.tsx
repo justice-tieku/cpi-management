@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Cake, Phone, MessageSquare, Sparkles, Calendar, ChevronRight } from 'lucide-react';
 import { Member } from '../../types/cms';
+import { getCleanDialPhone } from '../../utils/phone';
 
 interface BirthdayWidgetProps {
   members: Member[];
@@ -204,7 +205,7 @@ export const BirthdayWidget: React.FC<BirthdayWidgetProps> = ({
                 </span>
 
                 <a
-                  href={`tel:${member.phone}`}
+                  href={`tel:${getCleanDialPhone(member.phone)}`}
                   className="p-2 bg-[#16285a] hover:bg-[#00ff9d] text-[#cbd5e1] hover:text-[#070c1e] transition-colors cursor-pointer"
                   title={`Call ${member.firstName}`}
                 >
@@ -212,7 +213,7 @@ export const BirthdayWidget: React.FC<BirthdayWidgetProps> = ({
                 </a>
 
                 <a
-                  href={`sms:${member.phone}?body=Happy Birthday ${member.firstName}! May God bless you abundantly from Cross Passion International!`}
+                  href={`sms:${getCleanDialPhone(member.phone)}?body=Happy Birthday ${member.firstName}! May God bless you abundantly from Cross Passion International!`}
                   className="p-2 bg-[#16285a] hover:bg-[#00f0ff] text-[#cbd5e1] hover:text-[#070c1e] transition-colors cursor-pointer"
                   title={`Send Birthday SMS to ${member.firstName}`}
                 >

@@ -67,9 +67,30 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
 
     try {
       const cleanEmail = email.trim().toLowerCase();
+      const designatedPastorEmail = 'crosspassioninternational67@gmail.com';
+      const designatedPastorPassword = 'CrossPassion@99';
       const isDesignatedPastor =
-        cleanEmail === 'crosspassioninternational67@gmail.com' &&
-        password === 'CrossPassion@99';
+        cleanEmail === designatedPastorEmail &&
+        password === designatedPastorPassword;
+
+      // STRICT ROLE TAB ENFORCEMENT BEFORE AUTH:
+      // A. If Pastor tab is selected, ONLY the designated pastor credentials will work
+      if (role === 'pastor') {
+        if (!isDesignatedPastor) {
+          setIsSubmitting(false);
+          setError('Invalid login credentials.');
+          return;
+        }
+      }
+
+      // B. If Shepherd tab is selected, Pastor credentials must be blocked
+      if (role === 'shepherd') {
+        if (cleanEmail === designatedPastorEmail) {
+          setIsSubmitting(false);
+          setError('Invalid login credentials.');
+          return;
+        }
+      }
 
       // 1. Attempt Supabase Auth login
       let authRes = await supabase.auth.signInWithPassword({
@@ -157,7 +178,7 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
       const resolvedCell =
         profileData?.assigned_cell ||
         userMeta?.assigned_cell ||
-        'Care Cell';
+        'Shepherd Group';
 
       setIsSubmitting(false);
       onSuccess?.(resolvedRole, {

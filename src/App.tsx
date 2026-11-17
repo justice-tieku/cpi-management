@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { CMSProvider, useCMS } from './context/CMSContext';
 import { MinisterialTerminal } from './components/MinisterialTerminal';
 import { Sidebar, ActiveScreen } from './components/layout/Sidebar';
@@ -16,41 +16,119 @@ import { CellMeetingsView } from './components/cell/CellMeetingsView';
 import { MessagingCenter } from './components/communications/MessagingCenter';
 import { AnnouncementsBoard } from './components/communications/AnnouncementsBoard';
 import { ChurchEventsBoard } from './components/events/ChurchEventsBoard';
+import {
+  getStoredSession,
+  saveStoredSession,
+  clearStoredSession,
+  touchSessionActivity
+} from './utils/session';
+import { supabase } from '../backend/client';
+import { User } from './types/cms';
 
 const CMSApp: React.FC = () => {
   const { currentUser, setCurrentUser, recordShepherdLogin } = useCMS();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    const session = getStoredSession();
+    return !!session;
+  });
   const [activeScreen, setActiveScreen] = useState<ActiveScreen>('dashboard');
   const [isAddPersonOpen, setIsAddPersonOpen] = useState(false);
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
+  const lastTouchRef = useRef<number>(Date.now());
+
+  // Restore session on initial load if present and valid
+  useEffect(() => {
+    const session = getStoredSession();
+    if (session) {
+      setCurrentUser(session.user);
+      setIsAuthenticated(true);
+    } else {
+      setIsAuthenticated(false);
+    }
+  }, [setCurrentUser]);
+
+  // Handle explicit logout
+  const handleLogout = () => {
+    clearStoredSession();
+    supabase.auth.signOut().catch(() => {});
+    setIsAuthenticated(false);
+  };
+
+  // 15-Minute Inactivity Tracker:
+  // Listens to user interactions and logs out automatically if inactive for 15+ minutes
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    const handleUserActivity = () => {
+      const now = Date.now();
+      // Throttle localStorage updates to at most once every 10 seconds
+      if (now - lastTouchRef.current > 10000) {
+        lastTouchRef.current = now;
+        touchSessionActivity();
+      }
+    };
+
+    const events: Array<keyof WindowEventMap> = [
+      'mousedown',
+      'mousemove',
+      'keydown',
+      'scroll',
+      'touchstart',
+      'click'
+    ];
+
+    events.forEach((evt) => {
+      window.addEventListener(evt, handleUserActivity, { passive: true });
+    });
+
+    // Check inactivity every 10 seconds
+    const interval = setInterval(() => {
+      const session = getStoredSession();
+      if (!session) {
+        // Session expired after 15 minutes of inactivity
+        console.warn('Session expired due to 15 minutes of inactivity.');
+        handleLogout();
+      }
+    }, 10000);
+
+    return () => {
+      events.forEach((evt) => {
+        window.removeEventListener(evt, handleUserActivity);
+      });
+      clearInterval(interval);
+    };
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (
       <div className="w-full min-h-screen bg-[#070c1e]">
         <MinisterialTerminal
           onSuccess={(role, profile) => {
-            setIsAuthenticated(true);
+            let newUser: User;
             if (role === 'pastor') {
-              setCurrentUser({
+              newUser = {
                 id: profile.id || 'USR-PASTOR-01',
                 name: profile.name,
                 email: profile.email,
                 role: 'pastor',
                 branch: 'Main Sanctuary — Central Cathedral'
-              });
-              setActiveScreen('dashboard');
+              };
             } else {
               const registered = recordShepherdLogin(profile.name, profile.assignedCell);
-              setCurrentUser({
+              newUser = {
                 id: registered.id,
                 name: registered.name,
                 email: registered.email,
                 role: 'shepherd',
                 assignedCell: registered.cell,
                 branch: 'Main Sanctuary — Central Cathedral'
-              });
-              setActiveScreen('dashboard');
+              };
             }
+
+            setCurrentUser(newUser);
+            saveStoredSession(newUser, role);
+            setIsAuthenticated(true);
+            setActiveScreen('dashboard');
           }}
         />
       </div>
@@ -59,15 +137,15 @@ const CMSApp: React.FC = () => {
 
   const isPastor = currentUser.role === 'pastor';
 
-  // Simple, clean, short titles & descriptions
+  // Simple, clean, short titles & descriptions with "Shepherd" terminology
   const screenTitles: Record<ActiveScreen, { title: string; subtitle: string }> = {
     dashboard: {
-      title: isPastor ? 'Dashboard' : 'My Cell Dashboard',
-      subtitle: isPastor ? 'Overview & key metrics' : 'Cell overview & status'
+      title: isPastor ? 'Dashboard' : 'My Shepherd Dashboard',
+      subtitle: isPastor ? 'Overview & key metrics' : 'Flock overview & status'
     },
     members: {
-      title: isPastor ? 'Members' : 'My Cell Members',
-      subtitle: isPastor ? 'Church directory' : 'Cell member roster'
+      title: isPastor ? 'Members' : 'My Flock Members',
+      subtitle: isPastor ? 'Church directory' : 'Flock member roster'
     },
     shepherds: {
       title: 'Shepherds',
@@ -86,8 +164,8 @@ const CMSApp: React.FC = () => {
       subtitle: isPastor ? 'Member care tasks & visits' : 'Care tasks & follow-up calls'
     },
     'cell-meetings': {
-      title: 'Cell Meetings',
-      subtitle: isPastor ? 'Cell fellowship & offerings' : 'Weekly cell report & offerings'
+      title: isPastor ? 'Shepherd Meetings' : 'My Shepherd Meetings',
+      subtitle: isPastor ? 'Shepherd fellowship & offerings' : 'Weekly shepherd report & offerings'
     },
     reports: {
       title: isPastor ? 'Weekly Reports' : 'Submit Report',
@@ -118,7 +196,7 @@ const CMSApp: React.FC = () => {
       <Sidebar
         activeScreen={activeScreen}
         onNavigate={setActiveScreen}
-        onLogout={() => setIsAuthenticated(false)}
+        onLogout={handleLogout}
         mobileOpen={isMobileNavOpen}
         onMobileClose={() => setIsMobileNavOpen(false)}
       />

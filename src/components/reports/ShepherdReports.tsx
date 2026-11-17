@@ -192,7 +192,7 @@ export const ShepherdReports: React.FC = () => {
             <form onSubmit={handleShepherdSubmit} className="space-y-4">
               <div>
                 <label className="text-xs text-slate-300 font-medium block mb-1">
-                  Monthly Pastoral Care Summary &amp; Cell Notes
+                  Monthly Pastoral Care Summary &amp; Shepherd Notes
                 </label>
                 <textarea
                   rows={4}

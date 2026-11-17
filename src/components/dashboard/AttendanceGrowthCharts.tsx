@@ -390,8 +390,8 @@ export const AttendanceGrowthCharts: React.FC = () => {
       {activeTab === 'cells' && (
         <div className="p-5 space-y-5">
           <div className="flex items-center justify-between text-xs">
-            <span className="font-bold text-white">Cell Group Performance</span>
-            <span className="text-[#00f0ff] font-bold font-mono">{shepherds.length} Active Cells</span>
+            <span className="font-bold text-white">Shepherd Group Performance</span>
+            <span className="text-[#00f0ff] font-bold font-mono">{shepherds.length} Active Groups</span>
           </div>
 
           <div className="space-y-3">

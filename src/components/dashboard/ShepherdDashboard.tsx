@@ -68,7 +68,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
             Welcome, {currentUser.name}
           </h2>
           <p className="text-xs text-[#a6c4eb] mt-0.5">
-            Care Cell: <strong className="text-white">{currentUser.assignedCell}</strong>
+            Shepherd Group: <strong className="text-white">{currentUser.assignedCell}</strong>
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
             <Bell className="w-5 h-5 text-[#00f0ff] shrink-0 mt-0.5 animate-bounce" />
             <div className="space-y-1">
               <p className="font-bold text-white text-sm">
-                New Member Assigned to Your Care Cell!
+                New Member Assigned to Your Shepherd Group!
               </p>
               <p className="text-[#a6c4eb]">
                 {recentAssignmentNotifs[0].message}
@@ -141,7 +141,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
         {/* 1. Cell Flock */}
         <div className="p-5 bg-[#111d44] shadow-xl space-y-2">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#a6c4eb] font-medium">Cell Flock Size</span>
+            <span className="text-xs text-[#a6c4eb] font-medium">Shepherd Group Size</span>
             <div className="w-8 h-8 bg-[#0a122e] flex items-center justify-center text-[#00f0ff]">
               <Users className="w-4 h-4" />
             </div>
@@ -340,10 +340,10 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
             </p>
           </div>
 
-          {/* Cell Flock Birthdays */}
+          {/* Shepherd Group Birthdays */}
           <BirthdayWidget
             members={visibleMembers}
-            title="Cell Birthdays"
+            title="Shepherd Group Birthdays"
             subtitle={`Celebrations for members in ${currentUser.assignedCell || 'your flock'}`}
           />
 

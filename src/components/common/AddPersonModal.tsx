@@ -102,7 +102,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose 
                 Add New Person
               </h3>
               <p className="text-[11px] text-[#a6c4eb]">
-                Register into church &amp; care cell records
+                Register into church & shepherd group records
               </p>
             </div>
           </div>
@@ -160,7 +160,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose 
                 required
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                placeholder="e.g. +1 (555) 234-5678"
+                placeholder="e.g. +233 24 000 0000"
                 className="w-full pl-9 pr-3 py-2 bg-[#0a122e] text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f0ff]"
               />
             </div>
@@ -220,7 +220,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({ isOpen, onClose 
           {isPastor && (
             <div>
               <label className="text-[11px] font-semibold text-[#cbd5e1] block mb-1">
-                Assign to Care Cell / Shepherd
+                Assign to Shepherd Group
               </label>
               <select
                 value={selectedShepherdId}

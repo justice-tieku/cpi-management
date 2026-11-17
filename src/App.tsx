@@ -229,6 +229,7 @@ const CMSApp: React.FC = () => {
       <AddPersonModal
         isOpen={isAddPersonOpen}
         onClose={() => setIsAddPersonOpen(false)}
+        defaultMode={activeScreen === 'first-timers' ? 'guest' : 'member'}
       />
     </div>
   );

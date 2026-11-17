@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   UserPlus,
   Phone,
@@ -17,6 +17,7 @@ import { useCMS } from '../../context/CMSContext';
 import { VisitorJourney, VisitorRecord } from '../../types/cms';
 import { AddPersonModal } from '../common/AddPersonModal';
 import { DirectOutreachModal } from '../common/DirectOutreachModal';
+import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
 
 export const FirstTimersTracking: React.FC = () => {
   const { visibleVisitors, shepherds, currentUser } = useCMS();
@@ -38,6 +39,11 @@ export const FirstTimersTracking: React.FC = () => {
 
   // Local state for interactive visitors list
   const [visitorsList, setVisitorsList] = useState<VisitorRecord[]>(visibleVisitors);
+
+  // Keep visitorsList in sync whenever new visitors are registered
+  useEffect(() => {
+    setVisitorsList(visibleVisitors);
+  }, [visibleVisitors]);
 
   const journeySteps: VisitorJourney[] = [
     'First Visit',
@@ -190,15 +196,15 @@ export const FirstTimersTracking: React.FC = () => {
                 <div className="flex flex-wrap items-center gap-4 text-xs text-[#a6c4eb] pt-1">
                   <span className="flex items-center gap-1.5">
                     <Phone className="w-3.5 h-3.5 text-[#7b9dc7]" />
-                    <span className="font-mono">{v.phone}</span>
+                    <span className="font-mono text-slate-300">{formatGhanaianPhone(v.phone)}</span>
                     <a
-                      href={`tel:${v.phone}`}
+                      href={`tel:${getCleanDialPhone(v.phone)}`}
                       className="text-emerald-400 hover:text-emerald-300 ml-1 text-[11px] font-semibold"
                     >
                       Call
                     </a>
                     <a
-                      href={`sms:${v.phone}`}
+                      href={`sms:${getCleanDialPhone(v.phone)}`}
                       className="text-[#00f0ff] hover:text-[#00f0ff] ml-1 text-[11px] font-semibold"
                     >
                       SMS
@@ -230,7 +236,7 @@ export const FirstTimersTracking: React.FC = () => {
                     setOutreachGuest({
                       isOpen: true,
                       name: v.name,
-                      phone: v.phone,
+                      phone: formatGhanaianPhone(v.phone),
                       shepherd: v.assignedShepherdName
                     })
                   }
@@ -275,6 +281,7 @@ export const FirstTimersTracking: React.FC = () => {
       <AddPersonModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        defaultMode="guest"
       />
     </div>
   );

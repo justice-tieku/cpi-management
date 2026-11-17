@@ -193,10 +193,10 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
         setShowReassignModal(false);
         setTimeout(() => setSuccessNotice(''), 5000);
       } else {
-        setReassignError(res.error || 'Unable to save the record. Please try again.');
+        setReassignError(res.error || 'Unable to add a new person. Please try again.');
       }
     } catch (err: any) {
-      setReassignError('Unable to save the record. Please try again.');
+      setReassignError('Unable to add a new person. Please try again.');
     } finally {
       setIsTransferring(false);
     }
@@ -208,13 +208,13 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 bg-[#111d44]">
         <div>
           <span className="text-[11px] font-semibold text-[#00f0ff] uppercase tracking-wider block">
-            Pastoral Administration • Cross Passion International
+            Pastoral Administration
           </span>
           <h2 className="text-xl font-bold text-white tracking-tight mt-0.5">
             Shepherds Management
           </h2>
           <p className="text-xs text-[#a6c4eb] mt-0.5">
-            Shepherd group assignments and flock allocations
+            Shepherd Assignment & Sheep Allocation
           </p>
         </div>
 
@@ -229,7 +229,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
             className="px-3.5 py-1.5 bg-[#00ff9d] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
           >
             <UserPlus className="w-3.5 h-3.5" />
-            <span>+ Invite New Shepherd</span>
+            <span>+ Add New Shepherd</span>
           </button>
 
           <div className="flex items-center gap-2 bg-[#0a122e] p-1">
@@ -241,7 +241,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                   : 'text-[#a6c4eb] hover:text-white'
               }`}
             >
-              All Cells by Category
+              All Cells
             </button>
             <button
               onClick={() => setViewMode('deep-dive')}
@@ -251,7 +251,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                   : 'text-[#a6c4eb] hover:text-white'
               }`}
             >
-              Individual Shepherd Deep Dive
+              Individual Shepherd
             </button>
           </div>
         </div>

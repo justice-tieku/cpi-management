@@ -19,6 +19,7 @@ import {
 import { Member, SpiritualStage, MemberStatus } from '../../types/cms';
 import { useCMS } from '../../context/CMSContext';
 import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
+import { normalizeDate } from '../../utils/date';
 
 interface MemberDetailModalProps {
   member: Member | null;
@@ -126,7 +127,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
         phone: formatGhanaianPhone(form.phone.trim()),
         email: form.email.trim(),
         city: form.city.trim(),
-        dateOfBirth: form.dateOfBirth.trim() || undefined,
+        dateOfBirth: normalizeDate(form.dateOfBirth) || undefined,
         spiritualStage: form.spiritualStage,
         status: form.status,
         generalNotes: form.generalNotes.trim()

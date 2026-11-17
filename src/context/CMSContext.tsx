@@ -21,6 +21,7 @@ import {
 import { supabase, isSupabaseConfigured } from '../../backend/client';
 import { formatGhanaianPhone } from '../utils/phone';
 import { getStoredSession } from '../utils/session';
+import { normalizeDate } from '../utils/date';
 
 export interface CMSNotification {
   id: string;
@@ -62,6 +63,7 @@ interface CMSContextType {
   updateTaskStatus: (taskId: string, status: FollowUpStatus, note?: string) => Promise<{ success: boolean; error?: string }>;
   visitors: VisitorRecord[];
   visibleVisitors: VisitorRecord[];
+  registerVisitor: (data: Omit<VisitorRecord, 'id' | 'contactAttempts'>) => Promise<{ success: boolean; error?: string; visitor?: VisitorRecord }>;
   shepherdReports: ShepherdReport[];
   submitReport: (reportId: string, narrative: string) => Promise<{ success: boolean; error?: string }>;
   approveReport: (reportId: string) => void;
@@ -314,6 +316,27 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           );
         }
 
+        // 7. Visitors (First-Timers / Guests)
+        const { data: dbVisitors } = await supabase.from('visitors').select('*');
+        if (dbVisitors && dbVisitors.length > 0 && isMounted) {
+          setVisitors(
+            dbVisitors.map((v: any) => ({
+              id: v.id,
+              name: v.name,
+              phone: formatGhanaianPhone(v.phone),
+              email: v.email || '',
+              visitDate: v.visit_date,
+              serviceAttended: v.service_attended,
+              invitedBy: v.invited_by || undefined,
+              assignedShepherdId: v.assigned_shepherd_id || undefined,
+              assignedShepherdName: v.assigned_shepherd_name || undefined,
+              journeyStage: v.journey_stage,
+              contactAttempts: v.contact_attempts || 0,
+              notes: v.notes || undefined
+            }))
+          );
+        }
+
         if (isMounted) setIsCloudConnected(true);
       } catch (err) {
         console.warn('[CPI Cloud Sync] Running with cached data:', err);
@@ -388,8 +411,10 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     ? notifications
     : notifications.filter((n) => n.recipientId === currentUser.id || n.recipientId === 'all');
 
-  const getProfileUUID = (userIdOrShepherdId?: string): string => {
-    if (!userIdOrShepherdId) return 'a0000000-0000-0000-0000-000000000001';
+  const getProfileUUID = (userIdOrShepherdId?: string, fallback = false): string | null => {
+    if (!userIdOrShepherdId) return fallback ? 'a0000000-0000-0000-0000-000000000001' : null;
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(userIdOrShepherdId);
+    if (isUUID) return userIdOrShepherdId;
     const idMap: Record<string, string> = {
       'USR-PASTOR-01': 'a0000000-0000-0000-0000-000000000001',
       'SH-01': 'a0000000-0000-0000-0000-000000000002',
@@ -398,7 +423,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       'SH-04': 'a0000000-0000-0000-0000-000000000005',
       'SH-05': 'a0000000-0000-0000-0000-000000000006'
     };
-    return idMap[userIdOrShepherdId] || 'a0000000-0000-0000-0000-000000000001';
+    return idMap[userIdOrShepherdId] || (fallback ? 'a0000000-0000-0000-0000-000000000001' : null);
   };
 
   const markNotificationRead = (id: string) => {
@@ -590,17 +615,33 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'A member with this telephone or email already exists in the registry.' };
     }
 
-    const newId = `CPI-M-${1035 + members.length}`;
+    // Generate safe, collision-free member ID
+    const maxNum = members.reduce((max, m) => {
+      const match = m.id.match(/CPI-M-(\d+)/);
+      if (match) {
+        const num = parseInt(match[1], 10);
+        return num > max ? num : max;
+      }
+      return max;
+    }, 1032);
+    let newId = `CPI-M-${maxNum + 1}`;
+    while (members.some((m) => m.id === newId)) {
+      newId = `CPI-M-${parseInt(newId.replace('CPI-M-', ''), 10) + 1}`;
+    }
+
     const formattedPhone = formatGhanaianPhone(newMemData.phone.trim());
+    const normalizedDob = normalizeDate(newMemData.dateOfBirth);
+
     const newMember: Member = {
       ...newMemData,
       firstName: newMemData.firstName.trim(),
-      lastName: newMemData.lastName?.trim() || '',
+      lastName: newMemData.lastName?.trim() || '—',
       phone: formattedPhone,
       email: newMemData.email?.trim() || '',
+      dateOfBirth: normalizedDob || undefined,
       id: newId,
       registeredAt: new Date().toISOString().split('T')[0],
-      registeredBy: currentUser.name
+      registeredBy: currentUser.name || 'Pastor Adams'
     };
 
     if (isSupabaseConfigured) {
@@ -612,12 +653,12 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           phone: newMember.phone,
           email: newMember.email || null,
           city: newMember.city || 'Central District',
-          date_of_birth: newMember.dateOfBirth || null,
-          status: newMember.status,
-          spiritual_stage: newMember.spiritualStage,
+          date_of_birth: normalizedDob,
+          status: newMember.status || 'New Member',
+          spiritual_stage: newMember.spiritualStage || 'New Convert',
           department: newMember.department || null,
           cell_group: newMember.cellGroup,
-          current_shepherd_id: newMember.currentShepherdId || null,
+          current_shepherd_id: getProfileUUID(newMember.currentShepherdId),
           current_shepherd_name: newMember.currentShepherdName || null,
           registered_at: newMember.registeredAt,
           registered_by: newMember.registeredBy,
@@ -653,6 +694,87 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true, member: newMember };
   };
 
+  const registerVisitor = async (
+    data: Omit<VisitorRecord, 'id' | 'contactAttempts'>
+  ): Promise<{ success: boolean; error?: string; visitor?: VisitorRecord }> => {
+    if (!data || !data.name?.trim() || !data.phone?.trim()) {
+      return { success: false, error: 'Please enter the required information.' };
+    }
+
+    const formattedPhone = formatGhanaianPhone(data.phone.trim());
+    const newId = `VIS-${Date.now().toString().slice(-6)}`;
+    const visitDate = normalizeDate(data.visitDate) || new Date().toISOString().split('T')[0];
+
+    const newVisitor: VisitorRecord = {
+      ...data,
+      id: newId,
+      name: data.name.trim(),
+      phone: formattedPhone,
+      email: data.email?.trim() || '',
+      visitDate,
+      serviceAttended: data.serviceAttended || 'Sunday Service',
+      journeyStage: data.journeyStage || 'First Visit',
+      contactAttempts: 0,
+      notes: data.notes || ''
+    };
+
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await (supabase.from('visitors') as any).insert({
+          id: newId,
+          name: newVisitor.name,
+          phone: newVisitor.phone,
+          email: newVisitor.email || null,
+          visit_date: newVisitor.visitDate,
+          service_attended: newVisitor.serviceAttended,
+          invited_by: newVisitor.invitedBy || null,
+          assigned_shepherd_id: getProfileUUID(newVisitor.assignedShepherdId),
+          assigned_shepherd_name: newVisitor.assignedShepherdName || null,
+          journey_stage: newVisitor.journeyStage,
+          contact_attempts: 0,
+          notes: newVisitor.notes || null
+        });
+
+        if (error) {
+          console.error('[Supabase registerVisitor] Error:', error);
+          return { success: false, error: 'Unable to save the record. Please try again.' };
+        }
+      } catch (err: any) {
+        console.error('[Supabase registerVisitor] Catch:', err);
+        return { success: false, error: 'Unable to save the record. Please try again.' };
+      }
+    }
+
+    setVisitors((prev) => [newVisitor, ...prev]);
+
+    // Also enroll guest in member roster under 'Pending Verification' so they exist across church records
+    const nameParts = newVisitor.name.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '—';
+    const guestMemberId = `CPI-M-${Date.now().toString().slice(-4)}`;
+
+    const guestMember: Member = {
+      id: guestMemberId,
+      firstName,
+      lastName,
+      phone: formattedPhone,
+      email: newVisitor.email,
+      city: 'Central District',
+      status: 'Pending Verification',
+      spiritualStage: 'New Convert',
+      cellGroup: newVisitor.assignedShepherdName ? `${newVisitor.assignedShepherdName}'s Group` : 'First-Timers Care',
+      currentShepherdId: newVisitor.assignedShepherdId,
+      currentShepherdName: newVisitor.assignedShepherdName,
+      registeredAt: newVisitor.visitDate,
+      registeredBy: currentUser.name || 'Pastor Adams',
+      generalNotes: `First-time guest. Invited by: ${newVisitor.invitedBy || 'Walk-in'}. ${newVisitor.notes || ''}`
+    };
+
+    setMembers((prev) => [guestMember, ...prev]);
+
+    return { success: true, visitor: newVisitor };
+  };
+
   const updateMember = async (memberId: string, updates: Partial<Member>): Promise<{ success: boolean; error?: string }> => {
     if (!memberId || !updates || Object.keys(updates).length === 0) {
       return { success: false, error: 'There is no data to save.' };
@@ -670,7 +792,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         if (updates.email !== undefined) dbPayload.email = updates.email.trim() || null;
         if (updates.city !== undefined) dbPayload.city = updates.city;
-        if (updates.dateOfBirth !== undefined) dbPayload.date_of_birth = updates.dateOfBirth || null;
+        if (updates.dateOfBirth !== undefined) {
+          const norm = normalizeDate(updates.dateOfBirth);
+          dbPayload.date_of_birth = norm;
+          updates.dateOfBirth = norm || undefined;
+        }
         if (updates.status !== undefined) dbPayload.status = updates.status;
         if (updates.spiritualStage !== undefined) dbPayload.spiritual_stage = updates.spiritualStage;
         if (updates.department !== undefined) dbPayload.department = updates.department || null;
@@ -1309,6 +1435,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateTaskStatus,
         visitors,
         visibleVisitors,
+        registerVisitor,
         shepherdReports,
         submitReport,
         approveReport,

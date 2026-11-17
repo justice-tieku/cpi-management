@@ -1023,7 +1023,6 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         const { error } = await (supabase.from('attendance_records') as any).upsert({
           id: targetRecordId,
-          service_id: 'SRV-SUN-04',
           service_name: 'Sunday 1st Service — Communion',
           service_date: date,
           member_id: member.id,

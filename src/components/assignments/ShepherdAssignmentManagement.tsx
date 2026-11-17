@@ -53,7 +53,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
   const [newShepherdEmail, setNewShepherdEmail] = useState('');
   const [newShepherdPhone, setNewShepherdPhone] = useState('');
   const [newShepherdCell, setNewShepherdCell] = useState('');
-  const [newShepherdPassword, setNewShepherdPassword] = useState('CrossPassion@99');
+  const [newShepherdPassword, setNewShepherdPassword] = useState('');
   const [isCreatingShepherd, setIsCreatingShepherd] = useState(false);
   const [inviteError, setInviteError] = useState('');
   const [createdCredentials, setCreatedCredentials] = useState<{
@@ -80,7 +80,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
         email: newShepherdEmail.trim(),
         phone: newShepherdPhone.trim(),
         cellName: newShepherdCell.trim(),
-        password: newShepherdPassword.trim() || 'CrossPassion@99'
+        password: newShepherdPassword.trim()
       });
 
       if (!res.success) throw new Error(res.error || 'Failed to create shepherd account');
@@ -89,10 +89,10 @@ export const ShepherdAssignmentManagement: React.FC = () => {
         name: newShepherdName.trim(),
         email: newShepherdEmail.trim(),
         cell: newShepherdCell.trim(),
-        password: newShepherdPassword.trim() || 'CrossPassion@99'
+        password: newShepherdPassword.trim()
       });
 
-      setSuccessNotice(`Shepherd account provisioned successfully for ${newShepherdName.trim()}!`);
+      setSuccessNotice(`Shepherd account successfully created for ${newShepherdName.trim()}!`);
     } catch (err: any) {
       setInviteError('Request unsuccessful. Please try again.');
     } finally {
@@ -702,7 +702,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                 <div className="p-4 bg-[#0f382a] text-[#00ff9d] flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 shrink-0" />
                   <span className="text-xs font-bold">
-                    Shepherd account provisioned successfully in Supabase!
+                    Shepherd account successfully created for {createdCredentials.name}!
                   </span>
                 </div>
 
@@ -838,7 +838,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                     disabled={isCreatingShepherd}
                     className="px-5 py-2 bg-[#00ff9d] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-bold cursor-pointer disabled:opacity-50"
                   >
-                    {isCreatingShepherd ? 'Provisioning Account...' : 'Create Shepherd Account'}
+                    {isCreatingShepherd ? 'Creating Account...' : 'Create Shepherd Account'}
                   </button>
                 </div>
               </form>

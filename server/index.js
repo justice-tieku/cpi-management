@@ -38,8 +38,7 @@ app.get('/health', async (req, res) => {
     if (error) {
       return res.status(500).json({
         status: 'warning',
-        message: 'API server running, but Supabase connection failed',
-        error: error.message,
+        message: 'API server running, but database connection failed',
         timestamp: new Date().toISOString()
       });
     }
@@ -48,13 +47,13 @@ app.get('/health', async (req, res) => {
       status: 'healthy',
       service: 'Cross Passion International (CPI) Ministerial API',
       version: '1.0.0',
-      database: 'Connected (Supabase Cloud)',
+      database: 'Connected',
       timestamp: new Date().toISOString()
     });
   } catch (err) {
     res.status(500).json({
       status: 'error',
-      message: err.message,
+      message: 'Request unsuccessful. Please try again.',
       timestamp: new Date().toISOString()
     });
   }
@@ -105,7 +104,7 @@ app.get('/api/stats', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -125,7 +124,7 @@ app.get('/api/members', async (req, res) => {
 
     res.json({ success: true, count: data.length, members: data });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -137,7 +136,7 @@ app.post('/api/members', async (req, res) => {
 
     res.status(201).json({ success: true, member: data });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -150,7 +149,7 @@ app.patch('/api/members/:id', async (req, res) => {
 
     res.json({ success: true, member: data });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -170,7 +169,7 @@ app.get('/api/attendance', async (req, res) => {
 
     res.json({ success: true, records: data });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -182,7 +181,7 @@ app.post('/api/attendance', async (req, res) => {
 
     res.status(201).json({ success: true, count: data.length, data });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -195,7 +194,7 @@ app.get('/api/announcements', async (req, res) => {
     if (error) throw error;
     res.json({ success: true, announcements: data });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -205,7 +204,7 @@ app.post('/api/announcements', async (req, res) => {
     if (error) throw error;
     res.status(201).json({ success: true, announcement: data });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -215,7 +214,7 @@ app.get('/api/events', async (req, res) => {
     if (error) throw error;
     res.json({ success: true, events: data });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -225,7 +224,7 @@ app.post('/api/events', async (req, res) => {
     if (error) throw error;
     res.status(201).json({ success: true, event: data });
   } catch (err) {
-    res.status(400).json({ success: false, error: err.message });
+    res.status(400).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -246,7 +245,7 @@ app.get('/api/finance/summary', async (req, res) => {
       recentRecords: (data || []).slice(-10)
     });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -274,7 +273,7 @@ app.post('/api/ministerial/broadcast-sms', async (req, res) => {
       timestamp: new Date().toISOString()
     });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -371,13 +370,13 @@ app.post('/api/auth/setup-initial-users', async (req, res) => {
 
     res.json({
       success: true,
-      message: 'Initial accounts provisioned successfully in Supabase Auth & Profiles',
+      message: 'Initial accounts created successfully',
       results,
       timestamp: new Date().toISOString()
     });
   } catch (err) {
     console.error('[SETUP USERS ERROR]', err);
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 
@@ -437,7 +436,7 @@ app.post('/api/shepherds/create', async (req, res) => {
 
     res.status(201).json({
       success: true,
-      message: `Shepherd account successfully provisioned for ${name}`,
+      message: `Shepherd account successfully created for ${name}`,
       shepherd: {
         id: userId,
         name: name.trim(),
@@ -466,7 +465,7 @@ app.get('/api/shepherds', async (req, res) => {
 
     res.json({ success: true, count: data ? data.length : 0, shepherds: data || [] });
   } catch (err) {
-    res.status(500).json({ success: false, error: err.message });
+    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
   }
 });
 

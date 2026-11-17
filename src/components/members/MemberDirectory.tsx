@@ -110,13 +110,6 @@ export const MemberDirectory: React.FC = () => {
             <Printer className="w-3.5 h-3.5 text-[#00f0ff]" />
             <span>Print</span>
           </button>
-          <button
-            onClick={() => setIsModalOpen(true)}
-            className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-extrabold shadow-md flex items-center gap-2 cursor-pointer transition-colors"
-          >
-            <UserPlus className="w-3.5 h-3.5" />
-            <span>Add New Person</span>
-          </button>
         </div>
       </div>
 

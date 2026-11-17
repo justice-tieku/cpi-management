@@ -79,6 +79,8 @@ export const AuditLogsView: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-800/60 text-xs">
+              {filteredLogs.map((log) => (
+                <tr key={log.id} className="hover:bg-[#16285a]/40 transition-colors font-mono">
               {filteredLogs.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="py-12 text-center text-[#7b9dc7] text-xs">
@@ -109,6 +111,7 @@ export const AuditLogsView: React.FC = () => {
                     {log.details}
                   </td>
                 </tr>
+              ))}
               )))}
             </tbody>
           </table>

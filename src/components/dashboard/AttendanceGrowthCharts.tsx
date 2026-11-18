@@ -15,25 +15,10 @@ export const AttendanceGrowthCharts: React.FC = () => {
   const { members, shepherds, cellMeetings } = useCMS();
   const [activeTab, setActiveTab] = useState<'attendance' | 'offering' | 'demographics' | 'cells'>('attendance');
 
-  /* ── Seeded 6-week trend data ── */
-  const weeklyTrends = [
-    { week: 'Wk 40', label: 'Oct 5',  sunday: 118, midweek: 74,  vigil: 55,  offerings: 3420 },
-    { week: 'Wk 41', label: 'Oct 12', sunday: 125, midweek: 82,  vigil: 61,  offerings: 3750 },
-    { week: 'Wk 42', label: 'Oct 19', sunday: 132, midweek: 89,  vigil: 67,  offerings: 3910 },
-    { week: 'Wk 43', label: 'Oct 26', sunday: 128, midweek: 85,  vigil: 60,  offerings: 3680 },
-    { week: 'Wk 44', label: 'Nov 2',  sunday: 139, midweek: 96,  vigil: 72,  offerings: 4120 },
-    { week: 'Wk 45', label: 'Nov 9',  sunday: 147, midweek: 104, vigil: 78,  offerings: 4450 },
-  ];
+  const weeklyTrends = [];
 
-  /* ── Offering categories ── */
-  const offeringCategories = [
-    { label: 'Tithe',         amount: 11200, color: '#00f0ff', pct: 42 },
-    { label: 'Sunday Seed',   amount: 7400,  color: '#00ff9d', pct: 28 },
-    { label: 'Project/Build', amount: 4800,  color: '#f59e0b', pct: 18 },
-    { label: 'Cell Meetings', amount: 2000,  color: '#a78bfa', pct: 7  },
-    { label: 'Benevolence',   amount: 1200,  color: '#fb923c', pct: 5  },
-  ];
-  const totalOffering = offeringCategories.reduce((s, c) => s + c.amount, 0);
+  const offeringCategories = [];
+  const totalOffering = 0;
 
   /* ── Demographics ── */
   const femaleNames = ['Sarah', 'Kimberly', 'Elizabeth'];

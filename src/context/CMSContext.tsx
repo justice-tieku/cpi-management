@@ -101,14 +101,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   });
 
-  // Cell Shepherds definition
-  const [shepherds, setShepherds] = useState([
-    { id: 'SH-01', name: 'Elder Nathan Cole', cell: 'Bethel Cell (Central)', assignedCount: 35, maxCapacity: 35 },
-    { id: 'SH-02', name: 'Deaconess Ruth Taiwo', cell: 'Eden Cell (South)', assignedCount: 19, maxCapacity: 30 },
-    { id: 'SH-03', name: 'Bro. Matthew Kim', cell: 'Moriah Young Adults', assignedCount: 24, maxCapacity: 30 },
-    { id: 'SH-04', name: 'Sister Grace Olatunji', cell: 'Sharon Cell (East)', assignedCount: 29, maxCapacity: 30 },
-    { id: 'SH-05', name: 'Pastor Emmanuel Vance', cell: 'Hebron Cell (North)', assignedCount: 32, maxCapacity: 35 }
-  ]);
+  // Cell Shepherds definition (live from backend only)
+  const [shepherds, setShepherds] = useState<{ id: string; name: string; cell: string; assignedCount: number; maxCapacity: number }[]>([]);
 
   const recordShepherdLogin = (name: string, cellName?: string) => {
     const trimmed = name.trim();
@@ -333,6 +327,20 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               journeyStage: v.journey_stage,
               contactAttempts: v.contact_attempts || 0,
               notes: v.notes || undefined
+            }))
+          );
+        }
+
+        // 8. Shepherds (from profiles)
+        const { data: dbShepherds } = await supabase.from('profiles').select('*').eq('role', 'shepherd');
+        if (dbShepherds && isMounted) {
+          setShepherds(
+            dbShepherds.map((s: any) => ({
+              id: s.id,
+              name: s.name || s.full_name || '',
+              cell: s.assigned_cell || s.cell || '',
+              assignedCount: 0,
+              maxCapacity: 30
             }))
           );
         }

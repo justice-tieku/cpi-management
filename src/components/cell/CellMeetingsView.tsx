@@ -12,6 +12,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
+import { validateName, validateAmount, validateCount, validateDateNotFuture } from '../../utils/validation';
 
 const inputCls =
   'w-full bg-[#070c1e]    px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f0ff] transition-colors';
@@ -41,12 +42,21 @@ export const CellMeetingsView: React.FC = () => {
     totalMeetings > 0 ? Math.round(totalAttendees / totalMeetings) : 0;
 
   const handleSubmit = async () => {
-    if (!form.topic.trim() || !form.attendeesCount) {
-      setError('Please enter the required information.');
-      return;
+    const errors: string[] = [];
+    const topicErr = validateName(form.topic, 'Topic');
+    if (topicErr) errors.push(topicErr);
+    const dateErr = validateDateNotFuture(form.date, 'Meeting date');
+    if (dateErr) errors.push(dateErr);
+    if (!form.attendeesCount.trim()) {
+      errors.push('Number of attendees is required.');
+    } else {
+      const countErr = validateCount(form.attendeesCount);
+      if (countErr) errors.push(countErr);
     }
-    if (isNaN(Number(form.attendeesCount))) {
-      setError('Please enter a valid attendees count.');
+    const amountErr = validateAmount(form.offeringAmount === '' ? '0' : form.offeringAmount, true);
+    if (amountErr) errors.push(amountErr);
+    if (errors.length > 0) {
+      setError(errors.join(' '));
       return;
     }
     setError('');

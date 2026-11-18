@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CalendarDays, Plus, X, MapPin, Clock, Tag, Image, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { ChurchEvent } from '../../types/cms';
+import { validateName } from '../../utils/validation';
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
   Conference: { bg: 'bg-[#072e54]', text: 'text-[#00f0ff]' },
@@ -46,9 +47,15 @@ export const ChurchEventsBoard: React.FC = () => {
 
   const handleSubmit = async () => {
     const errs: Record<string, string> = {};
-    if (!form.title.trim()) errs.title = 'Event title is required';
-    if (!form.date.trim()) errs.date = 'Event date is required';
-    if (!form.location.trim()) errs.location = 'Location is required';
+    const titleErr = validateName(form.title, 'Event title');
+    if (titleErr) errs.title = titleErr;
+    if (!form.date.trim()) errs.date = 'Event date is required.';
+    else if (Number.isNaN(new Date(form.date).getTime())) errs.date = 'Enter a valid event date.';
+    const locationErr = validateName(form.location, 'Location');
+    if (locationErr) errs.location = locationErr;
+    if (form.flyerUrl.trim() && !/^https?:\/\/.+/i.test(form.flyerUrl.trim())) {
+      errs.flyerUrl = 'Enter a valid image URL starting with http:// or https://.';
+    }
 
     if (Object.keys(errs).length > 0) {
       setErrors(errs);

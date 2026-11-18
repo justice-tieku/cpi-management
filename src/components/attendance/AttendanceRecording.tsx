@@ -100,7 +100,7 @@ export const AttendanceRecording: React.FC = () => {
         : 'Excused';
     
     // Update or insert into attendance records
-    recordSundayAttendance(memberId, mapped, serviceDate);
+    recordSundayAttendance(memberId, mapped, serviceDate, serviceName, serviceCategory);
   };
 
   const handleSave = async () => {
@@ -124,7 +124,7 @@ export const AttendanceRecording: React.FC = () => {
       };
     });
 
-    const result = await batchSaveAttendance(records);
+    const result = await batchSaveAttendance(records, serviceName, serviceCategory);
     setIsSaving(false);
 
     if (result.success) {

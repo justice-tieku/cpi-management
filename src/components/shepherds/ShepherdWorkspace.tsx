@@ -73,11 +73,15 @@ export const ShepherdWorkspace: React.FC = () => {
 
   const handleAddNote = () => {
     if (!selectedMemberId) {
-      setNoteNotice({ message: 'Please select at least one record before proceeding.', isError: true });
+      setNoteNotice({ message: 'Select a member before adding a note.', isError: true });
       return;
     }
     if (!newNote.trim()) {
-      setNoteNotice({ message: 'Please enter the required information.', isError: true });
+      setNoteNotice({ message: 'Note cannot be empty. Type what you want to record.', isError: true });
+      return;
+    }
+    if (newNote.trim().length > 2000) {
+      setNoteNotice({ message: 'Note is too long. Keep it under 2000 characters.', isError: true });
       return;
     }
     const member = visibleMembers.find((m) => m.id === selectedMemberId);

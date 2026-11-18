@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Megaphone, Plus, X, ChevronDown, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { ChurchAnnouncement } from '../../types/cms';
+import { validateName } from '../../utils/validation';
 
 const priorityConfig = {
   Normal: { label: 'Normal', bg: 'bg-[#16285a]', text: 'text-[#a6c4eb]', dot: 'bg-[#7b9dc7]' },
@@ -32,8 +33,10 @@ export const AnnouncementsBoard: React.FC = () => {
 
   const handleSubmit = async () => {
     const errs: { title?: string; content?: string } = {};
-    if (!form.title.trim()) errs.title = 'Title is required';
-    if (!form.content.trim()) errs.content = 'Message is required';
+    const titleErr = validateName(form.title, 'Title');
+    if (titleErr) errs.title = titleErr;
+    if (!form.content.trim()) errs.content = 'Message is required.';
+    else if (form.content.trim().length > 2000) errs.content = 'Message is too long. Keep it under 2000 characters.';
 
     if (Object.keys(errs).length > 0) {
       setErrors(errs);

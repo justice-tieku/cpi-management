@@ -26,7 +26,11 @@ export const ShepherdReports: React.FC = () => {
   const handleShepherdSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!narrativeInput.trim()) {
-      setStatusError('Please enter the required information.');
+      setStatusError('Report narrative is required.');
+      return;
+    }
+    if (narrativeInput.trim().length > 5000) {
+      setStatusError('Report is too long. Keep it under 5000 characters.');
       return;
     }
 

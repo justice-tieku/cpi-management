@@ -22,6 +22,7 @@ import { supabase, isSupabaseConfigured } from '../../backend/client';
 import { formatGhanaianPhone } from '../utils/phone';
 import { getStoredSession } from '../utils/session';
 import { normalizeDate } from '../utils/date';
+import { mapError } from '../utils/errors';
 
 export interface CMSNotification {
   id: string;
@@ -49,8 +50,8 @@ interface CMSContextType {
   attendanceRecords: AttendanceRecord[];
   visibleAttendance: AttendanceRecord[];
   updateAttendance: (recordId: string, status: AttendanceStatus) => void;
-  recordSundayAttendance: (memberId: string, status: AttendanceStatus, date?: string) => Promise<{ success: boolean; error?: string }>;
-  batchSaveAttendance: (records: { memberId: string; status: AttendanceStatus; date: string }[]) => Promise<{ success: boolean; error?: string; count?: number }>;
+  recordSundayAttendance: (memberId: string, status: AttendanceStatus, date?: string, serviceName?: string, serviceCategory?: string) => Promise<{ success: boolean; error?: string }>;
+  batchSaveAttendance: (records: { memberId: string; status: AttendanceStatus; date: string }[], serviceName?: string, serviceCategory?: string) => Promise<{ success: boolean; error?: string; count?: number }>;
   sundayAbsenceReports: SundayAbsenceReport[];
   visibleSundayAbsenceReports: SundayAbsenceReport[];
   redListMembers: SundayAbsenceReport[];
@@ -458,10 +459,10 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const sendMessage = async (recipientId: string, content: string): Promise<{ success: boolean; error?: string }> => {
     if (!recipientId) {
-      return { success: false, error: 'Please select a recipient before sending.' };
+      return { success: false, error: 'Select a recipient before sending.' };
     }
     if (!content || !content.trim()) {
-      return { success: false, error: 'There is no information to send.' };
+      return { success: false, error: 'Message is empty. Type what you want to send.' };
     }
 
     const target = shepherds.find((s) => s.id === recipientId);
@@ -494,11 +495,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase sendMessage] Error:', error);
-          return { success: false, error: 'Unable to send message. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase sendMessage] Catch:', err);
-        return { success: false, error: 'Unable to send message. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -551,11 +552,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase createAnnouncement] Error:', error);
-          return { success: false, error: 'Unable to save the record. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase createAnnouncement] Catch:', err);
-        return { success: false, error: 'Unable to save the record. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -595,11 +596,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase createEvent] Error:', error);
-          return { success: false, error: 'Unable to save the record. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase createEvent] Catch:', err);
-        return { success: false, error: 'Unable to save the record. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -613,14 +614,28 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'Please enter the required information.' };
     }
 
-    const isDuplicate = members.some(
-      (m) =>
-        m.phone === newMemData.phone.trim() ||
-        (newMemData.email && m.email && m.email.toLowerCase() === newMemData.email.trim().toLowerCase())
-    );
+    const formattedPhone = formatGhanaianPhone(newMemData.phone.trim());
+    const normalizedDob = normalizeDate(newMemData.dateOfBirth);
 
-    if (isDuplicate) {
-      return { success: false, error: 'A member with this telephone or email already exists in the registry.' };
+    // Duplicate detection on normalized phone / email, naming who already has it
+    const normPhone = (p: string) => p.replace(/[\s\-()]/g, '').replace(/^233/, '0').replace(/^0/, '');
+    const phoneDup = members.find((m) => normPhone(m.phone) === normPhone(newMemData.phone.trim()));
+    if (phoneDup) {
+      return {
+        success: false,
+        error: `This phone number is already registered to ${phoneDup.firstName} ${phoneDup.lastName}.`
+      };
+    }
+    if (newMemData.email?.trim()) {
+      const emailDup = members.find(
+        (m) => m.email && m.email.toLowerCase() === newMemData.email!.trim().toLowerCase()
+      );
+      if (emailDup) {
+        return {
+          success: false,
+          error: `This email address is already registered to ${emailDup.firstName} ${emailDup.lastName}.`
+        };
+      }
     }
 
     // Generate safe, collision-free member ID
@@ -636,9 +651,6 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     while (members.some((m) => m.id === newId)) {
       newId = `CPI-M-${parseInt(newId.replace('CPI-M-', ''), 10) + 1}`;
     }
-
-    const formattedPhone = formatGhanaianPhone(newMemData.phone.trim());
-    const normalizedDob = normalizeDate(newMemData.dateOfBirth);
 
     const newMember: Member = {
       ...newMemData,
@@ -689,11 +701,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase registerMember] Error:', error);
-          return { success: false, error: 'Unable to save the record. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase registerMember] Catch:', err);
-        return { success: false, error: 'Unable to save the record. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -772,11 +784,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase registerVisitor] Error:', error);
-          return { success: false, error: 'Unable to save the record. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase registerVisitor] Catch:', err);
-        return { success: false, error: 'Unable to save the record. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -845,11 +857,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase updateMember] Error:', error);
-          return { success: false, error: 'Unable to save changes. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase updateMember] Catch:', err);
-        return { success: false, error: 'Unable to save changes. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -909,7 +921,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (memErr) {
           console.error('[Supabase reassignMember memErr] Error:', memErr);
-          return { success: false, error: 'Unable to save changes. Please try again.' };
+          return { success: false, error: mapError(memErr).message };
         }
 
         // Step 2: Record assignment history — non-critical, log but don't fail user operation
@@ -933,7 +945,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       } catch (err: any) {
         console.error('[Supabase reassignMember] Catch:', err);
-        return { success: false, error: 'Unable to save changes. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -1009,7 +1021,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const recordSundayAttendance = async (
     memberId: string,
     status: AttendanceStatus,
-    date = '2026-11-08'
+    date = '2026-11-08',
+    serviceName?: string,
+    serviceCategory?: string
   ): Promise<{ success: boolean; error?: string }> => {
     if (!memberId || !status) {
       return { success: false, error: 'Please enter the required information.' };
@@ -1031,7 +1045,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         const { error } = await (supabase.from('attendance_records') as any).upsert({
           id: targetRecordId,
-          service_name: 'Sunday 1st Service — Communion',
+          service_name: serviceName || 'Sunday 1st Service — Communion',
+          service_category: serviceCategory || 'sunday',
           service_date: date,
           member_id: member.id,
           member_name: `${member.firstName} ${member.lastName}`,
@@ -1045,11 +1060,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase recordSundayAttendance] Error:', error);
-          return { success: false, error: 'Unable to save the record. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase recordSundayAttendance] Catch:', err);
-        return { success: false, error: 'Unable to save the record. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -1091,13 +1106,17 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const batchSaveAttendance = async (
-    recordsToSave: { memberId: string; status: AttendanceStatus; date: string }[]
+    recordsToSave: { memberId: string; status: AttendanceStatus; date: string }[],
+    serviceName?: string,
+    serviceCategory?: string
   ): Promise<{ success: boolean; error?: string; count?: number }> => {
     if (!recordsToSave || recordsToSave.length === 0) {
       return { success: false, error: 'There is no data to save.' };
     }
 
     const authUserId = (await supabase.auth.getUser()).data.user?.id || null;
+    const resolvedServiceName = serviceName || 'Sunday 1st Service — Communion';
+    const resolvedCategory = serviceCategory || 'sunday';
     const payload = recordsToSave.map((rec) => {
       const member = members.find((m) => m.id === rec.memberId);
       const existing = attendanceRecords.find(
@@ -1107,8 +1126,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       return {
         id,
-        service_id: 'SRV-SUN-04',
-        service_name: 'Sunday 1st Service â€” Communion',
+        service_name: resolvedServiceName,
+        service_category: resolvedCategory,
         service_date: rec.date,
         member_id: rec.memberId,
         member_name: member ? `${member.firstName} ${member.lastName}` : 'Member',
@@ -1126,11 +1145,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const { error } = await (supabase.from('attendance_records') as any).upsert(payload);
         if (error) {
           console.error('[Supabase batchSaveAttendance] Error:', error);
-          return { success: false, error: 'Unable to save the record. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase batchSaveAttendance] Catch:', err);
-        return { success: false, error: 'Unable to save the record. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -1141,7 +1160,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const idx = updated.findIndex((r) => r.memberId === p.member_id && r.serviceDate === p.service_date);
         const localRec: AttendanceRecord = {
           id: p.id,
-          serviceId: p.service_id,
+          serviceId: undefined,
           serviceName: p.service_name,
           serviceDate: p.service_date,
           memberId: p.member_id,
@@ -1311,7 +1330,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
       } catch (err: any) {
         console.error('[Supabase recordCellMeeting] Catch:', err);
-        return { success: false, error: 'Unable to save the record. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -1358,11 +1377,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase updateTaskStatus] Error:', error);
-          return { success: false, error: 'Unable to save changes. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase updateTaskStatus] Catch:', err);
-        return { success: false, error: 'Unable to save changes. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 
@@ -1407,11 +1426,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase submitReport] Error:', error);
-          return { success: false, error: 'Unable to submit report. Please try again.' };
+          return { success: false, error: mapError(error).message };
         }
       } catch (err: any) {
         console.error('[Supabase submitReport] Catch:', err);
-        return { success: false, error: 'Unable to submit report. Please try again.' };
+        return { success: false, error: mapError(err).message };
       }
     }
 

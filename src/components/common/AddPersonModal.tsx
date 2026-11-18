@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, UserPlus, Phone, Mail, Calendar, MapPin, User, CheckCircle2, UserCheck, Sparkles } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
+import { validateName, validatePhone, validateEmail, validateDob, formatPhone } from '../../utils/validation';
 
 interface AddPersonModalProps {
   isOpen: boolean;
@@ -42,10 +43,24 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
     e.preventDefault();
     setFeedback(null);
 
-    if (!fullName.trim() || !phone.trim()) {
-      setFeedback({ type: 'error', message: 'Please enter the required information.' });
+    const errors: string[] = [];
+    const nameErr = validateName(fullName.trim(), 'Full name');
+    if (nameErr) errors.push(nameErr);
+    const phoneErr = validatePhone(phone);
+    if (phoneErr) errors.push(phoneErr);
+    if (email.trim()) {
+      const emailErr = validateEmail(email.trim());
+      if (emailErr) errors.push(emailErr);
+    }
+    if (dob.trim()) {
+      const dobErr = validateDob(dob);
+      if (dobErr) errors.push(dobErr);
+    }
+    if (errors.length > 0) {
+      setFeedback({ type: 'error', message: errors.join(' ') });
       return;
     }
+    const formattedPhone = formatPhone(phone);
 
     setIsSubmitting(true);
 
@@ -60,7 +75,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
         // Register as First-Timer / Guest
         const result = await registerVisitor({
           name: fullName.trim(),
-          phone: phone.trim(),
+          phone: formattedPhone,
           email: email.trim(),
           visitDate: dob.trim() || new Date().toISOString().split('T')[0],
           serviceAttended: 'Sunday Service',
@@ -95,7 +110,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
         const result = await registerMember({
           firstName,
           lastName,
-          phone: phone.trim(),
+          phone: formattedPhone,
           email: email.trim(),
           city: location.trim() || 'Central',
           dateOfBirth: dob.trim() || undefined,

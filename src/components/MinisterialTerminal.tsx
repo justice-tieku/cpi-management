@@ -53,12 +53,16 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
     e.preventDefault();
 
     if (!email.trim()) {
-      setError('Please enter your email address.');
+      setError('Email is required. Enter the email on your account.');
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Enter a valid email address, for example name@example.com.');
       return;
     }
 
     if (!password.trim()) {
-      setError('Please enter your access password.');
+      setError('Password is required. Enter your access password.');
       return;
     }
 
@@ -106,8 +110,9 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
             email: cleanEmail,
             password: password
           });
-        } catch {
-          // Continue to fallback if server unreachable
+        } catch (setupErr) {
+          // Continue to fallback if server unreachable; log for debugging.
+          console.warn('[Login] setupInitialUsers failed:', setupErr);
         }
       }
 

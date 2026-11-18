@@ -26,6 +26,7 @@ import {
 import { useCMS } from '../../context/CMSContext';
 import { apiClient } from '../../services/apiClient';
 import { formatGhanaianPhone } from '../../utils/phone';
+import { validateName, validateEmail, validatePhone } from '../../utils/validation';
 
 export const ShepherdAssignmentManagement: React.FC = () => {
   const {
@@ -69,8 +70,21 @@ export const ShepherdAssignmentManagement: React.FC = () => {
 
   const handleCreateShepherd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newShepherdName.trim() || !newShepherdEmail.trim() || !newShepherdCell.trim()) {
-      setInviteError('Please enter the required information.');
+    const errors: string[] = [];
+    const nameErr = validateName(newShepherdName, 'Name');
+    if (nameErr) errors.push(nameErr);
+    if (!newShepherdEmail.trim()) errors.push('Email is required.');
+    else {
+      const emailErr = validateEmail(newShepherdEmail.trim());
+      if (emailErr) errors.push(emailErr);
+    }
+    const phoneErr = newShepherdPhone.trim() ? validatePhone(newShepherdPhone) : null;
+    if (phoneErr) errors.push(phoneErr);
+    const cellErr = validateName(newShepherdCell, 'Cell name');
+    if (cellErr) errors.push(cellErr);
+    if (newShepherdPassword.trim().length < 6) errors.push('Password must be at least 6 characters.');
+    if (errors.length > 0) {
+      setInviteError(errors.join(' '));
       return;
     }
 
@@ -97,7 +111,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
 
       // Success is shown inside the modal via createdCredentials panel
     } catch (err: any) {
-      setInviteError('Request unsuccessful. Please try again.');
+      setInviteError(err?.message || 'Could not create the shepherd account. Check the details and try again.');
     } finally {
       setIsCreatingShepherd(false);
     }

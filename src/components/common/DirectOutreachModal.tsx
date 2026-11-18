@@ -63,7 +63,7 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
 
   const handleWhatsAppSend = () => {
     if (!message.trim()) {
-      setErrorNotice('There is no information to send.');
+      setErrorNotice('Message is empty. Type what you want to send.');
       return;
     }
     setErrorNotice(null);
@@ -76,11 +76,11 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
 
   const handleSmsSend = () => {
     if (!message.trim()) {
-      setErrorNotice('There is no information to send.');
+      setErrorNotice('Message is empty. Type what you want to send.');
       return;
     }
     if (!cleanPhone) {
-      setErrorNotice('Please enter the required information.');
+      setErrorNotice('No phone number available. Select a member with a valid phone number.');
       return;
     }
     setErrorNotice(null);

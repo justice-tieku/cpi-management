@@ -12,12 +12,21 @@ export const MessagingCenter: React.FC = () => {
     ? shepherds.map((s) => ({ id: s.id, name: s.name, role: 'Shepherd', cell: s.cell }))
     : [{ id: 'USR-PASTOR-01', name: 'Pastor Adams', role: 'Pastor / Admin' }];
 
-  const [selectedConvId, setSelectedConvId] = useState<string>(conversations[0]?.id || '');
+  const [selectedConvId, setSelectedConvId] = useState<string>('');
   const [draftText, setDraftText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSending, setIsSending] = useState(false);
   const [sendNotice, setSendNotice] = useState<{ message: string; isError: boolean } | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+
+  // Auto-select the first conversation once shepherds/conversations load.
+  // shepherds arrive asynchronously, so the initial state is empty; without this
+  // the user sees "select a recipient" even though a conversation is displayed.
+  useEffect(() => {
+    if (!selectedConvId && conversations.length > 0) {
+      setSelectedConvId(conversations[0].id);
+    }
+  }, [conversations.length, selectedConvId]);
 
   const selectedConv = conversations.find((c) => c.id === selectedConvId);
 
@@ -50,11 +59,15 @@ export const MessagingCenter: React.FC = () => {
   const handleSend = async () => {
     const text = draftText.trim();
     if (!selectedConvId) {
-      setSendNotice({ message: 'Please select at least one record before proceeding.', isError: true });
+      setSendNotice({ message: 'Select a recipient from the list before sending.', isError: true });
       return;
     }
     if (!text) {
-      setSendNotice({ message: 'There is no information to send.', isError: true });
+      setSendNotice({ message: 'Message is empty. Type what you want to send.', isError: true });
+      return;
+    }
+    if (text.length > 5000) {
+      setSendNotice({ message: 'Message is too long. Keep it under 5000 characters.', isError: true });
       return;
     }
 

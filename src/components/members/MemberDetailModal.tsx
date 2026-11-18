@@ -20,6 +20,7 @@ import { Member, SpiritualStage, MemberStatus } from '../../types/cms';
 import { useCMS } from '../../context/CMSContext';
 import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
 import { normalizeDate } from '../../utils/date';
+import { validateName, validatePhone, validateEmail, validateDob, formatPhone } from '../../utils/validation';
 
 interface MemberDetailModalProps {
   member: Member | null;
@@ -112,8 +113,22 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.firstName.trim() || !form.phone.trim()) {
-      setSaveNotice({ message: 'Please enter the required information.', isError: true });
+
+    const errors: string[] = [];
+    const firstNameErr = validateName(form.firstName, 'First name');
+    if (firstNameErr) errors.push(firstNameErr);
+    const phoneErr = validatePhone(form.phone);
+    if (phoneErr) errors.push(phoneErr);
+    if (form.email.trim()) {
+      const emailErr = validateEmail(form.email.trim());
+      if (emailErr) errors.push(emailErr);
+    }
+    if (form.dateOfBirth.trim()) {
+      const dobErr = validateDob(form.dateOfBirth);
+      if (dobErr) errors.push(dobErr);
+    }
+    if (errors.length > 0) {
+      setSaveNotice({ message: errors.join(' '), isError: true });
       return;
     }
 
@@ -124,7 +139,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
       const result = await updateMember(member.id, {
         firstName: form.firstName.trim(),
         lastName: form.lastName.trim(),
-        phone: formatGhanaianPhone(form.phone.trim()),
+        phone: formatPhone(form.phone),
         email: form.email.trim(),
         city: form.city.trim(),
         dateOfBirth: normalizeDate(form.dateOfBirth) || undefined,

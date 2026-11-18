@@ -484,7 +484,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         const { error } = await (supabase.from('chat_messages') as any)
           .insert({
             id: newMsg.id,
-            sender_id: getProfileUUID(currentUser.id),
+            sender_id: (await supabase.auth.getUser()).data.user?.id || getProfileUUID(currentUser.id),
             sender_name: currentUser.name,
             recipient_id: getProfileUUID(recipientId),
             recipient_name: newMsg.recipientName,
@@ -543,7 +543,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             id: newAnn.id,
             title: newAnn.title,
             content: newAnn.content,
-            author_id: getProfileUUID(currentUser.id),
+            author_id: (await supabase.auth.getUser()).data.user?.id || getProfileUUID(currentUser.id),
             author_name: currentUser.name,
             priority: newAnn.priority,
             target: newAnn.target
@@ -1036,7 +1036,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           member_id: member.id,
           member_name: `${member.firstName} ${member.lastName}`,
           cell_group: member.cellGroup,
-          shepherd_id: getProfileUUID(member.currentShepherdId),
+          shepherd_id: (await supabase.auth.getUser()).data.user?.id || getProfileUUID(member.currentShepherdId),
           status,
           recorded_by: currentUser.name,
           recorded_at: new Date().toISOString(),
@@ -1097,6 +1097,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'There is no data to save.' };
     }
 
+    const authUserId = (await supabase.auth.getUser()).data.user?.id || null;
     const payload = recordsToSave.map((rec) => {
       const member = members.find((m) => m.id === rec.memberId);
       const existing = attendanceRecords.find(
@@ -1107,12 +1108,12 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return {
         id,
         service_id: 'SRV-SUN-04',
-        service_name: 'Sunday 1st Service — Communion',
+        service_name: 'Sunday 1st Service â€” Communion',
         service_date: rec.date,
         member_id: rec.memberId,
         member_name: member ? `${member.firstName} ${member.lastName}` : 'Member',
         cell_group: member?.cellGroup || 'General',
-        shepherd_id: member ? getProfileUUID(member.currentShepherdId) : null,
+        shepherd_id: authUserId || getProfileUUID(member?.currentShepherdId),
         status: rec.status,
         recorded_by: currentUser.name,
         recorded_at: new Date().toISOString(),
@@ -1270,10 +1271,15 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured) {
       try {
+        const { data: userData } = await supabase.auth.getUser();
+        const authUserId = userData?.user?.id || getProfileUUID(currentUser.id);
+        if (!authUserId) {
+          return { success: false, error: 'Your session has expired. Please log in again.' };
+        }
         const { error } = await (supabase.from('cell_meetings') as any).insert({
           id: newMeeting.id,
           cell_name: newMeeting.cellName,
-          shepherd_id: getProfileUUID(currentUser.id),
+          shepherd_id: authUserId,
           shepherd_name: currentUser.name,
           meeting_date: newMeeting.date,
           topic: newMeeting.topic,
@@ -1284,7 +1290,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         if (error) {
           console.error('[Supabase recordCellMeeting] Error:', error);
-          return { success: false, error: 'Unable to save the record. Please try again.' };
+          return { success: false, error: error.code === '42501' ? 'You do not have permission to save this. Please log in again or contact an administrator.' : 'Unable to save the record. Please try again.' };
         }
 
         // Also register cell fellowship offering in finance ledger
@@ -1391,7 +1397,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         const { error } = await (supabase.from('shepherd_reports') as any).upsert({
           id,
-          shepherd_id: getProfileUUID(currentUser.id),
+          shepherd_id: (await supabase.auth.getUser()).data.user?.id || getProfileUUID(currentUser.id),
           shepherd_name: currentUser.name,
           cell_name: targetCell,
           narrative: narrative.trim(),

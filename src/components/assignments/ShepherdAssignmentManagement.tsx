@@ -135,17 +135,23 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
   };
 
   // Active Shepherd for Deep Dive
-  const activeShepherd = shepherds.find((s) => s.id === selectedShepherdId) || shepherds[0];
+  const activeShepherd = shepherds.find((s) => s.id === selectedShepherdId) || shepherds[0] || {
+    id: '',
+    name: 'No shepherd yet',
+    cell: '—',
+    assignedCount: 0,
+    maxCapacity: 30
+  };
   const activeMembers = members.filter(
-    (m) => m.currentShepherdId === activeShepherd.id || m.cellGroup === activeShepherd.cell
+    (m) => activeShepherd && (m.currentShepherdId === activeShepherd.id || m.cellGroup === activeShepherd.cell)
   );
   const activeMeetings = cellMeetings.filter(
-    (cm) => cm.shepherdId === activeShepherd.id || cm.cellName === activeShepherd.cell
+    (cm) => activeShepherd && (cm.shepherdId === activeShepherd.id || cm.cellName === activeShepherd.cell)
   );
   const activeAttendance = attendanceRecords.filter(
-    (a) => a.shepherdId === activeShepherd.id || a.cellGroup === activeShepherd.cell
+    (a) => activeShepherd && (a.shepherdId === activeShepherd.id || a.cellGroup === activeShepherd.cell)
   );
-  const activeTasks = followUpTasks.filter((t) => t.shepherdId === activeShepherd.id);
+  const activeTasks = followUpTasks.filter((t) => activeShepherd && t.shepherdId === activeShepherd.id);
 
   // Cell Category Stats (Calculated across all cells)
   const cellStats = shepherds.map((sh) => {

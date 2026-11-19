@@ -77,13 +77,14 @@ export const AttendanceGrowthCharts: React.FC = () => {
     };
   });
 
-  /* ── Chart helpers ── */
-  const maxSunday   = Math.max(...weeklyTrends.map(w => w.sunday));
-  const maxOffering = Math.max(...weeklyTrends.map(w => w.offerings));
-  const latestWeek  = weeklyTrends[weeklyTrends.length - 1];
-  const prevWeek    = weeklyTrends[weeklyTrends.length - 2];
+  /* ── Chart helpers (safe for empty data — never crash) ── */
+  const maxSunday   = Math.max(1, ...weeklyTrends.map(w => w.sunday));
+  const maxOffering = Math.max(1, ...weeklyTrends.map(w => w.offerings));
+  const latestWeek  = weeklyTrends[weeklyTrends.length - 1] || { label: '', sunday: 0, midweek: 0, vigil: 0, offerings: 0 };
+  const prevWeek    = weeklyTrends[weeklyTrends.length - 2] || latestWeek;
   const sundayGrowth = latestWeek.sunday   - prevWeek.sunday;
   const offerGrowth  = latestWeek.offerings - prevWeek.offerings;
+  const weekCount    = Math.max(1, weeklyTrends.length);
 
   const tabs = [
     { id: 'attendance'  as const, label: 'Attendance',   icon: Activity   },
@@ -142,7 +143,7 @@ export const AttendanceGrowthCharts: React.FC = () => {
         })}
       </div>
 
-      {members.length === 0 ? (
+      {members.length === 0 || weeklyTrends.length === 0 ? (
         <div className="py-16 text-center text-[#a6c4eb] text-sm">
           No data recorded yet
         </div>

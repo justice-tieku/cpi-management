@@ -32,8 +32,6 @@ export const AttendanceRecording: React.FC = () => {
     currentUser,
     visibleMembers,
     visibleAttendance,
-    updateAttendance,
-    recordSundayAttendance,
     batchSaveAttendance,
     redListMembers,
     criticalAbsenteeMembers
@@ -44,11 +42,12 @@ export const AttendanceRecording: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'roster' | 'red_list' | 'critical_absentee'>('roster');
 
   const [serviceCategory, setServiceCategory] = useState<'sunday' | 'midweek' | 'vigil'>('sunday');
-  const [serviceDate, setServiceDate] = useState('2026-11-08');
-  const [serviceName, setServiceName] = useState('Sunday Service');
+  const [serviceDate, setServiceDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [serviceName, setServiceName] = useState('Sunday 1st Service — Communion');
   const [searchTerm, setSearchTerm] = useState('');
   const [cellFilter, setCellFilter] = useState('all');
   const [isSaving, setIsSaving] = useState(false);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [saveNotice, setSaveNotice] = useState<{ message: string; isError: boolean } | null>(null);
   const [outreachTarget, setOutreachTarget] = useState<{
     isOpen: boolean;
@@ -71,13 +70,13 @@ export const AttendanceRecording: React.FC = () => {
     setServiceCategory(cat);
     if (cat === 'sunday') {
       setServiceName('Sunday Service');
-      setServiceDate('2026-11-08');
+      setServiceDate(new Date().toISOString().split('T')[0]);
     } else if (cat === 'midweek') {
       setServiceName('Wednesday Midweek');
-      setServiceDate('2026-11-04');
+      setServiceDate(new Date().toISOString().split('T')[0]);
     } else {
       setServiceName('Friday Prayer Meeting');
-      setServiceDate('2026-11-06');
+      setServiceDate(new Date().toISOString().split('T')[0]);
     }
   };
 
@@ -92,15 +91,7 @@ export const AttendanceRecording: React.FC = () => {
 
   const handleStatusChange = (memberId: string, newStatus: AttendanceStatusType) => {
     setLocalStatuses((prev) => ({ ...prev, [memberId]: newStatus }));
-    const mapped =
-      newStatus === 'present'
-        ? 'Present'
-        : newStatus === 'absent'
-        ? 'Absent'
-        : 'Excused';
-    
-    // Update or insert into attendance records
-    recordSundayAttendance(memberId, mapped, serviceDate, serviceName, serviceCategory);
+    setHasUnsavedChanges(true);
   };
 
   const handleSave = async () => {
@@ -129,6 +120,7 @@ export const AttendanceRecording: React.FC = () => {
 
     if (result.success) {
       setSaveNotice({ message: 'Record saved successfully.', isError: false });
+      setHasUnsavedChanges(false);
     } else {
       setSaveNotice({ message: result.error || 'Unable to save the record. Please try again.', isError: true });
     }
@@ -226,7 +218,7 @@ export const AttendanceRecording: React.FC = () => {
             ) : (
               <Save className="w-3.5 h-3.5" />
             )}
-            <span>{isSaving ? 'Saving Roster...' : 'Save Attendance'}</span>
+            <span>{isSaving ? 'Saving Roster...' : hasUnsavedChanges ? 'Save Attendance *' : 'Save Attendance'}</span>
           </button>
         </div>
       </div>
@@ -689,7 +681,8 @@ export const AttendanceRecording: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                recordSundayAttendance(record.memberId, 'Present', '2026-11-08');
+                                setLocalStatuses((prev) => ({ ...prev, [record.memberId]: 'present' }));
+                                setHasUnsavedChanges(true);
                                 setLocalStatuses((prev) => ({ ...prev, [record.memberId]: 'present' }));
                               }}
                               className="px-3 py-1.5 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-extrabold cursor-pointer transition-colors inline-flex items-center gap-1 shadow-sm"
@@ -830,7 +823,8 @@ export const AttendanceRecording: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                recordSundayAttendance(record.memberId, 'Present', '2026-11-08');
+                                setLocalStatuses((prev) => ({ ...prev, [record.memberId]: 'present' }));
+                                setHasUnsavedChanges(true);
                                 setLocalStatuses((prev) => ({ ...prev, [record.memberId]: 'present' }));
                               }}
                               className="px-3 py-1.5 bg-[#00ff9d] hover:bg-emerald-400 text-[#070c1e] text-xs font-extrabold cursor-pointer transition-colors inline-flex items-center gap-1 shadow-sm"

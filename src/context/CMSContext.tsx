@@ -348,7 +348,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               id: s.id,
               name: s.name || s.full_name || '',
               cell: s.assigned_cell || s.cell || '',
-              assignedCount: 0,
+              assignedCount: (dbMembers || []).filter((member: any) => member.current_shepherd_id === s.id).length,
               maxCapacity: 30
             }))
           );
@@ -967,6 +967,12 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'Member not found.' };
     }
     const oldShepherdId = targetMember.currentShepherdId;
+    if (targetShepherd.id === oldShepherdId) {
+      return { success: false, error: 'This member is already assigned to that shepherd.' };
+    }
+    if (targetShepherd.assignedCount >= targetShepherd.maxCapacity) {
+      return { success: false, error: `${targetShepherd.name} has reached the ${targetShepherd.maxCapacity}-member capacity.` };
+    }
 
     // Record assignment history
     const newAssignment: ShepherdAssignment = {

@@ -309,9 +309,8 @@ CREATE INDEX IF NOT EXISTS idx_notifications_recipient ON public.notifications(r
 CREATE OR REPLACE FUNCTION public.is_pastor()
 RETURNS BOOLEAN AS $$
 BEGIN
-    -- Allow read/write when connecting with project public anon key
     IF auth.uid() IS NULL THEN
-        RETURN TRUE;
+        RETURN FALSE;
     END IF;
     RETURN EXISTS (
         SELECT 1 FROM public.profiles
@@ -457,12 +456,12 @@ USING (
     shepherd_id = auth.uid()
 );
 
--- Shepherd Assignments Policies (open to all authenticated and anon — anon key is used by app)
+-- Shepherd assignments are controlled by pastors only.
 DROP POLICY IF EXISTS "Shepherd assignments manageable by pastor or shepherd" ON public.shepherd_assignments;
 CREATE POLICY "Shepherd assignments manageable by pastor or shepherd"
 ON public.shepherd_assignments FOR ALL TO anon, authenticated
-USING (true)
-WITH CHECK (true);
+USING (public.is_pastor())
+WITH CHECK (public.is_pastor());
 
 -- Visitors Policies
 DROP POLICY IF EXISTS "Visitors viewable by pastor or assigned shepherd" ON public.visitors;

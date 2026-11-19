@@ -169,6 +169,28 @@ CREATE TRIGGER trg_cpi_dob
   BEFORE INSERT OR UPDATE OF date_of_birth ON public.members
   FOR EACH ROW EXECUTE FUNCTION public.cpi_check_dob();
 
+-- 8. ROLE SECURITY
+-- Unauthenticated requests must never receive pastor-level access.
+CREATE OR REPLACE FUNCTION public.is_pastor()
+RETURNS BOOLEAN AS $$
+BEGIN
+  IF auth.uid() IS NULL THEN
+    RETURN FALSE;
+  END IF;
+  RETURN EXISTS (
+    SELECT 1
+    FROM public.profiles
+    WHERE id = auth.uid() AND role = 'pastor'
+  );
+END; $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+DROP POLICY IF EXISTS "Shepherd assignments manageable by pastor or shepherd"
+  ON public.shepherd_assignments;
+CREATE POLICY "Shepherd assignments manageable by pastor or shepherd"
+  ON public.shepherd_assignments FOR ALL TO anon, authenticated
+  USING (public.is_pastor())
+  WITH CHECK (public.is_pastor());
+
 -- =============================================================================
 -- 4. ACTIVATE (after cleaning bad rows — section 5)
 -- =============================================================================

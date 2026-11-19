@@ -35,7 +35,8 @@ export const ShepherdAssignmentManagement: React.FC = () => {
     attendanceRecords,
     cellMeetings,
     followUpTasks,
-    reassignMember
+    reassignMember,
+    assignmentsHistory
   } = useCMS();
 
   // Mode: 'categories' (overview of all cells) or 'deep-dive' (individual shepherd)
@@ -623,6 +624,39 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {viewMode === 'categories' && assignmentsHistory.length > 0 && (
+        <div className="p-5 bg-[#111d44] shadow-sm space-y-4">
+          <div>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Recent Assignment History</h3>
+            <p className="text-xs text-[#a6c4eb] mt-0.5">Pastor review of recent member transfers</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr className="text-[10px] uppercase tracking-wider text-[#a6c4eb] font-semibold bg-[#0a122e]">
+                  <th className="py-2.5 px-3">Member</th>
+                  <th className="py-2.5 px-3">Assigned Shepherd</th>
+                  <th className="py-2.5 px-3">Cell</th>
+                  <th className="py-2.5 px-3">Date</th>
+                  <th className="py-2.5 px-3">Reason</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#16285a]">
+                {assignmentsHistory.slice(0, 10).map((assignment) => (
+                  <tr key={assignment.id}>
+                    <td className="py-2.5 px-3 font-semibold text-white">{assignment.memberName}</td>
+                    <td className="py-2.5 px-3 text-slate-300">{assignment.shepherdName}</td>
+                    <td className="py-2.5 px-3 text-[#00f0ff]">{assignment.cellGroup}</td>
+                    <td className="py-2.5 px-3 text-[#a6c4eb]">{assignment.startDate}</td>
+                    <td className="py-2.5 px-3 text-[#a6c4eb]">{assignment.reason || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       )}

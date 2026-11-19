@@ -947,6 +947,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const reassignMember = async (memberId: string, newShepherdId: string, reason: string): Promise<{ success: boolean; error?: string }> => {
+    if (currentUser.role !== 'pastor') {
+      return { success: false, error: 'Only a pastor can assign or reassign members.' };
+    }
     if (!memberId) {
       return { success: false, error: 'Please select at least one record before proceeding.' };
     }
@@ -1102,6 +1105,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!memberId || !status) {
       return { success: false, error: 'Please enter the required information.' };
     }
+    if (serviceCategory && !['sunday', 'midweek', 'vigil'].includes(serviceCategory)) {
+      return { success: false, error: 'Select a valid service category.' };
+    }
     const member = members.find((m) => m.id === memberId);
     if (!member) {
       return { success: false, error: 'Member not found.' };
@@ -1187,10 +1193,23 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!recordsToSave || recordsToSave.length === 0) {
       return { success: false, error: 'There is no data to save.' };
     }
+    if (currentUser.role !== 'pastor') {
+      const canManageAllRecords = recordsToSave.every((record) =>
+        visibleMembers.some((member) => member.id === record.memberId)
+      );
+      if (!canManageAllRecords) {
+        return { success: false, error: 'You can only save attendance for members in your assigned cell.' };
+      }
+    }
 
-    const authUserId = (await supabase.auth.getUser()).data.user?.id || null;
+    const authUserId = isSupabaseConfigured
+      ? (await supabase.auth.getUser()).data.user?.id || null
+      : null;
     const resolvedServiceName = serviceName || 'Sunday 1st Service — Communion';
     const resolvedCategory = serviceCategory || 'sunday';
+    if (!['sunday', 'midweek', 'vigil'].includes(resolvedCategory)) {
+      return { success: false, error: 'Select a valid service category.' };
+    }
     const payload = recordsToSave.map((rec) => {
       const member = members.find((m) => m.id === rec.memberId);
       const existing = attendanceRecords.find(

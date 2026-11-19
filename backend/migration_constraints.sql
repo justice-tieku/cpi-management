@@ -148,7 +148,9 @@ END; $$ LANGUAGE plpgsql;
 CREATE OR REPLACE FUNCTION public.cpi_check_dob()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF NEW.date_of_birth IS NOT NULL AND
+  -- Reassignments update the member row without changing the DOB.
+  IF (TG_OP = 'INSERT' OR NEW.date_of_birth IS DISTINCT FROM OLD.date_of_birth)
+     AND NEW.date_of_birth IS NOT NULL AND
      (NEW.date_of_birth > CURRENT_DATE OR (CURRENT_DATE - NEW.date_of_birth) > 43800) THEN
     RAISE EXCEPTION 'Enter a valid date of birth.' USING ERRCODE = '23514';
   END IF;

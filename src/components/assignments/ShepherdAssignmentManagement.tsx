@@ -189,6 +189,10 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
     } else if (members.length > 0) {
       setReassignMemberId(members[0].id);
     }
+    const selectedMember = members.find((member) => member.id === memberId) || members[0];
+    const nextShepherd = shepherds.find((shepherd) => shepherd.id !== selectedMember?.currentShepherdId) || shepherds[0];
+    if (nextShepherd) setTargetShepherdId(nextShepherd.id);
+    setReassignError(null);
     setShowReassignModal(true);
   };
 

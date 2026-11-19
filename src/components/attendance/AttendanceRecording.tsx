@@ -45,7 +45,7 @@ export const AttendanceRecording: React.FC = () => {
 
   const [serviceCategory, setServiceCategory] = useState<'sunday' | 'midweek' | 'vigil'>('sunday');
   const [serviceDate, setServiceDate] = useState('2026-11-08');
-  const [serviceName, setServiceName] = useState('Sunday 1st Service — Communion');
+  const [serviceName, setServiceName] = useState('Sunday Service');
   const [searchTerm, setSearchTerm] = useState('');
   const [cellFilter, setCellFilter] = useState('all');
   const [isSaving, setIsSaving] = useState(false);
@@ -70,13 +70,13 @@ export const AttendanceRecording: React.FC = () => {
   const handleCategoryChange = (cat: 'sunday' | 'midweek' | 'vigil') => {
     setServiceCategory(cat);
     if (cat === 'sunday') {
-      setServiceName('Sunday 1st Service — Communion');
+      setServiceName('Sunday Service');
       setServiceDate('2026-11-08');
     } else if (cat === 'midweek') {
-      setServiceName('Wednesday Midweek Encounter');
+      setServiceName('Wednesday Midweek');
       setServiceDate('2026-11-04');
     } else {
-      setServiceName('Friday Night Vigil of Fire');
+      setServiceName('Friday Prayer Meeting');
       setServiceDate('2026-11-06');
     }
   };
@@ -350,7 +350,7 @@ export const AttendanceRecording: React.FC = () => {
                     : 'text-[#a6c4eb] hover:text-slate-200'
                 }`}
               >
-                Night Vigil
+                Friday Night Prayer
               </button>
             </div>
           </div>
@@ -374,10 +374,10 @@ export const AttendanceRecording: React.FC = () => {
                 onChange={(e) => setServiceName(e.target.value)}
                 className="px-3 py-1.5 bg-[#070c1e] text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00f0ff] cursor-pointer"
               >
-                <option>Sunday 1st Service — Communion</option>
-                <option>Sunday 2nd Service — Celebration</option>
+                <option>Sunday Service</option>
+                <option>PPIT Meeting</option>
                 <option>Wednesday Midweek Encounter</option>
-                <option>Friday Night Vigil</option>
+                <option>Friday Night Prayer</option>
               </select>
             </div>
 

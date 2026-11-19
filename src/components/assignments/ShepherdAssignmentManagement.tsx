@@ -26,7 +26,7 @@ import {
 import { useCMS } from '../../context/CMSContext';
 import { apiClient } from '../../services/apiClient';
 import { formatGhanaianPhone } from '../../utils/phone';
-import { validateName, validateEmail, validatePhone } from '../../utils/validation';
+import { validateName, validateEmail, validatePhone, validateText, formatPhone } from '../../utils/validation';
 
 export const ShepherdAssignmentManagement: React.FC = () => {
   const {
@@ -80,7 +80,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
     }
     const phoneErr = newShepherdPhone.trim() ? validatePhone(newShepherdPhone) : null;
     if (phoneErr) errors.push(phoneErr);
-    const cellErr = validateName(newShepherdCell, 'Cell name');
+    const cellErr = validateText(newShepherdCell, 'Cell name', 2, 120);
     if (cellErr) errors.push(cellErr);
     if (newShepherdPassword.trim().length < 6) errors.push('Password must be at least 6 characters.');
     if (errors.length > 0) {
@@ -95,7 +95,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
       const res = await apiClient.createShepherd({
         name: newShepherdName.trim(),
         email: newShepherdEmail.trim(),
-        phone: formatGhanaianPhone(newShepherdPhone.trim()),
+        phone: formatPhone(newShepherdPhone.trim()),
         cellName: newShepherdCell.trim(),
         password: newShepherdPassword.trim()
       });

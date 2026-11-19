@@ -12,7 +12,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
-import { validateName, validateAmount, validateCount, validateDateNotFuture } from '../../utils/validation';
+import { validateText, validateAmount, validateCount, validateDateNotFuture } from '../../utils/validation';
 
 const inputCls =
   'w-full bg-[#070c1e]    px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-[#00f0ff] transition-colors';
@@ -43,7 +43,7 @@ export const CellMeetingsView: React.FC = () => {
 
   const handleSubmit = async () => {
     const errors: string[] = [];
-    const topicErr = validateName(form.topic, 'Topic');
+    const topicErr = validateText(form.topic, 'Topic', 2, 200);
     if (topicErr) errors.push(topicErr);
     const dateErr = validateDateNotFuture(form.date, 'Meeting date');
     if (dateErr) errors.push(dateErr);

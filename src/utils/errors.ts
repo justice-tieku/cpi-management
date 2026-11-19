@@ -72,6 +72,10 @@ export function mapError(err: any, context = 'save'): FriendlyError {
         technical: raw
       };
     case '23514':
+      // Custom friendly messages from triggers (future date / DOB) are passed through.
+      if (raw && !/violates check constraint/i.test(raw)) {
+        return { message: raw, technical: raw };
+      }
       return {
         message: label
           ? `The ${label} value does not meet the required rules. Please correct it and try again.`

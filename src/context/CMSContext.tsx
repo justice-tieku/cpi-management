@@ -20,6 +20,7 @@ import {
 } from '../types/cms';
 import { supabase, isSupabaseConfigured } from '../../backend/client';
 import { formatGhanaianPhone } from '../utils/phone';
+import { formatPhone } from '../utils/validation';
 import { getStoredSession } from '../utils/session';
 import { normalizeDate } from '../utils/date';
 import { mapError } from '../utils/errors';
@@ -614,7 +615,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'Please enter the required information.' };
     }
 
-    const formattedPhone = formatGhanaianPhone(newMemData.phone.trim());
+    const formattedPhone = formatPhone(newMemData.phone.trim());
     const normalizedDob = normalizeDate(newMemData.dateOfBirth);
 
     // Duplicate detection on normalized phone / email, naming who already has it
@@ -735,7 +736,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return { success: false, error: 'Please enter the required information.' };
     }
 
-    const formattedPhone = formatGhanaianPhone(data.phone.trim());
+    const formattedPhone = formatPhone(data.phone.trim());
     const newId = `VIS-${Date.now().toString().slice(-6)}`;
     const visitDate = normalizeDate(data.visitDate) || new Date().toISOString().split('T')[0];
 
@@ -833,7 +834,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (updates.firstName !== undefined) dbPayload.first_name = updates.firstName.trim();
         if (updates.lastName !== undefined) dbPayload.last_name = updates.lastName.trim();
         if (updates.phone !== undefined) {
-          const gPhone = formatGhanaianPhone(updates.phone.trim());
+          const gPhone = formatPhone(updates.phone.trim());
           dbPayload.phone = gPhone;
           updates.phone = gPhone;
         }

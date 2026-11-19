@@ -123,7 +123,9 @@ EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL; END $$;
 DROP TRIGGER IF EXISTS trg_cpi_future_attendance ON public.attendance_records;
 DROP TRIGGER IF EXISTS trg_cpi_future_meeting    ON public.cell_meetings;
 DROP TRIGGER IF EXISTS trg_cpi_dob               ON public.members;
-DROP FUNCTION IF EXISTS public.cpi_reject_future_date();
+DROP FUNCTION IF EXISTS public.cpi_check_attendance_date();
+DROP FUNCTION IF EXISTS public.cpi_check_meeting_date();
+DROP FUNCTION IF EXISTS public.cpi_check_dob();
 
 CREATE OR REPLACE FUNCTION public.cpi_check_attendance_date()
 RETURNS TRIGGER AS $$

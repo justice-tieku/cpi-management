@@ -14,7 +14,8 @@ import {
   Save,
   MessageSquare,
   Cake,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from 'lucide-react';
 import { Member, SpiritualStage, MemberStatus } from '../../types/cms';
 import { useCMS } from '../../context/CMSContext';
@@ -50,9 +51,10 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
   isOpen,
   onClose
 }) => {
-  const { updateMember, attendanceRecords, followUpTasks } = useCMS();
+  const { updateMember, deleteMember, currentUser, attendanceRecords, followUpTasks } = useCMS();
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [activeTab, setActiveTab] = useState<'profile' | 'attendance' | 'tasks'>('profile');
   const [saveNotice, setSaveNotice] = useState<{ message: string; isError: boolean } | null>(null);
 
@@ -164,6 +166,19 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm(`Delete ${member.firstName} ${member.lastName}? This cannot be undone.`)) return;
+    setIsDeleting(true);
+    setSaveNotice(null);
+    const result = await deleteMember(member.id);
+    setIsDeleting(false);
+    if (result.success) {
+      onClose();
+    } else {
+      setSaveNotice({ message: result.error || 'Unable to delete this member.', isError: true });
+    }
+  };
+
   const initials = `${member.firstName?.[0] || ''}${member.lastName?.[0] || ''}`.toUpperCase();
 
   return (
@@ -201,14 +216,27 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
 
           <div className="flex items-center gap-2">
             {!isEditing && (
-              <button
-                type="button"
-                onClick={() => setIsEditing(true)}
-                className="px-3 py-1.5 bg-[#16285a] hover:bg-[#00f0ff] text-[#00f0ff] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>Edit Profile</span>
-              </button>
+              <>
+                {currentUser.role === 'pastor' && (
+                  <button
+                    type="button"
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="px-3 py-1.5 bg-rose-950/50 hover:bg-rose-900 text-rose-300 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>{isDeleting ? 'Deleting...' : 'Delete'}</span>
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setIsEditing(true)}
+                  className="px-3 py-1.5 bg-[#16285a] hover:bg-[#00f0ff] text-[#00f0ff] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edit Profile</span>
+                </button>
+              </>
             )}
             <button
               type="button"

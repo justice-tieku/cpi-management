@@ -9,7 +9,9 @@ import {
   CheckCircle2,
   Clock,
   FileText,
-  TrendingUp
+  TrendingUp,
+  Edit3,
+  Trash2
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { validateText, validateAmount, validateCount, validateDateNotFuture } from '../../utils/validation';
@@ -19,12 +21,14 @@ const inputCls =
 const labelCls = 'block text-xs text-[#a6c4eb] mb-1 font-medium';
 
 export const CellMeetingsView: React.FC = () => {
-  const { currentUser, visibleCellMeetings, recordCellMeeting } = useCMS();
+  const { currentUser, visibleCellMeetings, recordCellMeeting, updateCellMeeting, deleteCellMeeting } = useCMS();
   const isPastor = currentUser.role === 'pastor';
 
   const [showForm, setShowForm] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [form, setForm] = useState({
     date: new Date().toISOString().split('T')[0],
     topic: '',
@@ -40,6 +44,14 @@ export const CellMeetingsView: React.FC = () => {
   const totalAttendees = visibleCellMeetings.reduce((sum, m) => sum + (m.attendeesCount || 0), 0);
   const avgAttendees =
     totalMeetings > 0 ? Math.round(totalAttendees / totalMeetings) : 0;
+
+  const handleDeleteMeeting = async (meetingId: string, topic: string) => {
+    if (!window.confirm(`Delete "${topic}"? This cannot be undone.`)) return;
+    setDeletingId(meetingId);
+    const result = await deleteCellMeeting(meetingId);
+    setDeletingId(null);
+    if (!result.success) setError(result.error || 'Unable to delete meeting.');
+  };
 
   const handleSubmit = async () => {
     const errors: string[] = [];
@@ -63,13 +75,16 @@ export const CellMeetingsView: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const result = await recordCellMeeting({
+      const payload = {
         date: form.date,
         topic: form.topic.trim(),
         attendeesCount: Number(form.attendeesCount),
         offeringAmount: Number(form.offeringAmount) || 0,
         notes: form.notes.trim()
-      });
+      };
+      const result = editingId
+        ? await updateCellMeeting(editingId, payload)
+        : await recordCellMeeting(payload);
 
       if (result.success) {
         setForm({
@@ -80,6 +95,7 @@ export const CellMeetingsView: React.FC = () => {
           notes: ''
         });
         setSubmitted(true);
+        setEditingId(null);
         setShowForm(false);
         setTimeout(() => setSubmitted(false), 4000);
       } else {
@@ -108,7 +124,12 @@ export const CellMeetingsView: React.FC = () => {
         </div>
         {!isPastor && (
           <button
-            onClick={() => { setShowForm(true); setSubmitted(false); }}
+            onClick={() => {
+              setEditingId(null);
+              setForm({ date: new Date().toISOString().split('T')[0], topic: '', attendeesCount: '', offeringAmount: '', notes: '' });
+              setShowForm(true);
+              setSubmitted(false);
+            }}
             className="flex items-center gap-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold px-4 py-2 transition-colors"
           >
             <Plus className="w-4 h-4" />
@@ -237,6 +258,37 @@ export const CellMeetingsView: React.FC = () => {
                     )}
                   </div>
                 </div>
+                {!isPastor && (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      type="button"
+                      title="Edit meeting"
+                      onClick={() => {
+                        setEditingId(mtg.id);
+                        setForm({
+                          date: mtg.date,
+                          topic: mtg.topic,
+                          attendeesCount: String(mtg.attendeesCount),
+                          offeringAmount: String(mtg.offeringAmount || 0),
+                          notes: mtg.notes || ''
+                        });
+                        setShowForm(true);
+                      }}
+                      className="p-1.5 text-[#a6c4eb] hover:text-[#00f0ff] hover:bg-[#0a122e]"
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      title="Delete meeting"
+                      disabled={deletingId === mtg.id}
+                      onClick={() => handleDeleteMeeting(mtg.id, mtg.topic)}
+                      className="p-1.5 text-rose-300 hover:text-rose-100 hover:bg-rose-950/40 disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -251,10 +303,10 @@ export const CellMeetingsView: React.FC = () => {
             <div className="flex items-center justify-between px-5 py-4">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-[#00f0ff]" />
-                <h3 className="text-sm font-bold text-white">Record Cell Meeting</h3>
+                <h3 className="text-sm font-bold text-white">{editingId ? 'Edit Cell Meeting' : 'Record Cell Meeting'}</h3>
               </div>
               <button
-                onClick={() => { setShowForm(false); setError(''); }}
+                onClick={() => { setShowForm(false); setEditingId(null); setError(''); }}
                 className="text-[#a6c4eb] hover:text-white transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -354,7 +406,7 @@ export const CellMeetingsView: React.FC = () => {
                 className="flex items-center gap-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold px-5 py-2 transition-colors disabled:opacity-50"
               >
                 <CheckCircle2 className="w-4 h-4" />
-                <span>{isSubmitting ? 'Saving...' : 'Save Meeting Record'}</span>
+                <span>{isSubmitting ? 'Saving...' : editingId ? 'Save Changes' : 'Save Meeting Record'}</span>
               </button>
             </div>
           </div>

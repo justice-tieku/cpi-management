@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Megaphone, Plus, X, ChevronDown, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Megaphone, Plus, X, ChevronDown, CheckCircle2, AlertCircle, Edit3, Trash2 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { ChurchAnnouncement } from '../../types/cms';
 import { validateText } from '../../utils/validation';
@@ -11,12 +11,14 @@ const priorityConfig = {
 };
 
 export const AnnouncementsBoard: React.FC = () => {
-  const { currentUser, visibleAnnouncements, createAnnouncement } = useCMS();
+  const { currentUser, visibleAnnouncements, createAnnouncement, updateAnnouncement, deleteAnnouncement } = useCMS();
   const isPastor = currentUser.role === 'pastor';
 
   const [showModal, setShowModal] = useState(false);
   const [filterPriority, setFilterPriority] = useState<'All' | ChurchAnnouncement['priority']>('All');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [bannerNotice, setBannerNotice] = useState<{ message: string; isError: boolean } | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [errors, setErrors] = useState<{ title?: string; content?: string }>({});
@@ -49,17 +51,21 @@ export const AnnouncementsBoard: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const res = await createAnnouncement({
+      const payload = {
         title: form.title.trim(),
         content: form.content.trim(),
         priority: form.priority,
         target: form.target
-      });
+      };
+      const res = editingId
+        ? await updateAnnouncement(editingId, payload)
+        : await createAnnouncement(payload);
 
       if (res.success) {
         setForm({ title: '', content: '', priority: 'Normal', target: 'all_shepherds' });
+        setEditingId(null);
         setShowModal(false);
-        setBannerNotice({ message: 'Information sent successfully.', isError: false });
+        setBannerNotice({ message: editingId ? 'Announcement updated successfully.' : 'Information sent successfully.', isError: false });
         setTimeout(() => setBannerNotice(null), 4000);
       } else {
         setFormError(res.error || 'Unable to save the record. Please try again.');
@@ -69,6 +75,14 @@ export const AnnouncementsBoard: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleDelete = async (announcement: ChurchAnnouncement) => {
+    if (!window.confirm(`Delete "${announcement.title}"? This cannot be undone.`)) return;
+    setDeletingId(announcement.id);
+    const res = await deleteAnnouncement(announcement.id);
+    setDeletingId(null);
+    if (!res.success) setBannerNotice({ message: res.error || 'Unable to delete announcement.', isError: true });
   };
 
   const urgentCount = visibleAnnouncements.filter((a) => a.priority === 'Urgent').length;
@@ -122,7 +136,11 @@ export const AnnouncementsBoard: React.FC = () => {
 
           {isPastor && (
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => {
+                setEditingId(null);
+                setForm({ title: '', content: '', priority: 'Normal', target: 'all_shepherds' });
+                setShowModal(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-xs font-semibold text-[#070c1e] transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -149,9 +167,36 @@ export const AnnouncementsBoard: React.FC = () => {
               >
                 <div className="flex items-start justify-between gap-4 mb-3">
                   <h3 className="text-sm font-bold text-white leading-snug">{ann.title}</h3>
-                  <div className={`flex items-center gap-1.5 shrink-0 px-2.5 py-1  text-[10px] font-bold ${cfg.text}`}>
-                    <span className={`w-1.5 h-1.5  ${cfg.dot}`} />
-                    {cfg.label}
+                  <div className="flex items-center gap-2 shrink-0">
+                    {isPastor && (
+                      <>
+                        <button
+                          type="button"
+                          title="Edit announcement"
+                          onClick={() => {
+                            setEditingId(ann.id);
+                            setForm({ title: ann.title, content: ann.content, priority: ann.priority, target: ann.target });
+                            setShowModal(true);
+                          }}
+                          className="p-1.5 text-[#a6c4eb] hover:text-[#00f0ff] hover:bg-[#0a122e]"
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          title="Delete announcement"
+                          disabled={deletingId === ann.id}
+                          onClick={() => handleDelete(ann)}
+                          className="p-1.5 text-rose-300 hover:text-rose-100 hover:bg-rose-950/40 disabled:opacity-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 text-[10px] font-bold ${cfg.text}`}>
+                      <span className={`w-1.5 h-1.5 ${cfg.dot}`} />
+                      {cfg.label}
+                    </div>
                   </div>
                 </div>
                 <p className="text-xs text-slate-300 leading-relaxed mb-4">{ann.content}</p>
@@ -181,8 +226,8 @@ export const AnnouncementsBoard: React.FC = () => {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5">
               <div>
-                <h2 className="text-sm font-bold text-white">Post New Announcement</h2>
-                <p className="text-xs text-[#7b9dc7] mt-0.5">Broadcast to all shepherds</p>
+                <h2 className="text-sm font-bold text-white">{editingId ? 'Edit Announcement' : 'Post New Announcement'}</h2>
+                <p className="text-xs text-[#7b9dc7] mt-0.5">{editingId ? 'Update announcement details' : 'Broadcast to all shepherds'}</p>
               </div>
               <button
                 onClick={() => { setShowModal(false); setErrors({}); }}
@@ -258,7 +303,7 @@ export const AnnouncementsBoard: React.FC = () => {
             {/* Modal Footer */}
             <div className="flex items-center justify-end gap-3 p-5">
               <button
-                onClick={() => { setShowModal(false); setFormError(null); }}
+                onClick={() => { setShowModal(false); setEditingId(null); setFormError(null); }}
                 className="px-4 py-2 text-xs font-medium text-[#a6c4eb] hover:text-slate-200 hover:bg-slate-700/40 transition-colors cursor-pointer"
               >
                 Cancel
@@ -268,7 +313,7 @@ export const AnnouncementsBoard: React.FC = () => {
                 disabled={isSubmitting}
                 className="px-5 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-xs font-semibold text-[#070c1e] transition-colors cursor-pointer disabled:opacity-50"
               >
-                {isSubmitting ? 'Posting...' : 'Post Announcement'}
+                {isSubmitting ? 'Saving...' : editingId ? 'Save Changes' : 'Post Announcement'}
               </button>
             </div>
           </div>

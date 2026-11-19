@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarDays, Plus, X, MapPin, Clock, Tag, Image, CheckCircle2, AlertCircle } from 'lucide-react';
+import { CalendarDays, Plus, X, MapPin, Clock, Tag, Image, CheckCircle2, AlertCircle, Edit3, Trash2 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { ChurchEvent } from '../../types/cms';
 import { validateText } from '../../utils/validation';
@@ -19,12 +19,14 @@ const categories: ChurchEvent['category'][] = [
 ];
 
 export const ChurchEventsBoard: React.FC = () => {
-  const { currentUser, visibleEvents, createEvent } = useCMS();
+  const { currentUser, visibleEvents, createEvent, updateEvent, deleteEvent } = useCMS();
   const isPastor = currentUser.role === 'pastor';
 
   const [showModal, setShowModal] = useState(false);
   const [filterCategory, setFilterCategory] = useState<'All' | ChurchEvent['category']>('All');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [bannerNotice, setBannerNotice] = useState<{ message: string; isError: boolean } | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -68,7 +70,7 @@ export const ChurchEventsBoard: React.FC = () => {
     setIsSubmitting(true);
 
     try {
-      const res = await createEvent({
+      const payload = {
         title: form.title.trim(),
         date: form.date.trim(),
         time: form.time.trim() || '18:00',
@@ -76,10 +78,14 @@ export const ChurchEventsBoard: React.FC = () => {
         description: form.description.trim() || form.title.trim(),
         flyerUrl: form.flyerUrl.trim() || undefined,
         category: form.category
-      });
+      };
+      const res = editingId
+        ? await updateEvent(editingId, payload)
+        : await createEvent(payload);
 
       if (res.success) {
         setForm({ title: '', date: '', time: '', location: '', description: '', flyerUrl: '', category: 'Conference' });
+        setEditingId(null);
         setShowModal(false);
         setBannerNotice({ message: 'Record saved successfully.', isError: false });
         setTimeout(() => setBannerNotice(null), 4000);
@@ -108,6 +114,14 @@ export const ChurchEventsBoard: React.FC = () => {
     } catch {
       return true;
     }
+  };
+
+  const handleDelete = async (event: ChurchEvent) => {
+    if (!window.confirm(`Delete "${event.title}"? This cannot be undone.`)) return;
+    setDeletingId(event.id);
+    const res = await deleteEvent(event.id);
+    setDeletingId(null);
+    if (!res.success) setBannerNotice({ message: res.error || 'Unable to delete event.', isError: true });
   };
 
   return (
@@ -150,7 +164,11 @@ export const ChurchEventsBoard: React.FC = () => {
 
           {isPastor && (
             <button
-              onClick={() => setShowModal(true)}
+              onClick={() => {
+                setEditingId(null);
+                setForm({ title: '', date: '', time: '', location: '', description: '', flyerUrl: '', category: 'Conference' });
+                setShowModal(true);
+              }}
               className="flex items-center gap-2 px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-xs font-semibold text-[#070c1e] transition-colors cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
@@ -241,7 +259,42 @@ export const ChurchEventsBoard: React.FC = () => {
                       </div>
                       <span className="text-[10px] text-[#7b9dc7]">{event.createdBy}</span>
                     </div>
-                    <span className="text-[10px] text-slate-600">Posted {event.createdAt}</span>
+                    <div className="flex items-center gap-1">
+                      {isPastor && (
+                        <>
+                          <button
+                            type="button"
+                            title="Edit event"
+                            onClick={() => {
+                              setEditingId(event.id);
+                              setForm({
+                                title: event.title,
+                                date: event.date,
+                                time: event.time,
+                                location: event.location,
+                                description: event.description,
+                                flyerUrl: event.flyerUrl || '',
+                                category: event.category
+                              });
+                              setShowModal(true);
+                            }}
+                            className="p-1.5 text-[#a6c4eb] hover:text-[#00f0ff] hover:bg-[#0a122e]"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            title="Delete event"
+                            disabled={deletingId === event.id}
+                            onClick={() => handleDelete(event)}
+                            className="p-1.5 text-rose-300 hover:text-rose-100 hover:bg-rose-950/40 disabled:opacity-50"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </>
+                      )}
+                      <span className="text-[10px] text-slate-600 ml-1">Posted {event.createdAt}</span>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -257,11 +310,11 @@ export const ChurchEventsBoard: React.FC = () => {
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 sticky top-0 bg-[#111d44] z-10">
               <div>
-                <h2 className="text-sm font-bold text-white">Create New Event</h2>
-                <p className="text-xs text-[#7b9dc7] mt-0.5">Visible to all shepherds</p>
+                <h2 className="text-sm font-bold text-white">{editingId ? 'Edit Event' : 'Create New Event'}</h2>
+                <p className="text-xs text-[#7b9dc7] mt-0.5">{editingId ? 'Update event details' : 'Visible to all shepherds'}</p>
               </div>
               <button
-                onClick={() => { setShowModal(false); setErrors({}); }}
+                onClick={() => { setShowModal(false); setEditingId(null); setErrors({}); }}
                 className="p-1.5 hover:bg-slate-700/40 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4 text-[#a6c4eb]" />
@@ -402,7 +455,7 @@ export const ChurchEventsBoard: React.FC = () => {
             {/* Modal Footer */}
             <div className="flex items-center justify-end gap-3 p-5 sticky bottom-0 bg-[#111d44]">
               <button
-                onClick={() => { setShowModal(false); setFormError(null); }}
+                onClick={() => { setShowModal(false); setEditingId(null); setFormError(null); }}
                 className="px-4 py-2 text-xs font-medium text-[#a6c4eb] hover:text-slate-200 hover:bg-slate-700/40 transition-colors cursor-pointer"
               >
                 Cancel
@@ -412,7 +465,7 @@ export const ChurchEventsBoard: React.FC = () => {
                 disabled={isSubmitting}
                 className="px-5 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-xs font-semibold text-[#070c1e] transition-colors cursor-pointer disabled:opacity-50"
               >
-                {isSubmitting ? 'Creating...' : 'Create Event'}
+                {isSubmitting ? 'Saving...' : editingId ? 'Save Changes' : 'Create Event'}
               </button>
             </div>
           </div>

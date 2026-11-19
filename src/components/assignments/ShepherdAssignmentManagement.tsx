@@ -100,7 +100,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
         password: newShepherdPassword.trim()
       });
 
-      if (!res.success) throw new Error(res.error || 'Failed to create shepherd account');
+      if (!res.success) throw new Error(res.error || 'Faied to create shepherd account.');
 
       setCreatedCredentials({
         name: newShepherdName.trim(),
@@ -199,7 +199,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
       return;
     }
     if (!targetShepherdId) {
-      setReassignError('Please select a target shepherd.');
+      setReassignError('Please select a shepherd shepherd.');
       return;
     }
 
@@ -542,7 +542,6 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                     <tr className="text-[10px] uppercase tracking-wider text-[#a6c4eb] font-semibold bg-[#0a122e]">
                       <th className="py-2.5 px-3">Member Name</th>
                       <th className="py-2.5 px-3">Telephone</th>
-                      <th className="py-2.5 px-3">Spiritual Stage</th>
                       <th className="py-2.5 px-3">Enrolled Date</th>
                       <th className="py-2.5 px-3 text-right">Action</th>
                     </tr>
@@ -726,8 +725,8 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
               <div className="flex items-center gap-2">
                 <UserPlus className="w-5 h-5 text-[#00ff9d]" />
                 <div>
-                  <h3 className="text-base font-bold text-white">Onboard New Shepherd</h3>
-                  <p className="text-[11px] text-[#a6c4eb]">Provision private credentials and assign a flock</p>
+                  <h3 className="text-base font-bold text-white">Add New Shepherd</h3>
+                  <p className="text-[11px] text-[#a6c4eb]">Provide private credentials and assign a flock</p>
                 </div>
               </div>
               <button
@@ -743,7 +742,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                 <div className="p-4 bg-[#0f382a] text-[#00ff9d] flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 shrink-0" />
                   <span className="text-xs font-bold">
-                    Shepherd account successfully created for {createdCredentials.name}.
+                  Account successfully created for {createdCredentials.name}.
                   </span>
                 </div>
 
@@ -818,7 +817,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-[11px] font-semibold text-[#a6c4eb] block mb-1">
-                      Phone Number
+                      Phone Number *
                     </label>
                     <input
                       type="tel"

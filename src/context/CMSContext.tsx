@@ -44,6 +44,7 @@ interface CMSContextType {
   visibleMembers: Member[];
   registerMember: (member: Omit<Member, 'id' | 'registeredAt' | 'registeredBy'>) => Promise<{ success: boolean; error?: string; member?: Member }>;
   updateMember: (memberId: string, updates: Partial<Member>) => Promise<{ success: boolean; error?: string }>;
+  deleteMember: (memberId: string) => Promise<{ success: boolean; error?: string }>;
   reassignMember: (memberId: string, newShepherdId: string, reason: string) => Promise<{ success: boolean; error?: string }>;
   shepherds: { id: string; name: string; cell: string; assignedCount: number; maxCapacity: number }[];
   recordShepherdLogin: (name: string, cellName?: string) => { id: string; name: string; cell: string; email: string };
@@ -60,6 +61,8 @@ interface CMSContextType {
   cellMeetings: CellMeeting[];
   visibleCellMeetings: CellMeeting[];
   recordCellMeeting: (meeting: Omit<CellMeeting, 'id' | 'shepherdId' | 'shepherdName' | 'cellName'>) => Promise<{ success: boolean; error?: string }>;
+  updateCellMeeting: (meetingId: string, updates: Partial<CellMeeting>) => Promise<{ success: boolean; error?: string }>;
+  deleteCellMeeting: (meetingId: string) => Promise<{ success: boolean; error?: string }>;
   followUpTasks: FollowUpTask[];
   visibleTasks: FollowUpTask[];
   updateTaskStatus: (taskId: string, status: FollowUpStatus, note?: string) => Promise<{ success: boolean; error?: string }>;
@@ -82,9 +85,13 @@ interface CMSContextType {
   announcements: ChurchAnnouncement[];
   visibleAnnouncements: ChurchAnnouncement[];
   createAnnouncement: (data: Omit<ChurchAnnouncement, 'id' | 'authorName' | 'date'>) => Promise<{ success: boolean; error?: string }>;
+  updateAnnouncement: (announcementId: string, updates: Partial<ChurchAnnouncement>) => Promise<{ success: boolean; error?: string }>;
+  deleteAnnouncement: (announcementId: string) => Promise<{ success: boolean; error?: string }>;
   churchEvents: ChurchEvent[];
   visibleEvents: ChurchEvent[];
   createEvent: (data: Omit<ChurchEvent, 'id' | 'createdBy' | 'createdAt'>) => Promise<{ success: boolean; error?: string }>;
+  updateEvent: (eventId: string, updates: Partial<ChurchEvent>) => Promise<{ success: boolean; error?: string }>;
+  deleteEvent: (eventId: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 const CMSContext = createContext<CMSContextType | undefined>(undefined);
@@ -565,6 +572,31 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
+  const updateAnnouncement = async (announcementId: string, updates: Partial<ChurchAnnouncement>): Promise<{ success: boolean; error?: string }> => {
+    if (!announcementId || !updates) return { success: false, error: 'There is no data to save.' };
+    if (isSupabaseConfigured) {
+      const dbPayload: any = {};
+      if (updates.title !== undefined) dbPayload.title = updates.title.trim();
+      if (updates.content !== undefined) dbPayload.content = updates.content.trim();
+      if (updates.priority !== undefined) dbPayload.priority = updates.priority;
+      if (updates.target !== undefined) dbPayload.target = updates.target;
+      const { error } = await (supabase.from('announcements') as any).update(dbPayload).eq('id', announcementId);
+      if (error) return { success: false, error: mapError(error).message };
+    }
+    setAnnouncements((prev) => prev.map((item) => item.id === announcementId ? { ...item, ...updates } : item));
+    return { success: true };
+  };
+
+  const deleteAnnouncement = async (announcementId: string): Promise<{ success: boolean; error?: string }> => {
+    if (!announcementId) return { success: false, error: 'Invalid announcement.' };
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.from('announcements').delete().eq('id', announcementId);
+      if (error) return { success: false, error: mapError(error).message };
+    }
+    setAnnouncements((prev) => prev.filter((item) => item.id !== announcementId));
+    return { success: true };
+  };
+
   // 10. Church Events — all roles see all events
   const visibleEvents = churchEvents;
 
@@ -606,6 +638,34 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     setChurchEvents((prev) => [newEvt, ...prev]);
+    return { success: true };
+  };
+
+  const updateEvent = async (eventId: string, updates: Partial<ChurchEvent>): Promise<{ success: boolean; error?: string }> => {
+    if (!eventId || !updates) return { success: false, error: 'There is no data to save.' };
+    if (isSupabaseConfigured) {
+      const dbPayload: any = {};
+      if (updates.title !== undefined) dbPayload.title = updates.title.trim();
+      if (updates.date !== undefined) dbPayload.event_date = updates.date;
+      if (updates.time !== undefined) dbPayload.event_time = updates.time;
+      if (updates.location !== undefined) dbPayload.location = updates.location.trim();
+      if (updates.description !== undefined) dbPayload.description = updates.description.trim();
+      if (updates.flyerUrl !== undefined) dbPayload.flyer_url = updates.flyerUrl || null;
+      if (updates.category !== undefined) dbPayload.category = updates.category;
+      const { error } = await (supabase.from('church_events') as any).update(dbPayload).eq('id', eventId);
+      if (error) return { success: false, error: mapError(error).message };
+    }
+    setChurchEvents((prev) => prev.map((item) => item.id === eventId ? { ...item, ...updates } : item));
+    return { success: true };
+  };
+
+  const deleteEvent = async (eventId: string): Promise<{ success: boolean; error?: string }> => {
+    if (!eventId) return { success: false, error: 'Invalid event.' };
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.from('church_events').delete().eq('id', eventId);
+      if (error) return { success: false, error: mapError(error).message };
+    }
+    setChurchEvents((prev) => prev.filter((item) => item.id !== eventId));
     return { success: true };
   };
 
@@ -869,7 +929,20 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setMembers((prev) =>
       prev.map((m) => (m.id === memberId ? { ...m, ...updates } : m))
     );
+    return { success: true };
+  };
 
+  const deleteMember = async (memberId: string): Promise<{ success: boolean; error?: string }> => {
+    if (!memberId) return { success: false, error: 'Invalid member.' };
+    if (isSupabaseConfigured) {
+      try {
+        const { error } = await supabase.from('members').delete().eq('id', memberId);
+        if (error) return { success: false, error: mapError(error).message };
+      } catch (err: any) {
+        return { success: false, error: mapError(err).message };
+      }
+    }
+    setMembers((prev) => prev.filter((member) => member.id !== memberId));
     return { success: true };
   };
 
@@ -1357,6 +1430,32 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
+  const updateCellMeeting = async (meetingId: string, updates: Partial<CellMeeting>): Promise<{ success: boolean; error?: string }> => {
+    if (!meetingId || !updates) return { success: false, error: 'There is no data to save.' };
+    if (isSupabaseConfigured) {
+      const dbPayload: any = {};
+      if (updates.date !== undefined) dbPayload.meeting_date = updates.date;
+      if (updates.topic !== undefined) dbPayload.topic = updates.topic.trim();
+      if (updates.attendeesCount !== undefined) dbPayload.attendees_count = updates.attendeesCount;
+      if (updates.offeringAmount !== undefined) dbPayload.offering_amount = updates.offeringAmount;
+      if (updates.notes !== undefined) dbPayload.notes = updates.notes.trim() || null;
+      const { error } = await (supabase.from('cell_meetings') as any).update(dbPayload).eq('id', meetingId);
+      if (error) return { success: false, error: mapError(error).message };
+    }
+    setCellMeetings((prev) => prev.map((item) => item.id === meetingId ? { ...item, ...updates } : item));
+    return { success: true };
+  };
+
+  const deleteCellMeeting = async (meetingId: string): Promise<{ success: boolean; error?: string }> => {
+    if (!meetingId) return { success: false, error: 'Invalid meeting.' };
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.from('cell_meetings').delete().eq('id', meetingId);
+      if (error) return { success: false, error: mapError(error).message };
+    }
+    setCellMeetings((prev) => prev.filter((item) => item.id !== meetingId));
+    return { success: true };
+  };
+
   const updateTaskStatus = async (
     taskId: string,
     status: FollowUpStatus,
@@ -1479,6 +1578,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         visibleMembers,
         registerMember,
         updateMember,
+        deleteMember,
         reassignMember,
         shepherds,
         recordShepherdLogin,
@@ -1495,6 +1595,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         cellMeetings,
         visibleCellMeetings,
         recordCellMeeting,
+        updateCellMeeting,
+        deleteCellMeeting,
         followUpTasks,
         visibleTasks,
         updateTaskStatus,
@@ -1517,9 +1619,13 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         announcements,
         visibleAnnouncements,
         createAnnouncement,
+        updateAnnouncement,
+        deleteAnnouncement,
         churchEvents,
         visibleEvents,
-        createEvent
+        createEvent,
+        updateEvent,
+        deleteEvent
       }}
     >
       {children}

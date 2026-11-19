@@ -22,6 +22,23 @@ app.use(cors({
 }));
 app.use(express.json());
 
+const cleanText = (value) => typeof value === 'string'
+  ? value.replace(/[\u200B-\u200D\u2060\uFEFF]/g, '').replace(/\u00A0/g, ' ').replace(/\s+/g, ' ').trim()
+  : '';
+
+const isValidEmail = (value) => typeof value === 'string'
+  && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+
+const isValidPhone = (value) => {
+  if (typeof value !== 'string' || !value.trim()) return false;
+  const cleaned = value.replace(/[\s\-().]/g, '');
+  if (/[^\d+]/.test(cleaned)) return false;
+  let digits = cleaned.startsWith('+') ? cleaned.slice(1) : cleaned;
+  if (digits.startsWith('233')) digits = digits.slice(3);
+  if (digits.startsWith('0')) digits = digits.slice(1);
+  return digits.length === 9;
+};
+
 // Request logger
 app.use((req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
@@ -134,8 +151,11 @@ app.post('/api/members', async (req, res) => {
     if (!memberData || Object.keys(memberData).length === 0) {
       return res.status(400).json({ success: false, error: 'There is no data to save.' });
     }
-    if (!memberData.first_name || !memberData.phone) {
+    if (!cleanText(memberData.first_name) || !isValidPhone(memberData.phone)) {
       return res.status(400).json({ success: false, error: 'Please enter the required information.' });
+    }
+    if (memberData.email && !isValidEmail(memberData.email)) {
+      return res.status(400).json({ success: false, error: 'Enter a valid email address.' });
     }
 
     const { data, error } = await supabase.from('members').insert([memberData]).select().single();
@@ -190,6 +210,13 @@ app.post('/api/attendance', async (req, res) => {
     if (!rawRecords || rawRecords.length === 0) {
       return res.status(400).json({ success: false, error: 'There is no data to save.' });
     }
+    const invalidRecord = rawRecords.find((record) =>
+      !record || !record.memberId || !record.date || Number.isNaN(new Date(record.date).getTime())
+      || !['Present', 'Absent', 'Excused'].includes(record.status)
+    );
+    if (invalidRecord) {
+      return res.status(400).json({ success: false, error: 'Please enter valid attendance details.' });
+    }
 
     const { data, error } = await supabase.from('attendance_records').upsert(rawRecords).select();
     if (error) throw error;
@@ -216,7 +243,8 @@ app.get('/api/announcements', async (req, res) => {
 app.post('/api/announcements', async (req, res) => {
   try {
     const { title, content } = req.body || {};
-    if (!title || !title.trim() || !content || !content.trim()) {
+    if (!cleanText(title) || !cleanText(content)
+      || cleanText(title).length > 120 || cleanText(content).length > 2000) {
       return res.status(400).json({ success: false, error: 'Please enter the required information.' });
     }
 
@@ -242,7 +270,8 @@ app.post('/api/events', async (req, res) => {
   try {
     const { title, date, event_date, location, description } = req.body || {};
     const evDate = event_date || date;
-    if (!title || !title.trim() || !evDate || !location || !location.trim()) {
+    if (!cleanText(title) || !evDate || !cleanText(location)
+      || Number.isNaN(new Date(evDate).getTime()) || cleanText(title).length > 120 || cleanText(location).length > 160) {
       return res.status(400).json({ success: false, error: 'Please enter the required information.' });
     }
 
@@ -414,8 +443,15 @@ app.post('/api/shepherds/create', async (req, res) => {
   try {
     const { name, email, phone, cellName, password } = req.body;
 
-    if (!name || !name.trim() || !email || !email.trim() || !cellName || !cellName.trim()) {
+    if (!cleanText(name) || !isValidEmail(email) || !cleanText(cellName)
+      || cleanText(name).length > 60 || cleanText(cellName).length > 120) {
       return res.status(400).json({ success: false, error: 'Please enter the required information.' });
+    }
+    if (phone && !isValidPhone(phone)) {
+      return res.status(400).json({ success: false, error: 'Enter a valid phone number.' });
+    }
+    if (password?.trim() && password.trim().length < 6) {
+      return res.status(400).json({ success: false, error: 'Password must be at least 6 characters.' });
     }
 
     const shepherdPassword = password?.trim() || 'CrossPassion@99';

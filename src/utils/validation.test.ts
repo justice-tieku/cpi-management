@@ -1,4 +1,4 @@
-import { validatePhone, formatPhone, validateAmount, validateCount, validateEmail, validateName } from './validation';
+import { validatePhone, formatPhone, validateAmount, validateCount, validateEmail, validateName } from './validation.ts';
 
 const assert = (cond: boolean, msg: string) => { if (!cond) throw new Error(msg); };
 

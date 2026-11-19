@@ -205,6 +205,10 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
       setForgotStatus({ message: 'Please enter your email address', isError: true });
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(forgotEmail.trim())) {
+      setForgotStatus({ message: 'Enter a valid email address.', isError: true });
+      return;
+    }
 
     setIsSendingReset(true);
     setForgotStatus(null);

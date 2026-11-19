@@ -984,8 +984,10 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured) {
       try {
-        // Always resolve to a valid UUID — fall back to pastor UUID if the ID isn't mapped
-        const shepherdUuid = getProfileUUID(targetShepherd.id, true) as string;
+        const shepherdUuid = getProfileUUID(targetShepherd.id);
+        if (!shepherdUuid) {
+          return { success: false, error: 'The selected shepherd profile is not valid. Refresh the page and try again.' };
+        }
 
         // Step 1: Update the member's current shepherd assignment (critical)
         const { error: memErr } = await (supabase.from('members') as any)

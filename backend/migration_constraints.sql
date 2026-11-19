@@ -166,7 +166,7 @@ CREATE TRIGGER trg_cpi_future_meeting
   FOR EACH ROW EXECUTE FUNCTION public.cpi_check_meeting_date();
 
 CREATE TRIGGER trg_cpi_dob
-  BEFORE INSERT OR UPDATE ON public.members
+  BEFORE INSERT OR UPDATE OF date_of_birth ON public.members
   FOR EACH ROW EXECUTE FUNCTION public.cpi_check_dob();
 
 -- =============================================================================

@@ -992,7 +992,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           .update({
             current_shepherd_id: shepherdUuid,
             current_shepherd_name: targetShepherd.name,
-            cell_group: targetShepherd.cell
+            cell_group: targetShepherd.cell,
+            phone: formatPhone(targetMember.phone)
           })
           .eq('id', memberId);
 

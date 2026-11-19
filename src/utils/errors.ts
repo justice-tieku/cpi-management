@@ -36,12 +36,19 @@ function extractColumn(err: any): string | undefined {
   return cm ? cm[1] : undefined;
 }
 
+function extractConstraint(err: any): string | undefined {
+  const text = `${err?.constraint || ''} ${err?.message || ''} ${err?.details || ''}`;
+  const match = text.match(/constraint\s+"?([a-z0-9_]+)"?/i);
+  return match?.[1];
+}
+
 export function mapError(err: any, context = 'save'): FriendlyError {
   const code = String(err?.code || err?.status || '');
   const raw = err?.message || err?.details || '';
   const lower = raw.toLowerCase();
   const column = extractColumn(err);
   const label = column ? COLUMN_LABELS[column] || column.replace(/_/g, ' ') : undefined;
+  const constraint = extractConstraint(err);
 
   // Network / reachability
   if (!code && lower.includes('failed to fetch')) {
@@ -75,6 +82,24 @@ export function mapError(err: any, context = 'save'): FriendlyError {
       // Custom friendly messages from triggers (future date / DOB) are passed through.
       if (raw && !/violates check constraint/i.test(raw)) {
         return { message: raw, technical: raw };
+      }
+      if (constraint === 'members_phone_format_check') {
+        return {
+          message: 'This member has an invalid phone number format. Edit the member and save a valid Ghana phone number, then try the assignment again.',
+          technical: raw
+        };
+      }
+      if (constraint === 'members_email_format_check') {
+        return {
+          message: 'This member has an invalid email address. Edit the member and save a valid email address, then try the assignment again.',
+          technical: raw
+        };
+      }
+      if (constraint === 'members_name_len_check') {
+        return {
+          message: 'This member has an invalid name. Edit the member and correct the name, then try the assignment again.',
+          technical: raw
+        };
       }
       return {
         message: label

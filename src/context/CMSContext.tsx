@@ -103,10 +103,10 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (session?.user) return session.user;
     return {
       id: 'USR-PASTOR-01',
-      name: 'Pastor Adams',
+      name: 'Rev. Festus',
       email: 'pastor.adams@crosspassion.org',
       role: 'pastor',
-      branch: 'Main Sanctuary — Central Cathedral'
+      branch: 'Main Church',
     };
   });
 
@@ -494,7 +494,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recipientId,
       recipientName: isPastor
         ? (target?.name || 'Shepherd')
-        : 'Pastor Adams',
+        : 'Rev. Festus',
       content: trimmedContent,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' — just now',
       read: false

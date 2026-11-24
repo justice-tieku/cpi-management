@@ -1,3 +1,14 @@
+export function isFutureDate(val: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(val)) return true;
+
+  const [year, month, day] = val.split('-').map(Number);
+  const selected = new Date(year, month - 1, day);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  return selected.getTime() > today.getTime();
+}
+
 /**
  * Normalizes date input from any browser/locale format (e.g. DD/MM/YYYY, DD-MM-YYYY, YYYY-MM-DD)
  * to PostgreSQL compatible ISO format: YYYY-MM-DD.

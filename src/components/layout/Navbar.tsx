@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Bell, UserPlus, Check, X, Shield, User, Menu, Key, Lock, CheckCircle2, AlertCircle, Cloud, WifiOff } from 'lucide-react';
+import { Bell, UserPlus, Check, X, Shield, User, Menu, Key, Lock, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { supabase } from '../../../backend/client';
 
@@ -86,16 +86,6 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       <div className="flex items-center gap-3">
-        <div
-          className={`hidden lg:flex items-center gap-1.5 text-[10px] font-semibold ${
-            isCloudConnected ? 'text-emerald-300' : 'text-amber-300'
-          }`}
-          title={isCloudConnected ? 'Connected to cloud database' : 'Offline mode: changes may stay on this device'}
-        >
-          {isCloudConnected ? <Cloud className="w-3.5 h-3.5" /> : <WifiOff className="w-3.5 h-3.5" />}
-          <span>{isCloudConnected ? 'Cloud connected' : 'Offline mode'}</span>
-        </div>
-
         {/* '+ Add Person' Button only visible on relevant pages */}
         {showAddPerson && (
           <button

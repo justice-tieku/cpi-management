@@ -151,7 +151,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <h1 className="text-xs font-bold text-white uppercase tracking-wider font-serif truncate">
                 Cross Passion
               </h1>
-              <p className="text-xs font-bold text-[#00f0ff] uppercase tracking-wider font-serif">
+              <p className="text-xs font-bold text-white uppercase tracking-wider font-serif">
                 International
               </p>
             </div>

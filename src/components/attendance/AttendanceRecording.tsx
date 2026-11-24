@@ -22,6 +22,7 @@ import {
 import { useCMS } from '../../context/CMSContext';
 import { DirectOutreachModal } from '../common/DirectOutreachModal';
 import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
+import { isFutureDate } from '../../utils/date';
 
 export const AttendanceRecording: React.FC = () => {
   const {
@@ -126,7 +127,7 @@ export const AttendanceRecording: React.FC = () => {
       setSaveNotice({ message: 'Select a service date.', isError: true });
       return;
     }
-    if (new Date(`${serviceDate}T23:59:59`) > new Date()) {
+    if (isFutureDate(serviceDate)) {
       setSaveNotice({ message: 'Service date cannot be in the future.', isError: true });
       return;
     }

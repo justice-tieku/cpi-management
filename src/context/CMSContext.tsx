@@ -1264,7 +1264,10 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const payload = recordsToSave.map((rec) => {
       const member = members.find((m) => m.id === rec.memberId);
       const existing = attendanceRecords.find(
-        (a) => a.memberId === rec.memberId && a.serviceDate === rec.date
+        (a) =>
+          a.memberId === rec.memberId &&
+          a.serviceDate === rec.date &&
+          a.serviceName === resolvedServiceName
       );
       const id = existing?.id || `ATT-${rec.date.replace(/-/g, '')}-${Date.now().toString().slice(-4)}-${Math.floor(Math.random() * 1000)}`;
 
@@ -1276,7 +1279,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         member_id: rec.memberId,
         member_name: member ? `${member.firstName} ${member.lastName}` : 'Member',
         cell_group: member?.cellGroup || 'General',
-        shepherd_id: authUserId || getProfileUUID(member?.currentShepherdId),
+        shepherd_id: authUserId,
         status: rec.status,
         recorded_by: currentUser.name,
         recorded_at: new Date().toISOString(),
@@ -1286,6 +1289,28 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured) {
       try {
+        const memberIds = Array.from(new Set(recordsToSave.map((record) => record.memberId)));
+        const { data: validMembers, error: memberLookupError } = await (supabase.from('members') as any)
+          .select('id')
+          .in('id', memberIds);
+
+        if (memberLookupError) {
+          return { success: false, error: mapError(memberLookupError).message };
+        }
+
+        const validIds = new Set((validMembers || []).map((member: { id: string }) => member.id));
+        const missingIds = memberIds.filter((memberId) => !validIds.has(memberId));
+        if (missingIds.length > 0) {
+          return {
+            success: false,
+            error: 'One or more selected members no longer exist in the live database. Refresh the page and try again.'
+          };
+        }
+
+        if (!authUserId) {
+          return { success: false, error: 'Your session has expired. Please log in again.' };
+        }
+
         const { error } = await (supabase.from('attendance_records') as any).upsert(payload);
         if (error) {
           console.error('[Supabase batchSaveAttendance] Error:', error);

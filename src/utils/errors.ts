@@ -75,7 +75,7 @@ export function mapError(err: any, context = 'save'): FriendlyError {
       return { message: `${(label || 'A required field')!.replace(/^./, (c) => c.toUpperCase())} is required.`, technical: raw };
     case '23503':
       return {
-        message: 'This record is linked to other records and cannot be changed. Remove the related records first.',
+        message: 'A linked member or shepherd record no longer exists, or it was removed from Supabase. Refresh the page and try again.',
         technical: raw
       };
     case '23514':

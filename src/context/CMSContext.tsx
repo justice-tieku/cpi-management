@@ -45,6 +45,7 @@ interface CMSContextType {
   registerMember: (member: Omit<Member, 'id' | 'registeredAt' | 'registeredBy'>) => Promise<{ success: boolean; error?: string; member?: Member }>;
   updateMember: (memberId: string, updates: Partial<Member>) => Promise<{ success: boolean; error?: string }>;
   deleteMember: (memberId: string) => Promise<{ success: boolean; error?: string }>;
+  deleteShepherd: (shepherdId: string) => Promise<{ success: boolean; error?: string }>;
   reassignMember: (memberId: string, newShepherdId: string, reason: string) => Promise<{ success: boolean; error?: string }>;
   shepherds: { id: string; name: string; cell: string; assignedCount: number; maxCapacity: number; isPpitShepherd: boolean }[];
   recordShepherdLogin: (name: string, cellName?: string) => { id: string; name: string; cell: string; email: string };
@@ -203,7 +204,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       try {
         // 1. Members
         const { data: dbMembers, error: mErr } = await supabase.from('members').select('*');
-        if (!mErr && dbMembers && dbMembers.length > 0 && isMounted) {
+        if (!mErr && dbMembers && isMounted) {
           setMembers(
             dbMembers.map((m: any) => ({
               id: m.id,
@@ -229,7 +230,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         // 2. Attendance
         const { data: dbAttendance } = await supabase.from('attendance_records').select('*');
-        if (dbAttendance && dbAttendance.length > 0 && isMounted) {
+        if (dbAttendance && isMounted) {
           setAttendanceRecords(
             dbAttendance.map((a: any) => ({
               id: a.id,
@@ -250,7 +251,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         // 3. Cell Meetings
         const { data: dbMeetings } = await supabase.from('cell_meetings').select('*');
-        if (dbMeetings && dbMeetings.length > 0 && isMounted) {
+        if (dbMeetings && isMounted) {
           setCellMeetings(
             dbMeetings.map((cm: any) => ({
               id: cm.id,
@@ -268,7 +269,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         // 4. Announcements
         const { data: dbAnnouncements } = await supabase.from('announcements').select('*');
-        if (dbAnnouncements && dbAnnouncements.length > 0 && isMounted) {
+        if (dbAnnouncements && isMounted) {
           setAnnouncements(
             dbAnnouncements.map((an: any) => ({
               id: an.id,
@@ -284,7 +285,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         // 5. Events
         const { data: dbEvents } = await supabase.from('church_events').select('*');
-        if (dbEvents && dbEvents.length > 0 && isMounted) {
+        if (dbEvents && isMounted) {
           setChurchEvents(
             dbEvents.map((ev: any) => ({
               id: ev.id,
@@ -303,7 +304,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         // 6. Finance
         const { data: dbFinance } = await supabase.from('finance_records').select('*');
-        if (dbFinance && dbFinance.length > 0 && isMounted) {
+        if (dbFinance && isMounted) {
           setFinanceRecords(
             dbFinance.map((f: any) => ({
               id: f.id,
@@ -322,7 +323,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
         // 7. Visitors (First-Timers / Guests)
         const { data: dbVisitors } = await supabase.from('visitors').select('*');
-        if (dbVisitors && dbVisitors.length > 0 && isMounted) {
+        if (dbVisitors && isMounted) {
           setVisitors(
             dbVisitors.map((v: any) => ({
               id: v.id,
@@ -356,6 +357,88 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           );
         }
 
+        const { data: dbAuditLogs } = await supabase
+          .from('audit_logs')
+          .select('*')
+          .order('created_at', { ascending: false });
+        if (dbAuditLogs && isMounted) {
+          setAuditLogs(dbAuditLogs.map((log: any) => ({
+            id: log.id,
+            timestamp: log.created_at ? log.created_at.replace('T', ' ').slice(0, 19) : '',
+            actorName: log.actor_name,
+            actorRole: log.actor_role,
+            action: log.action,
+            entityType: log.entity_type,
+            entityId: log.entity_id || '',
+            details: log.details || ''
+          })));
+        }
+
+        const { data: dbTasks } = await supabase.from('follow_up_tasks').select('*');
+        if (dbTasks && isMounted) {
+          setFollowUpTasks(dbTasks.map((task: any) => ({
+            memberId: task.member_id,
+            memberName: task.member_name,
+            shepherdId: task.shepherd_id,
+            shepherdName: task.shepherd_name,
+            taskType: task.task_type,
+            dueDate: task.due_date || undefined,
+            priority: task.priority,
+            status: task.status,
+            nextAction: task.next_action || undefined,
+            notes: task.notes || undefined,
+            contactAttempts: task.contact_attempts || 0,
+            completedAt: task.completed_at || undefined
+          })) as FollowUpTask[]);
+        }
+
+        const { data: dbMessages } = await supabase.from('chat_messages').select('*');
+        if (dbMessages && isMounted) {
+          setMessages(dbMessages.map((message: any) => ({
+            id: message.id,
+            senderId: message.sender_id,
+            senderName: message.sender_name,
+            senderRole: message.sender_role,
+            recipientId: message.recipient_id,
+            recipientName: message.recipient_name,
+            content: message.content,
+            timestamp: message.created_at ? message.created_at.replace('T', ' ').slice(11, 16) : '',
+            read: message.is_read
+          })));
+        }
+
+        const { data: dbNotifications } = await supabase.from('notifications').select('*');
+        if (dbNotifications && isMounted) {
+          setNotifications(dbNotifications.map((notification: any) => ({
+            id: notification.id,
+            recipientId: notification.recipient_id,
+            title: notification.title,
+            message: notification.message,
+            timestamp: notification.created_at ? notification.created_at.replace('T', ' ').slice(0, 19) : '',
+            read: notification.is_read,
+            type: notification.notification_type === 'assignment' ? 'assignment'
+              : notification.notification_type === 'report' ? 'report' : 'general',
+            memberId: notification.member_id || undefined
+          })));
+        }
+
+        const { data: dbAssignments } = await supabase.from('shepherd_assignments').select('*');
+        if (dbAssignments && isMounted) {
+          setAssignmentsHistory(dbAssignments.map((assignment: any) => ({
+            id: assignment.id,
+            memberId: assignment.member_id,
+            memberName: assignment.member_name,
+            shepherdId: assignment.shepherd_id,
+            shepherdName: assignment.shepherd_name,
+            cellGroup: assignment.cell_group,
+            startDate: assignment.start_date,
+            endDate: assignment.end_date || undefined,
+            status: assignment.status,
+            assignedBy: assignment.assigned_by,
+            reason: assignment.reason || undefined
+          })));
+        }
+
         if (isMounted) setIsCloudConnected(true);
       } catch (err) {
         console.warn('[CPI Cloud Sync] Running with cached data:', err);
@@ -371,6 +454,14 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .on('postgres_changes', { event: '*', schema: 'public', table: 'cell_meetings' }, () => syncFromCloud())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'visitors' }, () => syncFromCloud())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_records' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'church_events' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'announcements' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'audit_logs' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'follow_up_tasks' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'chat_messages' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'notifications' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'shepherd_assignments' }, () => syncFromCloud())
       .subscribe();
 
     return () => {
@@ -502,13 +593,33 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     if (isSupabaseConfigured) {
       try {
+        let recipientUuid = getProfileUUID(recipientId);
+        if (!isPastor) {
+          const { data: pastorProfile, error: pastorLookupError } = await (supabase as any)
+            .from('profiles')
+            .select('id,name')
+            .eq('role', 'pastor')
+            .limit(1)
+            .maybeSingle();
+        if (pastorLookupError) {
+          return { success: false, error: mapError(pastorLookupError).message };
+        }
+        if (!pastorProfile) {
+          return { success: false, error: 'The pastor profile is not available. Refresh the page and try again.' };
+        }
+        recipientUuid = pastorProfile.id;
+        }
+        if (!recipientUuid) {
+          return { success: false, error: 'The selected recipient profile is not valid. Refresh the page and try again.' };
+        }
+
         const { error } = await (supabase.from('chat_messages') as any)
           .insert({
             id: newMsg.id,
             sender_id: (await supabase.auth.getUser()).data.user?.id || getProfileUUID(currentUser.id),
             sender_name: currentUser.name,
             sender_role: currentUser.role,
-            recipient_id: getProfileUUID(recipientId),
+            recipient_id: recipientUuid,
             recipient_name: newMsg.recipientName,
             content: newMsg.content,
             is_read: false
@@ -602,9 +713,20 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteAnnouncement = async (announcementId: string): Promise<{ success: boolean; error?: string }> => {
     if (!announcementId) return { success: false, error: 'Invalid announcement.' };
+    const target = announcements.find((announcement) => announcement.id === announcementId);
     if (isSupabaseConfigured) {
       const { error } = await supabase.from('announcements').delete().eq('id', announcementId);
       if (error) return { success: false, error: mapError(error).message };
+      await (supabase.from('audit_logs') as any).insert({
+        id: `LOG-${Date.now()}`,
+        actor_id: (await supabase.auth.getUser()).data.user?.id || null,
+        actor_name: currentUser.name,
+        actor_role: currentUser.role,
+        action: 'DELETE_ANNOUNCEMENT',
+        entity_type: 'Announcement',
+        entity_id: announcementId,
+        details: target ? `Deleted announcement ${target.title}` : `Deleted announcement ${announcementId}`
+      });
     }
     setAnnouncements((prev) => prev.filter((item) => item.id !== announcementId));
     return { success: true };
@@ -674,9 +796,20 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteEvent = async (eventId: string): Promise<{ success: boolean; error?: string }> => {
     if (!eventId) return { success: false, error: 'Invalid event.' };
+    const target = churchEvents.find((event) => event.id === eventId);
     if (isSupabaseConfigured) {
       const { error } = await supabase.from('church_events').delete().eq('id', eventId);
       if (error) return { success: false, error: mapError(error).message };
+      await (supabase.from('audit_logs') as any).insert({
+        id: `LOG-${Date.now()}`,
+        actor_id: (await supabase.auth.getUser()).data.user?.id || null,
+        actor_name: currentUser.name,
+        actor_role: currentUser.role,
+        action: 'DELETE_EVENT',
+        entity_type: 'Event',
+        entity_id: eventId,
+        details: target ? `Deleted event ${target.title}` : `Deleted event ${eventId}`
+      });
     }
     setChurchEvents((prev) => prev.filter((item) => item.id !== eventId));
     return { success: true };
@@ -945,12 +1078,68 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
+  const deleteShepherd = async (shepherdId: string): Promise<{ success: boolean; error?: string }> => {
+    if (currentUser.role !== 'pastor') {
+      return { success: false, error: 'Only the pastor can delete shepherd accounts.' };
+    }
+    if (!shepherdId) return { success: false, error: 'Invalid shepherd.' };
+
+    const target = shepherds.find((shepherd) => shepherd.id === shepherdId);
+    if (!target) return { success: false, error: 'Shepherd not found.' };
+
+    if (isSupabaseConfigured) {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) return { success: false, error: 'Your session has expired. Please log in again.' };
+
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'https://cpi-backend-api-70zt.onrender.com'}/api/shepherds/${encodeURIComponent(shepherdId)}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const result = await res.json();
+        if (!res.ok || !result.success) {
+          return { success: false, error: result.error || 'Unable to delete the shepherd.' };
+        }
+      } catch (err: any) {
+        return { success: false, error: mapError(err).message };
+      }
+    }
+
+    setShepherds((prev) => prev.filter((shepherd) => shepherd.id !== shepherdId));
+    setAuditLogs((prev) => [
+      {
+        id: `LOG-${Date.now()}`,
+        timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+        actorName: currentUser.name,
+        actorRole: currentUser.role,
+        action: 'DELETE_SHEPHERD',
+        entityType: 'Shepherd',
+        entityId: shepherdId,
+        details: `Deleted shepherd ${target.name}`
+      },
+      ...prev
+    ]);
+    return { success: true };
+  };
+
   const deleteMember = async (memberId: string): Promise<{ success: boolean; error?: string }> => {
     if (!memberId) return { success: false, error: 'Invalid member.' };
+    const target = members.find((member) => member.id === memberId);
     if (isSupabaseConfigured) {
       try {
         const { error } = await supabase.from('members').delete().eq('id', memberId);
         if (error) return { success: false, error: mapError(error).message };
+        await (supabase.from('audit_logs') as any).insert({
+          id: `LOG-${Date.now()}`,
+          actor_id: (await supabase.auth.getUser()).data.user?.id || null,
+          actor_name: currentUser.name,
+          actor_role: currentUser.role,
+          action: 'DELETE_MEMBER',
+          entity_type: 'Member',
+          entity_id: memberId,
+          details: target ? `Deleted member ${target.firstName} ${target.lastName}` : `Deleted member ${memberId}`
+        });
       } catch (err: any) {
         return { success: false, error: mapError(err).message };
       }
@@ -1559,9 +1748,20 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const deleteCellMeeting = async (meetingId: string): Promise<{ success: boolean; error?: string }> => {
     if (!meetingId) return { success: false, error: 'Invalid meeting.' };
+    const target = cellMeetings.find((meeting) => meeting.id === meetingId);
     if (isSupabaseConfigured) {
       const { error } = await supabase.from('cell_meetings').delete().eq('id', meetingId);
       if (error) return { success: false, error: mapError(error).message };
+      await (supabase.from('audit_logs') as any).insert({
+        id: `LOG-${Date.now()}`,
+        actor_id: (await supabase.auth.getUser()).data.user?.id || null,
+        actor_name: currentUser.name,
+        actor_role: currentUser.role,
+        action: 'DELETE_CELL_MEETING',
+        entity_type: 'CellMeeting',
+        entity_id: meetingId,
+        details: target ? `Deleted cell meeting ${target.topic}` : `Deleted cell meeting ${meetingId}`
+      });
     }
     setCellMeetings((prev) => prev.filter((item) => item.id !== meetingId));
     return { success: true };
@@ -1690,6 +1890,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         registerMember,
         updateMember,
         deleteMember,
+        deleteShepherd,
         reassignMember,
         shepherds,
         recordShepherdLogin,

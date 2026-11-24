@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, MessageSquare, Search, CheckCheck, Clock, AlertCircle } from 'lucide-react';
+import { Send, MessageSquare, Search, CheckCheck, Clock, AlertCircle, Menu, ArrowLeft } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 
 export const MessagingCenter: React.FC = () => {
@@ -16,6 +16,7 @@ export const MessagingCenter: React.FC = () => {
   const [draftText, setDraftText] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [isSending, setIsSending] = useState(false);
+  const [showConversationList, setShowConversationList] = useState(false);
   const [sendNotice, setSendNotice] = useState<{ message: string; isError: boolean } | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -106,19 +107,39 @@ export const MessagingCenter: React.FC = () => {
   );
 
   return (
-    <div className="flex h-full" style={{ maxHeight: 'calc(100vh - 112px)' }}>
+    <div className="relative flex h-full min-h-0" style={{ maxHeight: 'calc(100vh - 64px)' }}>
       {/* ======== LEFT SIDEBAR — Conversation List ======== */}
-      <div className="w-72 shrink-0 bg-[#0a122e] flex flex-col">
+      {showConversationList && (
+        <button
+          type="button"
+          aria-label="Close conversation list"
+          onClick={() => setShowConversationList(false)}
+          className="fixed inset-0 z-40 bg-black/60 md:hidden"
+        />
+      )}
+      <div className={`${showConversationList ? 'fixed inset-y-16 left-0 z-50 flex' : 'hidden'} md:relative md:inset-auto md:z-auto md:flex w-[85vw] max-w-72 shrink-0 bg-[#0a122e] flex-col border-r border-[#16285a]`}>
         {/* Header */}
         <div className="p-4">
-          <h2 className="text-sm font-bold text-white">
-            {isPastor ? 'Shepherd Messages' : 'My Messages'}
-          </h2>
-          <p className="text-xs text-[#7b9dc7] mt-0.5">
-            {isPastor
-              ? 'Direct shepherd messages'
-              : 'Direct messages with Pastor Adams'}
-          </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-sm font-bold text-white">
+                {isPastor ? 'Shepherd Messages' : 'My Messages'}
+              </h2>
+              <p className="text-xs text-[#7b9dc7] mt-0.5">
+                {isPastor
+                  ? 'Direct shepherd messages'
+                  : 'Direct messages with Pastor Adams'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowConversationList(false)}
+              className="md:hidden p-2 text-[#a6c4eb]"
+              aria-label="Close conversations"
+            >
+              <ArrowLeft className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         {/* Search (pastor only) */}
@@ -154,7 +175,10 @@ export const MessagingCenter: React.FC = () => {
             return (
               <button
                 key={conv.id}
-                onClick={() => setSelectedConvId(conv.id)}
+                onClick={() => {
+                  setSelectedConvId(conv.id);
+                  setShowConversationList(false);
+                }}
                 className={`w-full text-left px-4 py-3   transition-colors ${
                   isSelected
                     ? 'bg-[#072e54] -2 '
@@ -201,7 +225,15 @@ export const MessagingCenter: React.FC = () => {
         {selectedConv ? (
           <>
             {/* Thread Header */}
-            <div className="px-6 py-4 flex items-center gap-3 bg-[#0a122e]">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 flex items-center gap-3 bg-[#0a122e] shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowConversationList(true)}
+                className="md:hidden p-2 text-[#a6c4eb]"
+                aria-label="Open conversations"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
               <div className="w-9 h-9 bg-[#072e54] flex items-center justify-center shrink-0">
                 <span className="text-xs font-bold text-[#00f0ff]">
                   {selectedConv.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()}
@@ -218,7 +250,7 @@ export const MessagingCenter: React.FC = () => {
             </div>
 
             {/* Messages Thread */}
-            <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+            <div className="flex-1 min-h-0 overflow-y-auto px-3 sm:px-6 py-3 sm:py-4 space-y-4">
               {threadMessages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center">
                   <MessageSquare className="w-10 h-10 text-slate-700 mb-3" />
@@ -242,7 +274,7 @@ export const MessagingCenter: React.FC = () => {
                       </div>
 
                       {/* Bubble */}
-                      <div className={`max-w-[70%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
+                      <div className={`max-w-[82%] sm:max-w-[70%] ${isOwn ? 'items-end' : 'items-start'} flex flex-col gap-1`}>
                         <div className={`px-4 py-2.5  text-xs leading-relaxed ${
                           isOwn
                             ? 'bg-[#00f0ff] text-[#070c1e] font-medium '
@@ -264,14 +296,14 @@ export const MessagingCenter: React.FC = () => {
             </div>
 
             {/* Message Input */}
-            <div className="px-6 py-4 bg-[#0a122e]">
+            <div className="px-3 sm:px-6 py-3 sm:py-4 bg-[#0a122e] shrink-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]">
               {sendNotice && (
                 <div className="mb-2 p-2.5 bg-[#38141e] text-[#ff6b8b] text-xs flex items-center gap-2">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{sendNotice.message}</span>
                 </div>
               )}
-              <div className="flex items-end gap-3">
+              <div className="flex items-end gap-2 sm:gap-3">
                 <textarea
                   rows={2}
                   value={draftText}
@@ -282,7 +314,7 @@ export const MessagingCenter: React.FC = () => {
                       ? `Message ${selectedConv.name}…`
                       : 'Send a message to Pastor Adams…'
                   }
-                  className="flex-1 resize-none bg-[#111d44] px-4 py-3 text-xs text-slate-200 placeholder-slate-500 outline-none focus:ring-2 focus:ring-[#00f0ff] leading-relaxed"
+                  className="min-h-12 max-h-32 flex-1 resize-none bg-[#111d44] px-3 sm:px-4 py-3 text-sm sm:text-xs text-slate-200 placeholder-slate-500 outline-none focus:ring-2 focus:ring-[#00f0ff] leading-relaxed"
                 />
                 <button
                   onClick={handleSend}

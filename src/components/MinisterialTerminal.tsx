@@ -14,7 +14,6 @@ import {
 import { ServiceRole } from '../types/auth';
 import cpiLogo from '../assets/cpi-logo.png';
 import { supabase } from '../../backend/client';
-import { apiClient } from '../services/apiClient';
 
 interface UserProfile {
   id?: string;
@@ -72,68 +71,13 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
 
     try {
       const cleanEmail = email.trim().toLowerCase();
-      const designatedPastorEmail = 'crosspassioninternational67@gmail.com';
-      const designatedPastorPassword = 'CrossPassion@99';
-      const isDesignatedPastor =
-        cleanEmail === designatedPastorEmail &&
-        password === designatedPastorPassword;
-
-      // STRICT ROLE TAB ENFORCEMENT BEFORE AUTH:
-      // A. If Pastor tab is selected, ONLY the designated pastor credentials will work
-      if (role === 'pastor') {
-        if (!isDesignatedPastor) {
-          setIsSubmitting(false);
-          setError('Invalid login credentials.');
-          return;
-        }
-      }
-
-      // B. If Shepherd tab is selected, Pastor credentials must be blocked
-      if (role === 'shepherd') {
-        if (cleanEmail === designatedPastorEmail) {
-          setIsSubmitting(false);
-          setError('Invalid login credentials.');
-          return;
-        }
-      }
-
       // 1. Attempt Supabase Auth login
       let authRes = await supabase.auth.signInWithPassword({
         email: cleanEmail,
         password: password
       });
 
-      // If user not yet seeded in Auth, trigger backend setup once
-      if (authRes.error && authRes.error.message.toLowerCase().includes('invalid login credentials')) {
-        try {
-          await apiClient.setupInitialUsers();
-          authRes = await supabase.auth.signInWithPassword({
-            email: cleanEmail,
-            password: password
-          });
-        } catch (setupErr) {
-          // Continue to fallback if server unreachable; log for debugging.
-          console.warn('[Login] setupInitialUsers failed:', setupErr);
-        }
-      }
-
       if (authRes.error) {
-        // Fallback for offline / emergency login with designated credentials
-        if (isDesignatedPastor) {
-          if (role !== 'pastor') {
-            setIsSubmitting(false);
-            setError('Invalid login credentials.');
-            return;
-          }
-          setIsSubmitting(false);
-          onSuccess?.('pastor', {
-            id: 'USR-PASTOR-01',
-            name: 'Senior Pastor',
-            email: 'crosspassioninternational67@gmail.com'
-          });
-          return;
-        }
-
         setError('Invalid login credentials.');
         setIsSubmitting(false);
         return;

@@ -349,6 +349,12 @@ app.post('/api/auth/setup-initial-users', async (req, res) => {
         error: 'INITIAL_SETUP_PASSWORD is not configured on the server.'
       });
     }
+    if (req.header('x-cpi-admin-secret') !== setupPassword) {
+      return res.status(401).json({
+        success: false,
+        error: 'Unauthorized setup request.'
+      });
+    }
     const results = [];
 
     // Remove only the known placeholder profile UUIDs from seed.sql.
@@ -417,6 +423,26 @@ app.post('/api/auth/setup-initial-users', async (req, res) => {
 // Pastor Dynamic Shepherd Creation & Onboarding
 app.post('/api/shepherds/create', async (req, res) => {
   try {
+    const authorization = req.header('authorization');
+    const accessToken = authorization?.startsWith('Bearer ')
+      ? authorization.slice(7)
+      : null;
+    if (!accessToken) {
+      return res.status(401).json({ success: false, error: 'Authentication required.' });
+    }
+    const { data: authData, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !authData?.user) {
+      return res.status(401).json({ success: false, error: 'Invalid or expired session.' });
+    }
+    const { data: actorProfile, error: actorError } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', authData.user.id)
+      .maybeSingle();
+    if (actorError || actorProfile?.role !== 'pastor') {
+      return res.status(403).json({ success: false, error: 'Only the pastor can create shepherd accounts.' });
+    }
+
     const { name, email, phone, cellName, password, isPpitShepherd = false } = req.body;
 
     if (!cleanText(name) || !isValidEmail(email) || !cleanText(cellName)
@@ -520,6 +546,76 @@ app.post('/api/shepherds/create', async (req, res) => {
   } catch (err) {
     console.error('[CREATE SHEPHERD ERROR]', err);
     res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
+  }
+});
+
+// Pastor deletes a shepherd and the related authentication account.
+app.delete('/api/shepherds/:shepherdId', async (req, res) => {
+  try {
+    const authorization = req.header('authorization');
+    const accessToken = authorization?.startsWith('Bearer ') ? authorization.slice(7) : null;
+    if (!accessToken) {
+      return res.status(401).json({ success: false, error: 'Authentication required.' });
+    }
+
+    const { data: authData, error: authError } = await supabase.auth.getUser(accessToken);
+    if (authError || !authData?.user) {
+      return res.status(401).json({ success: false, error: 'Invalid or expired session.' });
+    }
+
+    const { data: actorProfile, error: actorError } = await supabase
+      .from('profiles')
+      .select('name,role')
+      .eq('id', authData.user.id)
+      .maybeSingle();
+    if (actorError || actorProfile?.role !== 'pastor') {
+      return res.status(403).json({ success: false, error: 'Only the pastor can delete shepherd accounts.' });
+    }
+
+    const shepherdId = req.params.shepherdId;
+    const { data: shepherd, error: shepherdError } = await supabase
+      .from('profiles')
+      .select('id,name,email,role')
+      .eq('id', shepherdId)
+      .eq('role', 'shepherd')
+      .maybeSingle();
+    if (shepherdError) throw shepherdError;
+    if (!shepherd) {
+      return res.status(404).json({ success: false, error: 'Shepherd not found.' });
+    }
+
+    await supabase.from('audit_logs').insert({
+      id: `LOG-${Date.now()}`,
+      actor_id: authData.user.id,
+      actor_name: actorProfile.name,
+      actor_role: 'pastor',
+      action: 'DELETE_SHEPHERD',
+      entity_type: 'Shepherd',
+      entity_id: shepherdId,
+      details: `Deleted shepherd ${shepherd.name} (${shepherd.email})`
+    });
+
+    await supabase.from('members').update({
+      current_shepherd_id: null,
+      current_shepherd_name: null
+    }).eq('current_shepherd_id', shepherdId);
+
+    await supabase.from('care_cells').update({ shepherd_id: null }).eq('shepherd_id', shepherdId);
+
+    const { error: profileError } = await supabase.from('profiles').delete().eq('id', shepherdId);
+    if (profileError) throw profileError;
+
+    const { error: authDeleteError } = await supabase.auth.admin.deleteUser(shepherdId);
+    if (authDeleteError) throw authDeleteError;
+
+    res.json({
+      success: true,
+      message: `${shepherd.name} was deleted successfully.`,
+      shepherdId
+    });
+  } catch (err) {
+    console.error('[DELETE SHEPHERD ERROR]', err);
+    res.status(500).json({ success: false, error: 'Unable to delete the shepherd. Please try again.' });
   }
 });
 

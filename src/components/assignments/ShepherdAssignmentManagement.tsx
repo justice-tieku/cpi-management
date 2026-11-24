@@ -21,7 +21,8 @@ import {
   Check,
   Mail,
   Lock,
-  X
+  X,
+  Trash2
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { apiClient } from '../../services/apiClient';
@@ -36,6 +37,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
     cellMeetings,
     followUpTasks,
     reassignMember,
+    deleteShepherd,
     assignmentsHistory
   } = useCMS();
 
@@ -47,10 +49,11 @@ export const ShepherdAssignmentManagement: React.FC = () => {
   const [showReassignModal, setShowReassignModal] = useState(false);
   const [reassignMemberId, setReassignMemberId] = useState<string>('');
   const [targetShepherdId, setTargetShepherdId] = useState<string>(shepherds[1]?.id || 'SH-02');
-  const [transferReason, setTransferReason] = useState('Geographic relocation / Care balancing');
+  const [transferReason, setTransferReason] = useState('Relocation');
   const [isTransferring, setIsTransferring] = useState(false);
   const [reassignError, setReassignError] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState('');
+  const [isDeletingShepherd, setIsDeletingShepherd] = useState(false);
 
   // Invite / Create Shepherd Modal State
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -185,6 +188,21 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
       presentCount
     };
   });
+
+  const handleDeleteShepherd = async () => {
+    if (!activeShepherd.id) return;
+    if (!window.confirm(`Delete ${activeShepherd.name}? This removes their login and leaves assigned members unassigned. This cannot be undone.`)) return;
+    setIsDeletingShepherd(true);
+    setReassignError(null);
+    const result = await deleteShepherd(activeShepherd.id);
+    setIsDeletingShepherd(false);
+    if (result.success) {
+      setSuccessNotice('Shepherd deleted successfully.');
+      setTimeout(() => setSuccessNotice(''), 5000);
+    } else {
+      setReassignError(result.error || 'Unable to delete the shepherd.');
+    }
+  };
 
   const handleOpenTransfer = (memberId?: string) => {
     if (memberId) {
@@ -498,6 +516,15 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
               </div>
 
               <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleDeleteShepherd}
+                  disabled={isDeletingShepherd}
+                  className="px-3.5 py-2 bg-[#38141e] hover:bg-[#641e2d] text-[#ff6b8b] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{isDeletingShepherd ? 'Deleting...' : 'Delete Shepherd'}</span>
+                </button>
                 <button
                   onClick={() => handleOpenTransfer()}
                   className="px-3.5 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors shadow-sm"
@@ -895,7 +922,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                     type="text"
                     value={newShepherdPassword}
                     onChange={(e) => setNewShepherdPassword(e.target.value)}
-                    placeholder="CrossPassion@99"
+                    placeholder="Enter a private password"
                     className="w-full px-3 py-2 bg-[#0a122e] text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#00f0ff]"
                   />
                   <p className="text-[10px] text-[#7b9dc7] mt-1">

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { CalendarDays, Plus, X, MapPin, Clock, Tag, Image, CheckCircle2, AlertCircle, Edit3, Trash2 } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { CalendarDays, Plus, X, MapPin, Clock, Tag, Image, CheckCircle2, AlertCircle, Edit3, Trash2, Upload } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { ChurchEvent } from '../../types/cms';
 import { validateText } from '../../utils/validation';
+import { supabase, isSupabaseConfigured } from '../../../backend/client';
 
 const categoryColors: Record<string, { bg: string; text: string }> = {
   Conference: { bg: 'bg-[#072e54]', text: 'text-[#00f0ff]' },
@@ -30,6 +31,8 @@ export const ChurchEventsBoard: React.FC = () => {
   const [bannerNotice, setBannerNotice] = useState<{ message: string; isError: boolean } | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [isUploadingFlyer, setIsUploadingFlyer] = useState(false);
+  const flyerInputRef = useRef<HTMLInputElement>(null);
   const [form, setForm] = useState({
     title: '',
     date: '',
@@ -46,6 +49,46 @@ export const ChurchEventsBoard: React.FC = () => {
 
   // Sort: upcoming events first
   const sorted = [...filtered].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  const handleFlyerUpload = async (file?: File) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setErrors((prev) => ({ ...prev, flyerUrl: 'Select a valid image file.' }));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, flyerUrl: 'The flyer must be 5 MB or smaller.' }));
+      return;
+    }
+    if (!isSupabaseConfigured) {
+      setErrors((prev) => ({ ...prev, flyerUrl: 'Connect Supabase before uploading flyers.' }));
+      return;
+    }
+
+    setIsUploadingFlyer(true);
+    setErrors((prev) => ({ ...prev, flyerUrl: '' }));
+    try {
+      const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `events/${Date.now()}-${crypto.randomUUID()}.${extension}`;
+      const { error } = await supabase.storage
+        .from('event-flyers')
+        .upload(path, file, { cacheControl: '3600', upsert: false });
+      if (error) throw error;
+
+      const { data } = supabase.storage.from('event-flyers').getPublicUrl(path);
+      setForm((prev) => ({ ...prev, flyerUrl: data.publicUrl }));
+    } catch (error: any) {
+      setErrors((prev) => ({
+        ...prev,
+        flyerUrl: error?.message?.includes('Bucket')
+          ? 'The event-flyers storage bucket is not available. Run the storage migration.'
+          : 'Unable to upload the flyer. Please try again.'
+      }));
+    } finally {
+      setIsUploadingFlyer(false);
+      if (flyerInputRef.current) flyerInputRef.current.value = '';
+    }
+  };
 
   const handleSubmit = async () => {
     const errs: Record<string, string> = {};
@@ -416,18 +459,28 @@ export const ChurchEventsBoard: React.FC = () => {
                 <label className="block text-xs font-semibold text-slate-300 mb-1.5">
                   <span className="flex items-center gap-1.5">
                     <Image className="w-3 h-3" />
-                    Flyer Image URL
+                    Event Flyer
                     <span className="text-[#7b9dc7] font-normal">(optional)</span>
                   </span>
                 </label>
                 <input
-                  type="text"
-                  value={form.flyerUrl}
-                  onChange={(e) => setForm({ ...form, flyerUrl: e.target.value })}
-                  placeholder="https://example.com/event-flyer.jpg"
-                  className="w-full px-3 py-2.5 bg-[#0a122e] text-xs text-slate-200 placeholder-slate-500 outline-none focus:ring-2 focus:ring-[#00f0ff]/60"
+                  ref={flyerInputRef}
+                  type="file"
+                  accept="image/png,image/jpeg,image/webp"
+                  onChange={(event) => handleFlyerUpload(event.target.files?.[0])}
+                  className="hidden"
                 />
-                <p className="text-[10px] text-slate-600 mt-1">Paste a direct link to your event flyer image</p>
+                <button
+                  type="button"
+                  onClick={() => flyerInputRef.current?.click()}
+                  disabled={isUploadingFlyer}
+                  className="w-full min-h-11 px-3 py-3 border border-dashed border-[#31517f] bg-[#0a122e] text-xs text-[#a6c4eb] hover:border-[#00f0ff] hover:text-white flex items-center justify-center gap-2 disabled:opacity-50"
+                >
+                  <Upload className="w-4 h-4 text-[#00f0ff]" />
+                  {isUploadingFlyer ? 'Uploading flyer…' : form.flyerUrl ? 'Replace Flyer Image' : 'Choose Flyer Image'}
+                </button>
+                <p className="text-[10px] text-slate-600 mt-1">PNG, JPG or WebP · Maximum 5 MB</p>
+                {errors.flyerUrl && <p className="text-rose-400 text-[10px] mt-1">{errors.flyerUrl}</p>}
 
                 {/* Flyer Preview */}
                 {form.flyerUrl.trim() && (

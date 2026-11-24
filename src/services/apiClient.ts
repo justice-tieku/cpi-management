@@ -3,6 +3,8 @@
  * Connects the frontend to the live Express ministerial backend on Render
  */
 
+import { supabase } from '../../backend/client';
+
 export const API_BASE_URL =
   import.meta.env.VITE_API_URL || 'https://cpi-backend-api-70zt.onrender.com';
 
@@ -111,9 +113,14 @@ export const apiClient = {
     isPpitShepherd?: boolean;
   }) {
     try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
       const res = await fetch(`${API_BASE_URL}/api/shepherds/create`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+        },
         body: JSON.stringify(payload)
       });
       return await res.json();

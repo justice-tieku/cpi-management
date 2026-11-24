@@ -16,14 +16,20 @@ import {
   FileText,
   Printer,
   AlertTriangle,
-  UserX
+  UserX,
+  Activity,
+  Wrench
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { AttendanceGrowthCharts } from './AttendanceGrowthCharts';
 import { BirthdayWidget } from '../common/BirthdayWidget';
 import { supabase, isSupabaseConfigured } from '../../../backend/client';
 
-export const ExecutiveDashboard: React.FC = () => {
+interface ExecutiveDashboardProps {
+  onNavigate?: (screen: any) => void;
+}
+
+export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({ onNavigate }) => {
   const {
     currentUser,
     members,
@@ -34,7 +40,8 @@ export const ExecutiveDashboard: React.FC = () => {
     visitors,
     shepherdReports,
     redListMembers,
-    criticalAbsenteeMembers
+    criticalAbsenteeMembers,
+    auditLogs
   } = useCMS();
 
   const [selectedShepherdId, setSelectedShepherdId] = useState<string | null>(null);
@@ -130,6 +137,29 @@ export const ExecutiveDashboard: React.FC = () => {
   const selectedShepherdTasks = followUpTasks.filter((t) => t.shepherdId === selectedShepherdId);
   const selectedShepherdReports = shepherdReports.filter((r) => r.shepherdId === selectedShepherdId);
 
+  const recentActivity = [
+    ...auditLogs.slice(0, 4).map((log) => ({
+      title: log.details,
+      detail: `${log.actorName} • ${log.action.replace(/_/g, ' ')}`,
+      time: log.timestamp,
+      tone: '#00f0ff'
+    })),
+    ...visitors.slice(0, 3).map((visitor) => ({
+      title: `${visitor.name} registered as a first-timer`,
+      detail: visitor.assignedShepherdName
+        ? `Assigned to ${visitor.assignedShepherdName}`
+        : 'Awaiting shepherd assignment',
+      time: visitor.visitDate,
+      tone: '#00ff9d'
+    })),
+    ...cellMeetings.slice(0, 3).map((meeting) => ({
+      title: `${meeting.cellName} submitted a fellowship report`,
+      detail: `${meeting.attendeesCount} attendees • GH₵ ${meeting.offeringAmount.toFixed(2)}`,
+      time: meeting.date,
+      tone: '#a78bfa'
+    }))
+  ].slice(0, 6);
+
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
       {/* Top Header Card */}
@@ -139,7 +169,7 @@ export const ExecutiveDashboard: React.FC = () => {
             Pastor Console • Cross Passion International
           </span>
           <h2 className="text-xl font-bold text-white tracking-tight mt-0.5">
-            Executive Dashboard
+            Command Center
           </h2>
           <p className="text-xs text-[#a6c4eb]">
             {currentUser.name} • {currentUser.branch}
@@ -193,14 +223,76 @@ export const ExecutiveDashboard: React.FC = () => {
         })}
       </div>
 
-      {/* Analytics — Full-Width Charts, Birthday stacked below on mobile */}
-      <div className="space-y-6">
-        <AttendanceGrowthCharts />
-        <BirthdayWidget
-          members={members}
-          title="Church Birthday Roster"
-          subtitle="Upcoming celebrations across all shepherd groups"
-        />
+      {/* AppDashboard-inspired operating view */}
+      <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <div className="xl:col-span-8 space-y-6">
+          <AttendanceGrowthCharts />
+          <BirthdayWidget
+            members={members}
+            title="Church Birthday Roster"
+            subtitle="Upcoming celebrations across all shepherd groups"
+          />
+        </div>
+
+        <div className="xl:col-span-4 space-y-6">
+          <div className="p-5 bg-[#111d44] shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="text-sm font-bold text-white">Live Queue</h3>
+                <p className="text-[11px] text-[#a6c4eb]">Recent church activity</p>
+              </div>
+              <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#00ff9d]">
+                <span className="w-2 h-2 bg-[#00ff9d] animate-pulse" />
+                LIVE
+              </span>
+            </div>
+            <div className="divide-y divide-[#16285a]">
+              {recentActivity.length === 0 ? (
+                <p className="py-8 text-center text-xs text-[#a6c4eb]">No recent activity</p>
+              ) : recentActivity.map((item, index) => (
+                <div key={`${item.title}-${index}`} className="py-3 flex gap-3">
+                  <span className="mt-1.5 w-2 h-2 shrink-0" style={{ backgroundColor: item.tone }} />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-white line-clamp-2">{item.title}</p>
+                    <p className="text-[10px] text-[#a6c4eb] mt-1">{item.detail}</p>
+                    <p className="text-[10px] text-[#7b9dc7] mt-1 font-mono">{item.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="p-5 bg-[#111d44] shadow-xl">
+            <div className="flex items-center gap-2 mb-4">
+              <Wrench className="w-4 h-4 text-[#00f0ff]" />
+              <div>
+                <h3 className="text-sm font-bold text-white">Quick Actions</h3>
+                <p className="text-[11px] text-[#a6c4eb]">Common pastor tasks</p>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: 'Add Member', screen: 'members', icon: UserPlus },
+                { label: 'Attendance', screen: 'attendance', icon: CalendarCheck },
+                { label: 'Shepherds', screen: 'shepherds', icon: ShieldAlert },
+                { label: 'Reports', screen: 'reports', icon: FileText }
+              ].map((action) => {
+                const Icon = action.icon;
+                return (
+                  <button
+                    key={action.label}
+                    type="button"
+                    onClick={() => onNavigate?.(action.screen)}
+                    className="p-3 bg-[#0a122e] hover:bg-[#16285a] text-[#a6c4eb] hover:text-white text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <Icon className="w-4 h-4 text-[#00f0ff]" />
+                    {action.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Weekly Shepherd Activity Compilation */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Users,
   CalendarCheck,
@@ -10,6 +10,8 @@ import {
   Plus,
   ArrowRight,
   Shield,
+  UserPlus,
+  FileText,
   Phone,
   MessageSquare,
   AlertCircle,
@@ -19,6 +21,7 @@ import {
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { BirthdayWidget } from '../common/BirthdayWidget';
+import { supabase, isSupabaseConfigured } from '../../../backend/client';
 
 interface ShepherdDashboardProps {
   onNavigate?: (screen: any) => void;
@@ -31,6 +34,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
     visibleAttendance,
     visibleCellMeetings,
     visibleTasks,
+    visibleVisitors,
     visibleNotifications,
     markNotificationRead,
     redListMembers,
@@ -38,14 +42,73 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
   } = useCMS();
 
   const flockCount = visibleMembers.length;
+  const [ppitSummary, setPpitSummary] = useState<{
+    sessionDate: string;
+    presentCount: number;
+    absentCount: number;
+    totalCount: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !currentUser.isPpitShepherd) return;
+
+    const loadPpitSummary = async () => {
+      const { data } = await (supabase.from('ppit_summary') as any)
+        .select('*')
+        .order('session_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (data) {
+        setPpitSummary({
+          sessionDate: data.session_date,
+          presentCount: data.present_count,
+          absentCount: data.absent_count,
+          totalCount: data.total_count
+        });
+      }
+    };
+
+    loadPpitSummary();
+    const channel = supabase
+      .channel(`shepherd-ppit-${currentUser.id}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ppit_summary' }, loadPpitSummary)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser.id, currentUser.isPpitShepherd]);
 
   const recentAssignmentNotifs = visibleNotifications.filter(
     (n) => n.type === 'assignment' && !n.read
   );
 
-  const sundayPresent = visibleAttendance.filter((a) => a.status === 'Present').length;
-  const sundayAbsent = visibleAttendance.filter((a) => a.status === 'Absent').length;
-  const sundayRate = flockCount > 0 ? Math.round((sundayPresent / flockCount) * 100) : 0;
+  const getLatestService = (category: 'sunday' | 'midweek' | 'vigil') => {
+    const records = visibleAttendance.filter((record) => {
+      const name = record.serviceName.toLowerCase();
+      if (category === 'midweek') return name.includes('midweek') || name.includes('wednesday');
+      if (category === 'vigil') return name.includes('prayer') || name.includes('vigil');
+      return name.includes('sunday') || name.includes('communion');
+    });
+    const latestDate = records.reduce((latest, record) =>
+      record.serviceDate > latest ? record.serviceDate : latest, '');
+    const latest = records.filter((record) => record.serviceDate === latestDate);
+    return {
+      latestDate,
+      present: latest.filter((record) => record.status === 'Present').length,
+      absent: latest.filter((record) => record.status === 'Absent').length
+    };
+  };
+
+  const latestSunday = getLatestService('sunday');
+  const latestMidweek = getLatestService('midweek');
+  const latestVigil = getLatestService('vigil');
+  const sundayPresent = latestSunday.present;
+  const sundayAbsent = latestSunday.absent;
+  const sundayRate = flockCount > 0
+    ? Math.round((sundayPresent / Math.max(flockCount, sundayPresent + sundayAbsent)) * 100)
+    : 0;
 
   const totalCellMeetings = visibleCellMeetings.length;
   const totalCellAttendees = visibleCellMeetings.reduce((sum, m) => sum + (m.attendeesCount || 0), 0);
@@ -54,6 +117,35 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
   const totalCellOfferings = visibleCellMeetings.reduce((sum, m) => sum + (m.offeringAmount || 0), 0);
 
   const openTasks = visibleTasks.filter((t) => t.status === 'Open');
+  const activeVisitors = visibleVisitors.filter((visitor) =>
+    visitor.journeyStage !== 'Closed'
+  ).length;
+  const stageCounts = [
+    'New Convert',
+    'Water Baptized',
+    'Foundation Class',
+    'Commissioned Worker',
+    'Deacon / Deaconess',
+    'Minister / Elder'
+  ].map((stage) => ({
+    stage,
+    count: visibleMembers.filter((member) => member.spiritualStage === stage).length
+  }));
+
+  const recentActivity = [
+    ...visibleCellMeetings.slice(0, 3).map((meeting) => ({
+      title: `${meeting.topic}`,
+      detail: `${meeting.attendeesCount} attendees • GH₵ ${meeting.offeringAmount.toFixed(2)}`,
+      time: meeting.date,
+      tone: '#a78bfa'
+    })),
+    ...openTasks.slice(0, 3).map((task) => ({
+      title: `${task.memberName}: ${task.taskType}`,
+      detail: task.nextAction || task.notes || 'Care follow-up',
+      time: task.dueDate || 'Open task',
+      tone: '#ff4069'
+    }))
+  ].slice(0, 5);
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
@@ -62,7 +154,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
         <div>
           <div className="flex items-center gap-2 text-[#00f0ff] text-xs font-bold uppercase tracking-wider">
             <Shield className="w-3.5 h-3.5" />
-            <span>Shepherd Personal Console</span>
+            <span>Shepherd Operating Dashboard</span>
           </div>
           <h2 className="text-xl font-bold text-white tracking-tight mt-0.5">
             Welcome, {currentUser.name}
@@ -83,7 +175,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
           </button>
           <span className="px-3 py-1.5 bg-[#043621] text-[#00ff9d] text-xs font-bold flex items-center gap-1.5">
             <span className="w-2 h-2 bg-[#00ff9d]" />
-            Active Shepherd
+            Live Shepherd Console
           </span>
         </div>
       </div>
@@ -136,8 +228,8 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
         </div>
       )}
 
-      {/* 4 Core KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Core operational KPI cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* 1. Cell Flock */}
         <div className="p-5 bg-[#111d44] shadow-xl space-y-2">
           <div className="flex items-center justify-between">
@@ -199,6 +291,101 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
             Cell fellowship offerings
           </p>
         </div>
+
+        <div className="p-5 bg-[#111d44] shadow-xl space-y-2">
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-[#a6c4eb] font-medium">Active First-Timers</span>
+            <div className="w-8 h-8 bg-[#0a122e] flex items-center justify-center text-[#00f0ff]">
+              <Phone className="w-4 h-4" />
+            </div>
+          </div>
+          <div className="text-2xl font-bold text-[#00f0ff] font-mono">{activeVisitors}</div>
+          <p className="text-xs text-[#a6c4eb]">
+            {openTasks.length} open care tasks
+          </p>
+        </div>
+
+        {currentUser.isPpitShepherd && (
+          <div className="p-5 bg-[#111d44] shadow-xl space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-[#a6c4eb] font-medium">Latest PPIT Attendance</span>
+              <div className="w-8 h-8 bg-[#0a122e] flex items-center justify-center text-[#a78bfa]">
+                <CalendarCheck className="w-4 h-4" />
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-[#a78bfa] font-mono">
+              {ppitSummary ? `${ppitSummary.presentCount} / ${ppitSummary.totalCount}` : 'Not Recorded'}
+            </div>
+            <p className="text-xs text-[#a6c4eb]">
+              {ppitSummary ? `${ppitSummary.sessionDate} • ${ppitSummary.absentCount} absent` : 'PPIT updates in real time'}
+            </p>
+          </div>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7 p-6 bg-[#111d44] shadow-xl space-y-4">
+          <div>
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider">Service Attendance Overview</h3>
+            <p className="text-xs text-[#a6c4eb] mt-0.5">Latest recorded session for each service</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {[
+              { label: 'Sunday', data: latestSunday, color: '#00f0ff' },
+              { label: 'Midweek', data: latestMidweek, color: '#60a5fa' },
+              { label: 'Friday Prayer', data: latestVigil, color: '#a78bfa' }
+            ].map((service) => (
+              <div key={service.label} className="p-4 bg-[#0a122e]">
+                <p className="text-[10px] font-bold uppercase" style={{ color: service.color }}>{service.label}</p>
+                <p className="text-xl font-bold text-white mt-1">
+                  {service.data.present} Present
+                </p>
+                <p className="text-[11px] text-[#ff4069] mt-1">{service.data.absent} Absent</p>
+                <p className="text-[10px] text-[#7b9dc7] mt-2 font-mono">
+                  {service.data.latestDate || 'No record'}
+                </p>
+              </div>
+            ))}
+          </div>
+          <div className="pt-2">
+            <p className="text-[10px] text-[#a6c4eb] font-bold uppercase mb-2">Flock Spiritual Growth</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {stageCounts.map(({ stage, count }) => (
+                <div key={stage} className="px-3 py-2 bg-[#0a122e]">
+                  <p className="text-[9px] text-[#a6c4eb] truncate">{stage}</p>
+                  <p className="text-sm font-bold text-white mt-0.5">{count}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div className="lg:col-span-5 p-6 bg-[#111d44] shadow-xl space-y-3">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-white">Live Queue</h3>
+              <p className="text-[11px] text-[#a6c4eb]">Recent shepherd activity</p>
+            </div>
+            <span className="flex items-center gap-1.5 text-[10px] font-bold text-[#00ff9d]">
+              <span className="w-2 h-2 bg-[#00ff9d] animate-pulse" />
+              LIVE
+            </span>
+          </div>
+          <div className="divide-y divide-[#16285a]">
+            {recentActivity.length === 0 ? (
+              <p className="py-8 text-center text-xs text-[#a6c4eb]">No recent activity</p>
+            ) : recentActivity.map((item, index) => (
+              <div key={`${item.title}-${index}`} className="py-3 flex gap-3">
+                <span className="mt-1.5 w-2 h-2 shrink-0" style={{ backgroundColor: item.tone }} />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-white line-clamp-2">{item.title}</p>
+                  <p className="text-[10px] text-[#a6c4eb] mt-1">{item.detail}</p>
+                  <p className="text-[10px] text-[#7b9dc7] mt-1 font-mono">{item.time}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Main Grid: Cell Meetings & Sunday Attendance Roll */}
@@ -228,7 +415,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
               </div>
             ) : (
               <div className="space-y-2.5">
-                {visibleCellMeetings.map((mtg) => (
+                {[...visibleCellMeetings].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5).map((mtg) => (
                   <div
                     key={mtg.id}
                     className="p-4 bg-[#0a122e] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
@@ -329,6 +516,33 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
 
         {/* Right Column (4 cols): Care Alerts & Collated Notice */}
         <div className="lg:col-span-4 space-y-5">
+          {onNavigate && (
+            <div className="p-5 bg-[#111d44] shadow-xl space-y-3">
+              <h3 className="text-xs font-bold text-white uppercase tracking-wider">Quick Actions</h3>
+              <div className="grid grid-cols-2 gap-2">
+                {[
+                  { label: 'Attendance', screen: 'attendance' as const, icon: CalendarCheck },
+                  { label: 'Add Guest', screen: 'first-timers' as const, icon: UserPlus },
+                  { label: 'Care Tasks', screen: 'care' as const, icon: Shield },
+                  { label: 'Submit Report', screen: 'reports' as const, icon: FileText }
+                ].map((action) => {
+                  const Icon = action.icon;
+                  return (
+                    <button
+                      key={action.label}
+                      type="button"
+                      onClick={() => onNavigate(action.screen)}
+                      className="p-3 bg-[#0a122e] hover:bg-[#16285a] text-[#a6c4eb] hover:text-white text-xs font-bold flex items-center gap-2 cursor-pointer transition-colors"
+                    >
+                      <Icon className="w-4 h-4 text-[#00f0ff]" />
+                      {action.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Pastor Collation Notice */}
           <div className="p-5 bg-[#072e54] space-y-2">
             <div className="flex items-center gap-2 text-[#00f0ff] text-xs font-bold uppercase tracking-wider">

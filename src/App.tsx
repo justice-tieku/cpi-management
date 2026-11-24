@@ -212,7 +212,7 @@ const CMSApp: React.FC = () => {
         />
 
         <main className="flex-1 overflow-y-auto bg-[#070c1e] pb-12">
-          {activeScreen === 'dashboard' && (isPastor ? <ExecutiveDashboard /> : <ShepherdDashboard />)}
+          {activeScreen === 'dashboard' && (isPastor ? <ExecutiveDashboard onNavigate={setActiveScreen} /> : <ShepherdDashboard onNavigate={setActiveScreen} />)}
           {activeScreen === 'members' && <MemberDirectory />}
           {activeScreen === 'shepherds' && <ShepherdAssignmentManagement />}
           {activeScreen === 'attendance' && <AttendanceRecording />}

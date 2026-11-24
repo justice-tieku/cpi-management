@@ -73,8 +73,22 @@ export const memberService = {
     reason: string,
     assignedBy: string
   ): Promise<void> {
+    if (!memberId || !newShepherdId || !newShepherdName?.trim() || !newCellGroup?.trim()) {
+      throw new Error('Member, shepherd, and cell are required.');
+    }
+    if (!reason?.trim()) throw new Error('Transfer reason is required.');
+    if (reason.trim().length > 500) throw new Error('Transfer reason must be 500 characters or fewer.');
+
+    const { data: member, error: memberLookupErr } = await supabase
+      .from('members')
+      .select('first_name,last_name')
+      .eq('id', memberId)
+      .single();
+    if (memberLookupErr) throw memberLookupErr;
+    const memberName = `${member.first_name} ${member.last_name}`;
+
     // 1. Update member row
-    const { error: updateErr } = await supabase
+    const { data: updatedMember, error: updateErr } = await supabase
       .from('members')
       .update({
         current_shepherd_id: newShepherdId,
@@ -82,15 +96,18 @@ export const memberService = {
         cell_group: newCellGroup,
         updated_at: new Date().toISOString()
       })
-      .eq('id', memberId);
+      .eq('id', memberId)
+      .select('id')
+      .single();
 
     if (updateErr) throw updateErr;
+    if (!updatedMember) throw new Error('Member reassignment was not permitted.');
 
     // 2. Insert assignment audit history
     await supabase.from('shepherd_assignments').insert({
       id: `ASN-${Date.now()}`,
       member_id: memberId,
-      member_name: 'Member',
+      member_name: memberName,
       shepherd_id: newShepherdId,
       shepherd_name: newShepherdName,
       cell_group: newCellGroup,

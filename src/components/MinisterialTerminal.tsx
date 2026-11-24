@@ -21,6 +21,7 @@ interface UserProfile {
   name: string;
   email: string;
   assignedCell?: string;
+  isPpitShepherd?: boolean;
 }
 
 interface MinisterialTerminalProps {
@@ -190,7 +191,8 @@ export const MinisterialTerminal: React.FC<MinisterialTerminalProps> = ({ onSucc
         id: user.id,
         name: resolvedName,
         email: user.email || cleanEmail,
-        assignedCell: resolvedCell
+        assignedCell: resolvedCell,
+        isPpitShepherd: profileData?.is_ppit_shepherd === true
       });
     } catch (err: any) {
       setIsSubmitting(false);

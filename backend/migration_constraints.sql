@@ -116,7 +116,7 @@ EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL; END $$;
 -- 6. ENUM / CATEGORY VALUE CHECKS
 DO $$ BEGIN
   ALTER TABLE public.attendance_records ADD CONSTRAINT attendance_category_check
-    CHECK (service_category IN ('sunday','midweek','vigil')) NOT VALID;
+    CHECK (service_category IN ('sunday','midweek','vigil','ppit')) NOT VALID;
 EXCEPTION WHEN duplicate_object OR duplicate_table THEN NULL; END $$;
 
 -- 7. DATE TRIGGERS (one function per table)
@@ -191,6 +191,12 @@ CREATE POLICY "Shepherd assignments manageable by pastor or shepherd"
   USING (public.is_pastor())
   WITH CHECK (public.is_pastor());
 
+-- Notifications must allow pastors/system workflows to insert assignment alerts.
+DROP POLICY IF EXISTS "Notifications insertable by pastor" ON public.notifications;
+CREATE POLICY "Notifications insertable by pastor"
+  ON public.notifications FOR INSERT TO anon, authenticated
+  WITH CHECK (public.is_pastor());
+
 -- =============================================================================
 -- 4. ACTIVATE (after cleaning bad rows — section 5)
 -- =============================================================================
@@ -217,6 +223,23 @@ CREATE POLICY "Shepherd assignments manageable by pastor or shepherd"
 -- =============================================================================
 -- 5. CLEANUP QUERIES (run to find existing bad rows before validating)
 -- =============================================================================
+-- Repair the mock member numbers already inserted before the phone constraint:
+UPDATE public.members
+SET phone = CASE id
+  WHEN 'CPI-M-1024' THEN '+233240000001'
+  WHEN 'CPI-M-1025' THEN '+233240000002'
+  WHEN 'CPI-M-1026' THEN '+233240000003'
+  WHEN 'CPI-M-1031' THEN '+233240000004'
+  WHEN 'CPI-M-1032' THEN '+233240000005'
+  WHEN 'CPI-M-1027' THEN '+233240000006'
+  WHEN 'CPI-M-1028' THEN '+233240000007'
+  ELSE phone
+END
+WHERE id IN (
+  'CPI-M-1024','CPI-M-1025','CPI-M-1026','CPI-M-1031',
+  'CPI-M-1032','CPI-M-1027','CPI-M-1028'
+);
+
 --   SELECT id, first_name, last_name, phone FROM public.members WHERE phone !~ '^\+233[0-9]{9}$';
 --   SELECT id, name, phone FROM public.visitors WHERE phone !~ '^\+233[0-9]{9}$';
 --   SELECT phone, COUNT(*) FROM public.members GROUP BY phone HAVING COUNT(*) > 1;
@@ -231,7 +254,7 @@ CREATE POLICY "Shepherd assignments manageable by pastor or shepherd"
 --   SELECT id, first_name, date_of_birth FROM public.members
 --     WHERE date_of_birth IS NOT NULL AND (date_of_birth > CURRENT_DATE OR (CURRENT_DATE - date_of_birth) > 43800);
 --   SELECT DISTINCT service_category FROM public.attendance_records
---     WHERE service_category NOT IN ('sunday','midweek','vigil');
+--   WHERE service_category NOT IN ('sunday','midweek','vigil','ppit');
 
 -- =============================================================================
 -- 6. VERIFY

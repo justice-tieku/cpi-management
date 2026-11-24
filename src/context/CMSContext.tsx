@@ -46,7 +46,7 @@ interface CMSContextType {
   updateMember: (memberId: string, updates: Partial<Member>) => Promise<{ success: boolean; error?: string }>;
   deleteMember: (memberId: string) => Promise<{ success: boolean; error?: string }>;
   reassignMember: (memberId: string, newShepherdId: string, reason: string) => Promise<{ success: boolean; error?: string }>;
-  shepherds: { id: string; name: string; cell: string; assignedCount: number; maxCapacity: number }[];
+  shepherds: { id: string; name: string; cell: string; assignedCount: number; maxCapacity: number; isPpitShepherd: boolean }[];
   recordShepherdLogin: (name: string, cellName?: string) => { id: string; name: string; cell: string; email: string };
   assignmentsHistory: ShepherdAssignment[];
   attendanceRecords: AttendanceRecord[];
@@ -111,7 +111,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   // Cell Shepherds definition (live from backend only)
-  const [shepherds, setShepherds] = useState<{ id: string; name: string; cell: string; assignedCount: number; maxCapacity: number }[]>([]);
+  const [shepherds, setShepherds] = useState<{ id: string; name: string; cell: string; assignedCount: number; maxCapacity: number; isPpitShepherd: boolean }[]>([]);
 
   const recordShepherdLogin = (name: string, cellName?: string) => {
     const trimmed = name.trim();
@@ -136,7 +136,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       name: trimmed,
       cell,
       assignedCount: 0,
-      maxCapacity: 30
+      maxCapacity: 30,
+      isPpitShepherd: false
     };
 
     setShepherds((prev) => [...prev, newShepherd]);
@@ -349,7 +350,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               name: s.name || s.full_name || '',
               cell: s.assigned_cell || s.cell || '',
               assignedCount: (dbMembers || []).filter((member: any) => member.current_shepherd_id === s.id).length,
-              maxCapacity: 30
+              maxCapacity: 30,
+              isPpitShepherd: s.is_ppit_shepherd === true
             }))
           );
         }
@@ -362,8 +364,18 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     syncFromCloud();
 
+    const realtimeChannel = supabase
+      .channel('cpi-live-dashboard')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'attendance_records' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'members' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'cell_meetings' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'visitors' }, () => syncFromCloud())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_records' }, () => syncFromCloud())
+      .subscribe();
+
     return () => {
       isMounted = false;
+      supabase.removeChannel(realtimeChannel);
     };
   }, []);
 
@@ -469,9 +481,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!recipientId) {
       return { success: false, error: 'Select a recipient before sending.' };
     }
-    if (!content || !content.trim()) {
-      return { success: false, error: 'Message is empty. Type what you want to send.' };
-    }
+    const trimmedContent = content?.trim() || '';
+    if (!trimmedContent) return { success: false, error: 'Message is empty. Type what you want to send.' };
+    if (trimmedContent.length > 5000) return { success: false, error: 'Message is too long. Use 5000 characters or fewer.' };
 
     const target = shepherds.find((s) => s.id === recipientId);
     const newMsg: ChatMessage = {
@@ -483,7 +495,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recipientName: isPastor
         ? (target?.name || 'Shepherd')
         : 'Pastor Adams',
-      content: content.trim(),
+      content: trimmedContent,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' — just now',
       read: false
     };
@@ -495,6 +507,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             id: newMsg.id,
             sender_id: (await supabase.auth.getUser()).data.user?.id || getProfileUUID(currentUser.id),
             sender_name: currentUser.name,
+            sender_role: currentUser.role,
             recipient_id: getProfileUUID(recipientId),
             recipient_name: newMsg.recipientName,
             content: newMsg.content,
@@ -956,6 +969,12 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!newShepherdId) {
       return { success: false, error: 'Please select a target shepherd.' };
     }
+    if (!reason?.trim()) {
+      return { success: false, error: 'Enter a transfer reason.' };
+    }
+    if (reason.trim().length > 500) {
+      return { success: false, error: 'Transfer reason must be 500 characters or fewer.' };
+    }
 
     const targetShepherd = shepherds.find((s) => s.id === newShepherdId);
     if (!targetShepherd) {
@@ -994,14 +1013,21 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (!shepherdUuid) {
           return { success: false, error: 'The selected shepherd profile is not valid. Refresh the page and try again.' };
         }
+        const { data: memberRow } = await supabase
+          .from('members')
+          .select('id')
+          .eq('id', memberId)
+          .maybeSingle();
+        if (!memberRow) {
+          return { success: false, error: 'Member not found in the live church database. Refresh and try again.' };
+        }
 
         // Step 1: Update the member's current shepherd assignment (critical)
         const { error: memErr } = await (supabase.from('members') as any)
           .update({
             current_shepherd_id: shepherdUuid,
             current_shepherd_name: targetShepherd.name,
-            cell_group: targetShepherd.cell,
-            phone: formatPhone(targetMember.phone)
+            cell_group: targetShepherd.cell
           })
           .eq('id', memberId);
 
@@ -1028,6 +1054,19 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (asnErr) {
           // Log the warning but do not block the user — the member record was already updated
           console.warn('[Supabase shepherd_assignments] Non-critical insert failed:', asnErr.message || asnErr);
+        }
+
+        const { error: notifErr } = await (supabase.from('notifications') as any).insert({
+          id: `NOTIF-${Date.now()}`,
+          recipient_id: shepherdUuid,
+          title: 'New Member Assigned to Your Shepherd Group',
+          message: `${targetMember.firstName} ${targetMember.lastName} has been assigned to ${targetShepherd.cell}. Transfer reason: ${reason.trim()}.`,
+          is_read: false,
+          notification_type: 'assignment',
+          member_id: memberId
+        });
+        if (notifErr) {
+          console.warn('[Supabase notifications] Assignment notification failed:', notifErr.message || notifErr);
         }
       } catch (err: any) {
         console.error('[Supabase reassignMember] Catch:', err);
@@ -1216,8 +1255,11 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       : null;
     const resolvedServiceName = serviceName || 'Sunday 1st Service — Communion';
     const resolvedCategory = serviceCategory || 'sunday';
-    if (!['sunday', 'midweek', 'vigil'].includes(resolvedCategory)) {
+    if (!['sunday', 'midweek', 'vigil', 'ppit'].includes(resolvedCategory)) {
       return { success: false, error: 'Select a valid service category.' };
+    }
+    if (resolvedCategory === 'ppit' && (currentUser.role !== 'shepherd' || !currentUser.isPpitShepherd)) {
+      return { success: false, error: 'Only the designated PPIT shepherd can record PPIT attendance.' };
     }
     const payload = recordsToSave.map((rec) => {
       const member = members.find((m) => m.id === rec.memberId);
@@ -1248,6 +1290,22 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (error) {
           console.error('[Supabase batchSaveAttendance] Error:', error);
           return { success: false, error: mapError(error).message };
+        }
+
+        if (resolvedCategory === 'ppit') {
+          const presentCount = payload.filter((record) => record.status === 'Present').length;
+          const absentCount = payload.length - presentCount;
+          const { error: summaryError } = await (supabase.from('ppit_summary') as any).upsert({
+            session_date: recordsToSave[0]?.date,
+            present_count: presentCount,
+            absent_count: absentCount,
+            total_count: payload.length,
+            recorded_by: currentUser.name,
+            updated_at: new Date().toISOString()
+          }, { onConflict: 'session_date' });
+          if (summaryError) {
+            return { success: false, error: mapError(summaryError).message };
+          }
         }
       } catch (err: any) {
         console.error('[Supabase batchSaveAttendance] Catch:', err);

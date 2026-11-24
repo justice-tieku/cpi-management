@@ -121,6 +121,7 @@ const CMSApp: React.FC = () => {
                 email: registered.email,
                 role: 'shepherd',
                 assignedCell: registered.cell,
+                isPpitShepherd: profile.isPpitShepherd === true,
                 branch: 'Main Sanctuary — Central Cathedral'
               };
             }

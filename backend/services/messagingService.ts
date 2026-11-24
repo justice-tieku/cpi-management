@@ -32,6 +32,10 @@ export const messagingService = {
     recipientName: string;
     content: string;
   }): Promise<MessageRow> {
+    const content = params.content?.trim();
+    if (!content) throw new Error('Message is required.');
+    if (content.length > 5000) throw new Error('Message must be 5000 characters or fewer.');
+
     const { data, error } = await supabase
       .from('chat_messages')
       .insert({
@@ -41,7 +45,7 @@ export const messagingService = {
         sender_role: params.senderRole,
         recipient_id: params.recipientId,
         recipient_name: params.recipientName,
-        content: params.content,
+        content,
         is_read: false
       })
       .select()

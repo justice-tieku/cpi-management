@@ -59,6 +59,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
   const [newShepherdPhone, setNewShepherdPhone] = useState('');
   const [newShepherdCell, setNewShepherdCell] = useState('');
   const [newShepherdPassword, setNewShepherdPassword] = useState('');
+  const [isPpitShepherd, setIsPpitShepherd] = useState(false);
   const [isCreatingShepherd, setIsCreatingShepherd] = useState(false);
   const [inviteError, setInviteError] = useState('');
   const [createdCredentials, setCreatedCredentials] = useState<{
@@ -98,7 +99,8 @@ export const ShepherdAssignmentManagement: React.FC = () => {
         email: newShepherdEmail.trim(),
         phone: formatPhone(newShepherdPhone.trim()),
         cellName: newShepherdCell.trim(),
-        password: newShepherdPassword.trim()
+        password: newShepherdPassword.trim(),
+        isPpitShepherd
       });
 
       if (!res.success) throw new Error(res.error || 'Faied to create shepherd account.');
@@ -204,7 +206,12 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
       return;
     }
     if (!targetShepherdId) {
-      setReassignError('Please select a shepherd shepherd.');
+      setReassignError('Please select a target shepherd.');
+      return;
+    }
+    const reasonErr = validateText(transferReason, 'Transfer reason', 2, 500);
+    if (reasonErr) {
+      setReassignError(reasonErr);
       return;
     }
 
@@ -895,6 +902,21 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                     The shepherd will use this password to sign in. They can change it anytime in their profile.
                   </p>
                 </div>
+
+                <label className="flex items-start gap-3 p-3 bg-[#0a122e] cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={isPpitShepherd}
+                    onChange={(event) => setIsPpitShepherd(event.target.checked)}
+                    className="mt-0.5 h-4 w-4 accent-[#00f0ff]"
+                  />
+                  <span>
+                    <span className="block text-xs font-bold text-white">PPIT Shepherd</span>
+                    <span className="block text-[10px] text-[#a6c4eb] mt-0.5">
+                      Assign PPIT attendance responsibility to this shepherd only.
+                    </span>
+                  </span>
+                </label>
 
                 {inviteError && (
                   <div className="p-3 bg-[#38141e] text-[#ff6b8b] text-xs flex items-center gap-2">

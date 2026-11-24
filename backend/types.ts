@@ -75,6 +75,7 @@ export interface Database {
           branch: string;
           avatar_url: string | null;
           phone: string | null;
+          is_ppit_shepherd: boolean;
           created_at: string;
           updated_at: string;
         };
@@ -87,6 +88,7 @@ export interface Database {
           branch?: string;
           avatar_url?: string | null;
           phone?: string | null;
+          is_ppit_shepherd?: boolean;
           created_at?: string;
           updated_at?: string;
         };
@@ -99,6 +101,7 @@ export interface Database {
           branch?: string;
           avatar_url?: string | null;
           phone?: string | null;
+          is_ppit_shepherd?: boolean;
           updated_at?: string;
         };
       };

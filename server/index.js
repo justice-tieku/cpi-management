@@ -342,11 +342,29 @@ app.post('/api/ministerial/broadcast-sms', async (req, res) => {
 // Seed / Initialize Pastor & Default Shepherds in Supabase Auth
 app.post('/api/auth/setup-initial-users', async (req, res) => {
   try {
+    const setupPassword = process.env.INITIAL_SETUP_PASSWORD;
+    if (!setupPassword) {
+      return res.status(503).json({
+        success: false,
+        error: 'INITIAL_SETUP_PASSWORD is not configured on the server.'
+      });
+    }
     const results = [];
+
+    // Remove only the known placeholder profile UUIDs from seed.sql.
+    // Real accounts created below are then the sole shepherd profiles shown by the app.
+    await supabase.from('profiles').delete().in('id', [
+      'a0000000-0000-0000-0000-000000000001',
+      'a0000000-0000-0000-0000-000000000002',
+      'a0000000-0000-0000-0000-000000000003',
+      'a0000000-0000-0000-0000-000000000004',
+      'a0000000-0000-0000-0000-000000000005',
+      'a0000000-0000-0000-0000-000000000006'
+    ]);
 
     // 1. Senior Pastor
     const pastorEmail = 'crosspassioninternational67@gmail.com';
-    const pastorPassword = 'CrossPassion@99';
+    const pastorPassword = setupPassword;
 
     const { data: existingUsers } = await supabase.auth.admin.listUsers();
     const pastorUser = existingUsers?.users?.find(u => u.email?.toLowerCase() === pastorEmail.toLowerCase());
@@ -381,50 +399,8 @@ app.post('/api/auth/setup-initial-users', async (req, res) => {
       branch: 'Main Sanctuary — Central Cathedral'
     });
 
-    // 2. Initial Shepherds
-    const defaultShepherds = [
-      { name: 'Elder Nathan Cole', email: 'nathan.cole@crosspassion.org', cell: 'Bethel Cell (Central)' },
-      { name: 'Deaconess Ruth Taiwo', email: 'ruth.taiwo@crosspassion.org', cell: 'Eden Cell (South)' },
-      { name: 'Bro. Matthew Kim', email: 'matthew.kim@crosspassion.org', cell: 'Moriah Young Adults' },
-      { name: 'Sister Grace Olatunji', email: 'grace.olatunji@crosspassion.org', cell: 'Sharon Cell (East)' },
-      { name: 'Pastor Emmanuel Vance', email: 'emmanuel.vance@crosspassion.org', cell: 'Hebron Cell (North)' }
-    ];
-
-    for (const sh of defaultShepherds) {
-      const existing = existingUsers?.users?.find(u => u.email?.toLowerCase() === sh.email.toLowerCase());
-      let shId;
-
-      if (existing) {
-        await supabase.auth.admin.updateUserById(existing.id, {
-          password: pastorPassword,
-          user_metadata: { name: sh.name, role: 'shepherd', assigned_cell: sh.cell }
-        });
-        shId = existing.id;
-        results.push({ email: sh.email, status: 'updated existing shepherd' });
-      } else {
-        const { data: created, error } = await supabase.auth.admin.createUser({
-          email: sh.email,
-          password: pastorPassword,
-          email_confirm: true,
-          user_metadata: { name: sh.name, role: 'shepherd', assigned_cell: sh.cell }
-        });
-        if (error) {
-          results.push({ email: sh.email, status: `error: ${error.message}` });
-          continue;
-        }
-        shId = created.user.id;
-        results.push({ email: sh.email, status: 'created shepherd' });
-      }
-
-      await supabase.from('profiles').upsert({
-        id: shId,
-        email: sh.email,
-        name: sh.name,
-        role: 'shepherd',
-        assigned_cell: sh.cell,
-        branch: 'Main Sanctuary — Central Cathedral'
-      });
-    }
+    // 2. Shepherd accounts are created only through the real-name
+    // /api/shepherds/create flow. This avoids inserting mock shepherd identities.
 
     res.json({
       success: true,
@@ -441,7 +417,7 @@ app.post('/api/auth/setup-initial-users', async (req, res) => {
 // Pastor Dynamic Shepherd Creation & Onboarding
 app.post('/api/shepherds/create', async (req, res) => {
   try {
-    const { name, email, phone, cellName, password } = req.body;
+    const { name, email, phone, cellName, password, isPpitShepherd = false } = req.body;
 
     if (!cleanText(name) || !isValidEmail(email) || !cleanText(cellName)
       || cleanText(name).length > 60 || cleanText(cellName).length > 120) {
@@ -454,7 +430,13 @@ app.post('/api/shepherds/create', async (req, res) => {
       return res.status(400).json({ success: false, error: 'Password must be at least 6 characters.' });
     }
 
-    const shepherdPassword = password?.trim() || 'CrossPassion@99';
+    const shepherdPassword = password?.trim() || process.env.INITIAL_SHEPHERD_PASSWORD;
+    if (!shepherdPassword) {
+      return res.status(503).json({
+        success: false,
+        error: 'A temporary shepherd password must be provided or INITIAL_SHEPHERD_PASSWORD must be configured.'
+      });
+    }
 
     // 1. Create or update user in Supabase Auth
     const { data: existingUsers } = await supabase.auth.admin.listUsers();
@@ -465,7 +447,7 @@ app.post('/api/shepherds/create', async (req, res) => {
     if (existing) {
       const { data: updated, error } = await supabase.auth.admin.updateUserById(existing.id, {
         password: shepherdPassword,
-        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone }
+        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone, is_ppit_shepherd: Boolean(isPpitShepherd) }
       });
       if (error) throw error;
       userId = existing.id;
@@ -477,7 +459,7 @@ app.post('/api/shepherds/create', async (req, res) => {
         email: cleanEmail,
         password: shepherdPassword,
         email_confirm: true,
-        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone }
+        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone, is_ppit_shepherd: Boolean(isPpitShepherd) }
       });
 
       if (error) {
@@ -487,7 +469,7 @@ app.post('/api/shepherds/create', async (req, res) => {
         if (retryUser) {
           await supabase.auth.admin.updateUserById(retryUser.id, {
             password: shepherdPassword,
-            user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone }
+            user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone, is_ppit_shepherd: Boolean(isPpitShepherd) }
           });
           userId = retryUser.id;
         } else {
@@ -499,6 +481,10 @@ app.post('/api/shepherds/create', async (req, res) => {
     }
 
     // 2. Upsert to public.profiles
+    if (isPpitShepherd) {
+      await supabase.from('profiles').update({ is_ppit_shepherd: false }).neq('id', userId);
+    }
+
     const { data: profile, error: profErr } = await supabase.from('profiles').upsert({
       id: userId,
       email: email.trim(),
@@ -506,6 +492,7 @@ app.post('/api/shepherds/create', async (req, res) => {
       role: 'shepherd',
       assigned_cell: cellName.trim(),
       phone: phone || null,
+      is_ppit_shepherd: Boolean(isPpitShepherd),
       branch: 'Main Sanctuary — Central Cathedral'
     }).select().single();
 
@@ -566,41 +553,23 @@ app.use((err, req, res, next) => {
 // ==========================================
 app.post('/api/admin/apply-rls-migrations', async (req, res) => {
   try {
-    // The shepherd_assignments table had RLS enabled but no policies,
-    // causing all INSERT/SELECT/UPDATE to be rejected by default.
-    // We apply an open policy so the anon key can manage assignments.
     const sql = `
       DROP POLICY IF EXISTS "Shepherd assignments manageable by pastor or shepherd" ON public.shepherd_assignments;
       CREATE POLICY "Shepherd assignments manageable by pastor or shepherd"
       ON public.shepherd_assignments FOR ALL TO anon, authenticated
-      USING (true)
-      WITH CHECK (true);
+      USING (public.is_pastor())
+      WITH CHECK (public.is_pastor());
+
+      DROP POLICY IF EXISTS "Notifications insertable by pastor" ON public.notifications;
+      CREATE POLICY "Notifications insertable by pastor"
+      ON public.notifications FOR INSERT TO anon, authenticated
+      WITH CHECK (public.is_pastor());
     `;
-
-    const { error } = await supabase.rpc('exec_sql', { sql_query: sql }).maybeSingle();
-
-    // If the rpc method doesn't exist, try via raw query workaround
-    if (error && error.message && error.message.includes('exec_sql')) {
-      // Fallback: execute statements one at a time via supabase-js client
-      // by inserting a known row to verify connectivity
-      console.warn('[RLS Migration] exec_sql RPC not available. Attempting direct upsert approach.');
-      res.json({
-        success: true,
-        message: 'RLS migration via exec_sql not available on this plan. Apply the SQL manually in Supabase Dashboard > SQL Editor.',
-        sql
-      });
-      return;
-    }
-
-    if (error) {
-      console.error('[RLS Migration] Error:', error);
-      return res.status(500).json({ success: false, error: error.message });
-    }
-
     res.json({
-      success: true,
-      message: 'RLS policies applied successfully to shepherd_assignments table.',
-      timestamp: new Date().toISOString()
+      success: false,
+      requiresManualMigration: true,
+      message: 'For security, run the RLS SQL manually in Supabase SQL Editor.',
+      sql
     });
   } catch (err) {
     console.error('[RLS Migration Error]', err);

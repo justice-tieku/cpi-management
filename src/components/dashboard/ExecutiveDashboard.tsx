@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Users,
   CalendarCheck,
@@ -21,6 +21,7 @@ import {
 import { useCMS } from '../../context/CMSContext';
 import { AttendanceGrowthCharts } from './AttendanceGrowthCharts';
 import { BirthdayWidget } from '../common/BirthdayWidget';
+import { supabase, isSupabaseConfigured } from '../../../backend/client';
 
 export const ExecutiveDashboard: React.FC = () => {
   const {
@@ -37,6 +38,42 @@ export const ExecutiveDashboard: React.FC = () => {
   } = useCMS();
 
   const [selectedShepherdId, setSelectedShepherdId] = useState<string | null>(null);
+  const [ppitSummary, setPpitSummary] = useState<{
+    sessionDate: string;
+    presentCount: number;
+    absentCount: number;
+    totalCount: number;
+  } | null>(null);
+
+  useEffect(() => {
+    if (!isSupabaseConfigured) return;
+
+    const loadPpitSummary = async () => {
+      const { data } = await (supabase.from('ppit_summary') as any)
+        .select('*')
+        .order('session_date', { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (data) {
+        setPpitSummary({
+          sessionDate: data.session_date,
+          presentCount: data.present_count,
+          absentCount: data.absent_count,
+          totalCount: data.total_count
+        });
+      }
+    };
+
+    loadPpitSummary();
+    const channel = supabase
+      .channel('ppit-dashboard-summary')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'ppit_summary' }, loadPpitSummary)
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   // Derive dynamic metrics
   const totalSouls = members.length;
@@ -72,6 +109,13 @@ export const ExecutiveDashboard: React.FC = () => {
       change: 'Cell fellowship network',
       subtext: 'Offerings & Bible studies',
       icon: BookOpen
+    },
+    {
+      title: 'Latest PPIT',
+      value: ppitSummary ? `${ppitSummary.presentCount} / ${ppitSummary.totalCount} Present` : 'No PPIT recorded',
+      change: ppitSummary ? ppitSummary.sessionDate : 'Waiting for PPIT shepherd',
+      subtext: ppitSummary ? `${ppitSummary.absentCount} absent` : 'Summary updates in real time',
+      icon: CalendarCheck
     }
   ];
 
@@ -119,7 +163,7 @@ export const ExecutiveDashboard: React.FC = () => {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {kpiData.map((kpi, idx) => {
           const Icon = kpi.icon;
           return (

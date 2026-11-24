@@ -15,3 +15,7 @@ services:
         sync: false
       - key: SUPABASE_ANON_KEY
         value: sb_publishable_CJ0WbtyykaD0vYB3hxAXjg_DtTyLLVc
+      - key: INITIAL_SETUP_PASSWORD
+        sync: false
+      - key: INITIAL_SHEPHERD_PASSWORD
+        sync: false

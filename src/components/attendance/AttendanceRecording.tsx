@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   CalendarCheck,
   Search,
   Check,
-  X,
-  Clock,
   Save,
   Users,
   Filter,
@@ -25,8 +23,6 @@ import { useCMS } from '../../context/CMSContext';
 import { DirectOutreachModal } from '../common/DirectOutreachModal';
 import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
 
-type AttendanceStatusType = 'present' | 'absent' | 'excused';
-
 export const AttendanceRecording: React.FC = () => {
   const {
     currentUser,
@@ -41,7 +37,7 @@ export const AttendanceRecording: React.FC = () => {
   // Navigation between Roster mark-up, Red List, and Critical Absentee List
   const [activeTab, setActiveTab] = useState<'roster' | 'red_list' | 'critical_absentee'>('roster');
 
-  const [serviceCategory, setServiceCategory] = useState<'sunday' | 'midweek' | 'vigil'>('sunday');
+  const [serviceCategory, setServiceCategory] = useState<'sunday' | 'midweek' | 'vigil' | 'ppit'>('sunday');
   const [serviceDate, setServiceDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [serviceName, setServiceName] = useState('Sunday 1st Service — Communion');
   const [searchTerm, setSearchTerm] = useState('');
@@ -66,7 +62,7 @@ export const AttendanceRecording: React.FC = () => {
   });
 
   // Switch category updates serviceName & default day
-  const handleCategoryChange = (cat: 'sunday' | 'midweek' | 'vigil') => {
+  const handleCategoryChange = (cat: 'sunday' | 'midweek' | 'vigil' | 'ppit') => {
     setServiceCategory(cat);
     if (cat === 'sunday') {
       setServiceName('Sunday Service');
@@ -74,23 +70,49 @@ export const AttendanceRecording: React.FC = () => {
     } else if (cat === 'midweek') {
       setServiceName('Wednesday Midweek');
       setServiceDate(new Date().toISOString().split('T')[0]);
-    } else {
+    } else if (cat === 'vigil') {
       setServiceName('Friday Prayer Meeting');
+      setServiceDate(new Date().toISOString().split('T')[0]);
+    } else {
+      setServiceName('PPIT');
       setServiceDate(new Date().toISOString().split('T')[0]);
     }
   };
 
   // Local state for interactive status overrides
-  const [localStatuses, setLocalStatuses] = useState<Record<string, AttendanceStatusType>>(() => {
-    const initial: Record<string, AttendanceStatusType> = {};
+  const [presentMembers, setPresentMembers] = useState<Record<string, boolean>>(() => {
+    const initial: Record<string, boolean> = {};
     visibleAttendance.forEach((rec) => {
-      initial[rec.memberId] = rec.status.toLowerCase() as AttendanceStatusType;
+      if (rec.serviceDate === serviceDate) {
+        initial[rec.memberId] = rec.status === 'Present';
+      }
     });
     return initial;
   });
 
-  const handleStatusChange = (memberId: string, newStatus: AttendanceStatusType) => {
-    setLocalStatuses((prev) => ({ ...prev, [memberId]: newStatus }));
+  useEffect(() => {
+    const initial: Record<string, boolean> = {};
+    visibleAttendance.forEach((rec) => {
+      if (rec.serviceDate === serviceDate) {
+        initial[rec.memberId] = rec.status === 'Present';
+      }
+    });
+    setPresentMembers(initial);
+  }, [serviceDate, visibleAttendance]);
+
+  const handlePresentChange = (memberId: string, isPresent: boolean) => {
+    setPresentMembers((prev) => ({ ...prev, [memberId]: isPresent }));
+    setHasUnsavedChanges(true);
+  };
+
+  const handleMarkAllPresent = () => {
+    setPresentMembers((prev) => {
+      const updated = { ...prev };
+      displayedMembers.forEach((member) => {
+        updated[member.id] = true;
+      });
+      return updated;
+    });
     setHasUnsavedChanges(true);
   };
 
@@ -100,17 +122,22 @@ export const AttendanceRecording: React.FC = () => {
       setTimeout(() => setSaveNotice(null), 4000);
       return;
     }
+    if (!serviceDate) {
+      setSaveNotice({ message: 'Select a service date.', isError: true });
+      return;
+    }
+    if (new Date(`${serviceDate}T23:59:59`) > new Date()) {
+      setSaveNotice({ message: 'Service date cannot be in the future.', isError: true });
+      return;
+    }
 
     setIsSaving(true);
     setSaveNotice(null);
 
     const records = displayedMembers.map((m) => {
-      const statusStr = localStatuses[m.id];
-      const status: 'Present' | 'Absent' | 'Excused' =
-        statusStr === 'absent' ? 'Absent' : statusStr === 'excused' ? 'Excused' : 'Present';
       return {
         memberId: m.id,
-        status,
+        status: presentMembers[m.id] ? 'Present' as const : 'Absent' as const,
         date: serviceDate
       };
     });
@@ -137,7 +164,7 @@ export const AttendanceRecording: React.FC = () => {
       `"${m.spiritualStage}"`,
       `"${serviceDate}"`,
       `"${serviceName}"`,
-      `"${localStatuses[m.id] ? localStatuses[m.id].toUpperCase() : 'PRESENT'}"`
+      `"${presentMembers[m.id] ? 'PRESENT' : 'ABSENT'}"`
     ]);
 
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
@@ -162,10 +189,10 @@ export const AttendanceRecording: React.FC = () => {
   // Calculate metrics
   const totalCount = displayedMembers.length;
   const presentCount = displayedMembers.filter(
-    (m) => (localStatuses[m.id] || 'present') === 'present'
+    (m) => presentMembers[m.id] === true
   ).length;
   const absentCount = displayedMembers.filter(
-    (m) => localStatuses[m.id] === 'absent'
+    (m) => presentMembers[m.id] !== true
   ).length;
   const rate = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
 
@@ -344,6 +371,19 @@ export const AttendanceRecording: React.FC = () => {
               >
                 Friday Night Prayer
               </button>
+              {currentUser.role === 'shepherd' && currentUser.isPpitShepherd && (
+                <button
+                  type="button"
+                  onClick={() => handleCategoryChange('ppit')}
+                  className={`px-3 py-1.5 font-medium transition-colors cursor-pointer ${
+                    serviceCategory === 'ppit'
+                      ? 'bg-[#a78bfa] text-[#070c1e] shadow-sm font-bold'
+                      : 'text-[#a6c4eb] hover:text-slate-200'
+                  }`}
+                >
+                  PPIT
+                </button>
+              )}
             </div>
           </div>
 
@@ -416,7 +456,15 @@ export const AttendanceRecording: React.FC = () => {
                     <th className="py-3 px-4">Telephone</th>
                     {isPastor && <th className="py-3 px-4">Shepherd Group</th>}
                     <th className="py-3 px-4">Sunday Attendance Risk</th>
-                    <th className="py-3 px-4 text-center">Mark Attendance</th>
+                    <th className="py-3 px-4 text-center">
+                      <button
+                        type="button"
+                        onClick={handleMarkAllPresent}
+                        className="text-[10px] font-bold text-[#00f0ff] hover:text-white cursor-pointer"
+                      >
+                        Mark All Present
+                      </button>
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#16285a]">
@@ -428,7 +476,7 @@ export const AttendanceRecording: React.FC = () => {
                     </tr>
                   ) : (
                     displayedMembers.map((member) => {
-                      const currentStatus = localStatuses[member.id] || 'present';
+                      const isPresent = presentMembers[member.id] === true;
                       const redInfo = redListMap.get(member.id);
                       const critInfo = criticalMap.get(member.id);
 
@@ -504,44 +552,18 @@ export const AttendanceRecording: React.FC = () => {
                             )}
                           </td>
                           <td className="py-3 px-4">
-                            <div className="flex items-center justify-center gap-1.5">
-                              <button
-                                type="button"
-                                onClick={() => handleStatusChange(member.id, 'present')}
-                                className={`px-3 py-1 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
-                                  currentStatus === 'present'
-                                    ? 'bg-emerald-600 text-white shadow-sm font-bold'
-                                    : 'bg-[#0a122e] text-[#a6c4eb] hover:text-emerald-300'
-                                }`}
-                              >
-                                <Check className="w-3.5 h-3.5" />
-                                <span>Present</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleStatusChange(member.id, 'absent')}
-                                className={`px-3 py-1 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
-                                  currentStatus === 'absent'
-                                    ? 'bg-rose-600 text-white shadow-sm font-bold'
-                                    : 'bg-[#0a122e] text-[#a6c4eb] hover:text-rose-300'
-                                }`}
-                              >
-                                <X className="w-3.5 h-3.5" />
-                                <span>Absent</span>
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() => handleStatusChange(member.id, 'excused')}
-                                className={`px-3 py-1 text-xs font-semibold flex items-center gap-1 cursor-pointer transition-colors ${
-                                  currentStatus === 'excused'
-                                    ? 'bg-amber-600 text-white shadow-sm font-bold'
-                                    : 'bg-[#0a122e] text-[#a6c4eb] hover:text-amber-300'
-                                }`}
-                              >
-                                <Clock className="w-3.5 h-3.5" />
-                                <span>Excused</span>
-                              </button>
-                            </div>
+                            <label className="flex items-center justify-center gap-2 cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={isPresent}
+                                onChange={(event) => handlePresentChange(member.id, event.target.checked)}
+                                className="h-4 w-4 accent-[#00f0ff] cursor-pointer"
+                                aria-label={`Present: ${member.firstName} ${member.lastName}`}
+                              />
+                              <span className={isPresent ? 'font-bold text-[#00ff9d]' : 'text-[#7b9dc7]'}>
+                                {isPresent ? 'Present' : 'Absent'}
+                              </span>
+                            </label>
                           </td>
                         </tr>
                       );
@@ -681,9 +703,8 @@ export const AttendanceRecording: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                setLocalStatuses((prev) => ({ ...prev, [record.memberId]: 'present' }));
+                                setPresentMembers((prev) => ({ ...prev, [record.memberId]: true }));
                                 setHasUnsavedChanges(true);
-                                setLocalStatuses((prev) => ({ ...prev, [record.memberId]: 'present' }));
                               }}
                               className="px-3 py-1.5 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-extrabold cursor-pointer transition-colors inline-flex items-center gap-1 shadow-sm"
                               title="Mark present for latest Sunday to immediately clear from Red List"
@@ -823,9 +844,8 @@ export const AttendanceRecording: React.FC = () => {
                             <button
                               type="button"
                               onClick={() => {
-                                setLocalStatuses((prev) => ({ ...prev, [record.memberId]: 'present' }));
+                                setPresentMembers((prev) => ({ ...prev, [record.memberId]: true }));
                                 setHasUnsavedChanges(true);
-                                setLocalStatuses((prev) => ({ ...prev, [record.memberId]: 'present' }));
                               }}
                               className="px-3 py-1.5 bg-[#00ff9d] hover:bg-emerald-400 text-[#070c1e] text-xs font-extrabold cursor-pointer transition-colors inline-flex items-center gap-1 shadow-sm"
                               title="Mark re-engaged and present to restore to Good Standing"

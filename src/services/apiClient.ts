@@ -108,6 +108,7 @@ export const apiClient = {
     phone?: string;
     cellName: string;
     password?: string;
+    isPpitShepherd?: boolean;
   }) {
     try {
       const res = await fetch(`${API_BASE_URL}/api/shepherds/create`, {

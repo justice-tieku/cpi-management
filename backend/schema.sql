@@ -97,6 +97,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     branch TEXT NOT NULL DEFAULT 'Main Sanctuary — Central Cathedral',
     avatar_url TEXT,
     phone TEXT,
+    is_ppit_shepherd BOOLEAN NOT NULL DEFAULT false,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
 );
@@ -164,6 +165,15 @@ CREATE TABLE IF NOT EXISTS public.attendance_records (
     recorded_by TEXT NOT NULL,
     recorded_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
     consecutive_absences INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS public.ppit_summary (
+    session_date DATE PRIMARY KEY,
+    present_count INTEGER NOT NULL DEFAULT 0,
+    absent_count INTEGER NOT NULL DEFAULT 0,
+    total_count INTEGER NOT NULL DEFAULT 0,
+    recorded_by TEXT NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
 );
 
 -- Weekly Cell Fellowship Meetings & Cell Offerings
@@ -319,6 +329,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+CREATE OR REPLACE FUNCTION public.is_ppit_shepherd()
+RETURNS BOOLEAN AS $$
+BEGIN
+    IF auth.uid() IS NULL THEN
+        RETURN FALSE;
+    END IF;
+    RETURN EXISTS (
+        SELECT 1 FROM public.profiles
+        WHERE id = auth.uid() AND role = 'shepherd' AND is_ppit_shepherd = true
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 CREATE OR REPLACE FUNCTION public.get_assigned_cell()
 RETURNS TEXT AS $$
 BEGIN
@@ -338,6 +361,7 @@ ALTER TABLE public.care_cells ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shepherd_assignments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.attendance_records ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ppit_summary ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cell_meetings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.follow_up_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.visitors ENABLE ROW LEVEL SECURITY;
@@ -399,19 +423,35 @@ DROP POLICY IF EXISTS "Attendance viewable by pastor or cell shepherd" ON public
 CREATE POLICY "Attendance viewable by pastor or cell shepherd"
 ON public.attendance_records FOR SELECT TO anon, authenticated
 USING (
-    public.is_pastor() OR
-    shepherd_id = auth.uid() OR
-    cell_group = public.get_assigned_cell()
+    (service_category <> 'ppit' AND (public.is_pastor() OR shepherd_id = auth.uid() OR cell_group = public.get_assigned_cell()))
+    OR
+    (service_category = 'ppit' AND public.is_ppit_shepherd() AND shepherd_id = auth.uid())
 );
 
 DROP POLICY IF EXISTS "Attendance manageable by pastor or cell shepherd" ON public.attendance_records;
 CREATE POLICY "Attendance manageable by pastor or cell shepherd"
 ON public.attendance_records FOR ALL TO anon, authenticated
 USING (
-    public.is_pastor() OR
-    shepherd_id = auth.uid() OR
-    cell_group = public.get_assigned_cell()
+    (service_category <> 'ppit' AND (public.is_pastor() OR shepherd_id = auth.uid() OR cell_group = public.get_assigned_cell()))
+    OR
+    (service_category = 'ppit' AND public.is_ppit_shepherd() AND shepherd_id = auth.uid())
+)
+WITH CHECK (
+    (service_category <> 'ppit' AND (public.is_pastor() OR shepherd_id = auth.uid() OR cell_group = public.get_assigned_cell()))
+    OR
+    (service_category = 'ppit' AND public.is_ppit_shepherd() AND shepherd_id = auth.uid())
 );
+
+DROP POLICY IF EXISTS "PPIT summary visible to pastor and designated shepherd" ON public.ppit_summary;
+CREATE POLICY "PPIT summary visible to pastor and designated shepherd"
+ON public.ppit_summary FOR SELECT TO anon, authenticated
+USING (public.is_pastor() OR public.is_ppit_shepherd());
+
+DROP POLICY IF EXISTS "PPIT summary writable by designated shepherd" ON public.ppit_summary;
+CREATE POLICY "PPIT summary writable by designated shepherd"
+ON public.ppit_summary FOR ALL TO anon, authenticated
+USING (public.is_ppit_shepherd())
+WITH CHECK (public.is_ppit_shepherd());
 
 -- Cell Meetings Policies
 DROP POLICY IF EXISTS "Cell meetings viewable by pastor or cell shepherd" ON public.cell_meetings;
@@ -553,6 +593,11 @@ DROP POLICY IF EXISTS "Notifications updatable only by recipient" ON public.noti
 CREATE POLICY "Notifications updatable only by recipient"
 ON public.notifications FOR UPDATE TO anon, authenticated
 USING (recipient_id = auth.uid());
+
+DROP POLICY IF EXISTS "Notifications insertable by pastor" ON public.notifications;
+CREATE POLICY "Notifications insertable by pastor"
+ON public.notifications FOR INSERT TO anon, authenticated
+WITH CHECK (public.is_pastor());
 
 -- Audit Logs Policies (Pastor only)
 DROP POLICY IF EXISTS "Audit logs viewable by pastor only" ON public.audit_logs;

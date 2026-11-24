@@ -13,6 +13,7 @@ export interface User {
   role: UserRole;
   avatar?: string;
   assignedCell?: string;
+  isPpitShepherd?: boolean;
   branch: string;
 }
 

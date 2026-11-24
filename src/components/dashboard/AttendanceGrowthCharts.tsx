@@ -12,20 +12,67 @@ import {
 import { useCMS } from '../../context/CMSContext';
 
 export const AttendanceGrowthCharts: React.FC = () => {
-  const { members, shepherds, cellMeetings } = useCMS();
+  const { members, shepherds, cellMeetings, attendanceRecords, financeRecords, isCloudConnected } = useCMS();
   const [activeTab, setActiveTab] = useState<'attendance' | 'offering' | 'demographics' | 'cells'>('attendance');
 
-  const weeklyTrends = [];
+  const weeklyTrends = Array.from({ length: 6 }, (_, index) => {
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    end.setDate(end.getDate() - ((5 - index) * 7));
+    const start = new Date(end);
+    start.setDate(start.getDate() - 6);
 
-  const offeringCategories = [];
-  const totalOffering = 0;
+    const weekRecords = attendanceRecords.filter((record) =>
+      record.serviceDate >= start.toISOString().split('T')[0] &&
+      record.serviceDate <= end.toISOString().split('T')[0] &&
+      record.status === 'Present'
+    );
+    const sunday = weekRecords.filter((record) => {
+      const name = record.serviceName.toLowerCase();
+      return name.includes('sunday') || name.includes('communion');
+    }).length;
+    const midweek = weekRecords.filter((record) =>
+      record.serviceName.toLowerCase().includes('midweek') ||
+      record.serviceName.toLowerCase().includes('wednesday')
+    ).length;
+    const vigil = weekRecords.filter((record) => {
+      const name = record.serviceName.toLowerCase();
+      return name.includes('friday') || name.includes('prayer') || name.includes('vigil');
+    }).length;
+    const offerings = financeRecords
+      .filter((record) =>
+        record.date >= start.toISOString().split('T')[0] &&
+        record.date <= end.toISOString().split('T')[0]
+      )
+      .reduce((sum, record) => sum + record.amount, 0);
+
+    return {
+      label: start.toLocaleDateString('en-GH', { month: 'short', day: 'numeric' }),
+      sunday,
+      midweek,
+      vigil,
+      offerings
+    };
+  });
+
+  const totalOffering = financeRecords.reduce((sum, record) => sum + record.amount, 0);
+  const offeringCategories = Array.from(
+    new Map(
+      financeRecords.map((record) => [
+        record.category,
+        (financeRecords
+          .filter((item) => item.category === record.category)
+          .reduce((sum, item) => sum + item.amount, 0))
+      ])
+    ).entries()
+  ).map(([label, amount]) => ({
+    label,
+    amount,
+    pct: totalOffering > 0 ? Math.round((amount / totalOffering) * 100) : 0,
+    color: '#f59e0b'
+  }));
 
   /* ── Demographics ── */
-  const femaleNames = ['Sarah', 'Kimberly', 'Elizabeth'];
-  const femaleCount = members.filter(m => femaleNames.includes(m.firstName)).length;
-  const maleCount   = members.length - femaleCount;
-  const malePct     = members.length > 0 ? Math.round((maleCount / members.length) * 100) : 50;
-  const femalePct   = 100 - malePct;
 
   const now = new Date();
   const getAge = (dob?: string) => {
@@ -118,6 +165,11 @@ export const AttendanceGrowthCharts: React.FC = () => {
           <span className="px-2.5 py-1 bg-[#0a122e] text-[11px] font-bold text-amber-300">
             GH₵ {latestWeek.offerings.toLocaleString()}
           </span>
+          {isCloudConnected && (
+            <span className="px-2.5 py-1 bg-[#043621] text-[11px] font-bold text-[#00ff9d]">
+              Live synced
+            </span>
+          )}
         </div>
       </div>
 
@@ -143,7 +195,7 @@ export const AttendanceGrowthCharts: React.FC = () => {
         })}
       </div>
 
-      {members.length === 0 || weeklyTrends.length === 0 ? (
+      {members.length === 0 && weeklyTrends.every((week) => week.sunday + week.midweek + week.vigil === 0) ? (
         <div className="py-16 text-center text-[#a6c4eb] text-sm">
           No data recorded yet
         </div>
@@ -298,32 +350,19 @@ export const AttendanceGrowthCharts: React.FC = () => {
       {activeTab === 'demographics' && (
         <div className="p-5 space-y-6">
 
-          {/* Gender */}
+          {/* Member status */}
           <div>
-            <p className="text-[11px] font-bold text-[#00f0ff] uppercase tracking-wider mb-3">Gender Ratio</p>
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div className="p-4 bg-[#0a122e] text-center">
-                <div className="text-3xl font-extrabold text-[#3b82f6] font-mono">{maleCount}</div>
-                <div className="text-xs text-[#a6c4eb] mt-1">Male</div>
-                <div className="text-sm font-bold text-[#3b82f6]">{malePct}%</div>
-              </div>
-              <div className="p-4 bg-[#0a122e] text-center">
-                <div className="text-3xl font-extrabold text-[#f472b6] font-mono">{femaleCount}</div>
-                <div className="text-xs text-[#a6c4eb] mt-1">Female</div>
-                <div className="text-sm font-bold text-[#f472b6]">{femalePct}%</div>
-              </div>
-            </div>
-            <div className="flex h-4 overflow-hidden">
-              <div style={{ width: `${malePct}%` }} className="bg-[#3b82f6] flex items-center justify-center">
-                <span className="text-[9px] font-bold text-white">{malePct}%</span>
-              </div>
-              <div style={{ width: `${femalePct}%` }} className="bg-[#f472b6] flex items-center justify-center">
-                <span className="text-[9px] font-bold text-white">{femalePct}%</span>
-              </div>
-            </div>
-            <div className="flex justify-between text-[10px] text-[#a6c4eb] mt-1">
-              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-[#3b82f6]" /> Male</span>
-              <span className="flex items-center gap-1"><span className="w-2 h-2 bg-[#f472b6]" /> Female</span>
+            <p className="text-[11px] font-bold text-[#00f0ff] uppercase tracking-wider mb-3">Membership Status</p>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {['Pending Verification', 'New Member', 'Active', 'Inactive', 'Transferred', 'Deceased'].map((status) => {
+                const count = members.filter((member) => member.status === status).length;
+                return (
+                  <div key={status} className="p-3 bg-[#0a122e]">
+                    <p className="text-[9px] text-[#a6c4eb] truncate">{status}</p>
+                    <p className="text-lg font-bold text-white font-mono mt-1">{count}</p>
+                  </div>
+                );
+              })}
             </div>
           </div>
 

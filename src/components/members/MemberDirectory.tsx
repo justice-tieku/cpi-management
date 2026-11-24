@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Search,
   Filter,
@@ -25,6 +25,8 @@ export const MemberDirectory: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCell, setSelectedCell] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 25;
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [outreachMember, setOutreachMember] = useState<{
     isOpen: boolean;
@@ -78,6 +80,13 @@ export const MemberDirectory: React.FC = () => {
     const matchesCell = selectedCell === 'all' || m.cellGroup.includes(selectedCell);
     return matchesSearch && matchesCell;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredMembers.length / pageSize));
+  const pagedMembers = filteredMembers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCell]);
 
   return (
     <div className="p-6 md:p-8 space-y-5 max-w-7xl mx-auto">
@@ -168,7 +177,7 @@ export const MemberDirectory: React.FC = () => {
                   </td>
                 </tr>
               ) : (
-                filteredMembers.map((member) => (
+                pagedMembers.map((member) => (
                 <tr key={member.id} className="hover:bg-[#16285a] transition-colors">
                   <td className="py-3 px-4">
                     <p className="font-bold text-white">
@@ -271,6 +280,32 @@ export const MemberDirectory: React.FC = () => {
             </tbody>
           </table>
         </div>
+        {filteredMembers.length > 0 && (
+          <div className="px-4 py-3 border-t border-[#16285a] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <p className="text-[11px] text-[#a6c4eb]">
+              Showing {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, filteredMembers.length)} of {filteredMembers.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={currentPage <= 1}
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                className="px-3 py-1.5 bg-[#0a122e] text-xs text-[#a6c4eb] disabled:opacity-40"
+              >
+                Previous
+              </button>
+              <span className="text-xs font-mono text-white">Page {Math.min(currentPage, totalPages)} of {totalPages}</span>
+              <button
+                type="button"
+                disabled={currentPage >= totalPages}
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                className="px-3 py-1.5 bg-[#0a122e] text-xs text-[#a6c4eb] disabled:opacity-40"
+              >
+                Next
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Member Profile / Edit Modal */}

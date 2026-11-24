@@ -117,6 +117,26 @@ export const AttendanceRecording: React.FC = () => {
     setHasUnsavedChanges(true);
   };
 
+  const handleMarkAllAbsent = () => {
+    setPresentMembers((prev) => {
+      const updated = { ...prev };
+      displayedMembers.forEach((member) => {
+        updated[member.id] = false;
+      });
+      return updated;
+    });
+    setHasUnsavedChanges(true);
+  };
+
+  React.useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const protectUnsavedChanges = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+    };
+    window.addEventListener('beforeunload', protectUnsavedChanges);
+    return () => window.removeEventListener('beforeunload', protectUnsavedChanges);
+  }, [hasUnsavedChanges]);
+
   const handleSave = async () => {
     if (displayedMembers.length === 0) {
       setSaveNotice({ message: 'There is no data to save.', isError: true });
@@ -458,13 +478,23 @@ export const AttendanceRecording: React.FC = () => {
                     {isPastor && <th className="py-3 px-4">Shepherd Group</th>}
                     <th className="py-3 px-4">Sunday Attendance Risk</th>
                     <th className="py-3 px-4 text-center">
-                      <button
-                        type="button"
-                        onClick={handleMarkAllPresent}
-                        className="text-[10px] font-bold text-[#00f0ff] hover:text-white cursor-pointer"
-                      >
-                        Mark All Present
-                      </button>
+                      <div className="flex items-center justify-center gap-3">
+                        <button
+                          type="button"
+                          onClick={handleMarkAllPresent}
+                          className="text-[10px] font-bold text-[#00ff9d] hover:text-white cursor-pointer"
+                        >
+                          Mark All Present
+                        </button>
+                        <span className="text-[#16285a]">|</span>
+                        <button
+                          type="button"
+                          onClick={handleMarkAllAbsent}
+                          className="text-[10px] font-bold text-[#ff4069] hover:text-white cursor-pointer"
+                        >
+                          Mark All Absent
+                        </button>
+                      </div>
                     </th>
                   </tr>
                 </thead>

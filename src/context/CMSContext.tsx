@@ -104,8 +104,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (session?.user) return session.user;
     return {
       id: 'USR-PASTOR-01',
-      name: 'Rev. Festus',
-      email: 'pastor.adams@crosspassion.org',
+      name: 'Senior Pastor',
+      email: '',
       role: 'pastor',
       branch: 'Main Church',
     };
@@ -585,7 +585,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       recipientId,
       recipientName: isPastor
         ? (target?.name || 'Shepherd')
-        : 'Rev. Festus',
+        : 'Senior Pastor',
       content: trimmedContent,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' — just now',
       read: false
@@ -868,7 +868,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       dateOfBirth: normalizedDob || undefined,
       id: newId,
       registeredAt: new Date().toISOString().split('T')[0],
-      registeredBy: currentUser.name || 'Pastor Adams'
+      registeredBy: currentUser.name || 'Senior Pastor'
     };
 
     if (isSupabaseConfigured) {
@@ -1020,7 +1020,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       currentShepherdId: newVisitor.assignedShepherdId,
       currentShepherdName: newVisitor.assignedShepherdName,
       registeredAt: newVisitor.visitDate,
-      registeredBy: currentUser.name || 'Pastor Adams',
+      registeredBy: currentUser.name || 'Senior Pastor',
       generalNotes: `First-time guest. Invited by: ${newVisitor.invitedBy || 'Walk-in'}. ${newVisitor.notes || ''}`
     };
 
@@ -1282,7 +1282,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: `NOTIF-${Date.now()}`,
       recipientId: targetShepherd.id,
       title: 'New Member Assigned to Your Shepherd Group',
-      message: `${targetMember ? `${targetMember.firstName} ${targetMember.lastName}` : 'A new member'} has been assigned to your shepherd group (${targetShepherd.cell}) by Pastor Adams. Transfer reason: ${reason}.`,
+      message: `${targetMember ? `${targetMember.firstName} ${targetMember.lastName}` : 'A new member'} has been assigned to your shepherd group (${targetShepherd.cell}) by ${currentUser.name}. Transfer reason: ${reason}.`,
       timestamp: 'Just now',
       read: false,
       type: 'assignment',

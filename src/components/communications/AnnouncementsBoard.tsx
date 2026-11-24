@@ -115,7 +115,7 @@ export const AnnouncementsBoard: React.FC = () => {
           <p className="text-xs text-[#7b9dc7] mt-0.5">
             {isPastor
               ? 'Church announcements & directives'
-              : 'Messages from Pastor Adams'}
+              : 'Messages from the Senior Pastor'}
           </p>
         </div>
         <div className="flex items-center gap-3">

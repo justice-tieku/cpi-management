@@ -10,7 +10,7 @@ export const MessagingCenter: React.FC = () => {
   type Conversation = { id: string; name: string; role: string; cell?: string };
   const conversations: Conversation[] = isPastor
     ? shepherds.map((s) => ({ id: s.id, name: s.name, role: 'Shepherd', cell: s.cell }))
-    : [{ id: 'USR-PASTOR-01', name: 'Pastor Adams', role: 'Pastor / Admin' }];
+    : [{ id: 'USR-PASTOR-01', name: 'Senior Pastor', role: 'Pastor / Admin' }];
 
   const [selectedConvId, setSelectedConvId] = useState<string>('');
   const [draftText, setDraftText] = useState('');
@@ -26,6 +26,12 @@ export const MessagingCenter: React.FC = () => {
   useEffect(() => {
     if (!selectedConvId && conversations.length > 0) {
       setSelectedConvId(conversations[0].id);
+      if (typeof window !== 'undefined' && window.innerWidth < 768) {
+        setShowConversationList(false);
+      }
+    }
+    if (conversations.length === 0 && typeof window !== 'undefined' && window.innerWidth < 768) {
+      setShowConversationList(true);
     }
   }, [conversations.length, selectedConvId]);
 
@@ -107,7 +113,7 @@ export const MessagingCenter: React.FC = () => {
   );
 
   return (
-    <div className="relative flex h-full min-h-0" style={{ maxHeight: 'calc(100vh - 64px)' }}>
+    <div className="relative flex h-full min-h-0 w-full overflow-hidden">
       {/* ======== LEFT SIDEBAR — Conversation List ======== */}
       {showConversationList && (
         <button
@@ -117,7 +123,7 @@ export const MessagingCenter: React.FC = () => {
           className="fixed inset-0 z-40 bg-black/60 md:hidden"
         />
       )}
-      <div className={`${showConversationList ? 'fixed inset-y-16 left-0 z-50 flex' : 'hidden'} md:relative md:inset-auto md:z-auto md:flex w-[85vw] max-w-72 shrink-0 bg-[#0a122e] flex-col border-r border-[#16285a]`}>
+      <div className={`${showConversationList ? 'fixed inset-y-16 left-0 z-50 flex' : 'hidden'} md:relative md:inset-auto md:z-auto md:flex w-[85vw] md:w-72 shrink-0 bg-[#0a122e] flex-col border-r border-[#16285a]`}>
         {/* Header */}
         <div className="p-4">
           <div className="flex items-center justify-between">
@@ -128,7 +134,7 @@ export const MessagingCenter: React.FC = () => {
               <p className="text-xs text-[#7b9dc7] mt-0.5">
                 {isPastor
                   ? 'Direct shepherd messages'
-                  : 'Direct messages with Pastor Adams'}
+                  : 'Direct messages with the Senior Pastor'}
               </p>
             </div>
             <button
@@ -181,8 +187,8 @@ export const MessagingCenter: React.FC = () => {
                 }}
                 className={`w-full text-left px-4 py-3   transition-colors ${
                   isSelected
-                    ? 'bg-[#072e54] -2 '
-                    : 'hover:bg-[#111d44] -2 -transparent'
+                    ? 'bg-[#072e54]'
+                    : 'hover:bg-[#111d44]'
                 }`}
               >
                 {/* Avatar + Name row */}
@@ -221,7 +227,7 @@ export const MessagingCenter: React.FC = () => {
       </div>
 
       {/* ======== RIGHT PANEL — Chat Thread ======== */}
-      <div className="flex-1 flex flex-col bg-[#070c1e] min-w-0">
+      <div className={`${showConversationList ? 'hidden md:flex' : 'flex'} flex-1 flex-col bg-[#070c1e] min-w-0 h-full`}>
         {selectedConv ? (
           <>
             {/* Thread Header */}
@@ -312,7 +318,7 @@ export const MessagingCenter: React.FC = () => {
                   placeholder={
                     isPastor
                       ? `Message ${selectedConv.name}…`
-                      : 'Send a message to Pastor Adams…'
+                      : 'Send a message to the Senior Pastor…'
                   }
                   className="min-h-12 max-h-32 flex-1 resize-none bg-[#111d44] px-3 sm:px-4 py-3 text-sm sm:text-xs text-slate-200 placeholder-slate-500 outline-none focus:ring-2 focus:ring-[#00f0ff] leading-relaxed"
                 />
@@ -328,7 +334,7 @@ export const MessagingCenter: React.FC = () => {
                 Press Enter to send · Shift+Enter for new line ·{' '}
                 {isPastor
                   ? 'Only you and this shepherd see this conversation'
-                  : 'Only you and Pastor Adams see this conversation'}
+                  : 'Only you and the Senior Pastor see this conversation'}
               </p>
             </div>
           </>

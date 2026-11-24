@@ -211,7 +211,11 @@ const CMSApp: React.FC = () => {
           onToggleMobileMenu={() => setIsMobileNavOpen((prev) => !prev)}
         />
 
-        <main className="flex-1 overflow-y-auto bg-[#070c1e] pb-12">
+        <main className={`flex-1 bg-[#070c1e] ${
+          activeScreen === 'messages'
+            ? 'min-h-0 overflow-hidden'
+            : 'overflow-y-auto pb-12'
+        }`}>
           {activeScreen === 'dashboard' && (isPastor ? <ExecutiveDashboard onNavigate={setActiveScreen} /> : <ShepherdDashboard onNavigate={setActiveScreen} />)}
           {activeScreen === 'members' && <MemberDirectory />}
           {activeScreen === 'shepherds' && <ShepherdAssignmentManagement />}

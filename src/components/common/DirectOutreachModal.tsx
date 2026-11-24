@@ -41,7 +41,7 @@ export const DirectOutreachModal: React.FC<DirectOutreachModalProps> = ({
       );
     } else if (category === 'critical') {
       setMessage(
-        `Dear ${firstName}, Pastor Adams and the pastoral team at Cross Passion International are thinking of you. You remain a valued part of God's family. Please let us know how we can support you or when we can drop by for prayer. God bless you.`
+        `Dear ${firstName}, the Senior Pastor and pastoral team at Cross Passion International are thinking of you. You remain a valued part of God's family. Please let us know how we can support you or when we can drop by for prayer. God bless you.`
       );
     } else if (category === 'first_timer') {
       setMessage(

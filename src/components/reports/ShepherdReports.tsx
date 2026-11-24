@@ -96,7 +96,7 @@ export const ShepherdReports: React.FC = () => {
       {submittedNotice && (
         <div className="p-3.5 bg-emerald-950/40 text-emerald-300 text-xs font-semibold flex items-center gap-2">
           <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-          <span>Monthly report submitted successfully to Pastor Adams.</span>
+          <span>Monthly report submitted successfully to the Senior Pastor.</span>
         </div>
       )}
 

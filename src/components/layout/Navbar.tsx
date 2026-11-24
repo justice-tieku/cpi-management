@@ -93,7 +93,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             className="flex items-center gap-2 px-3.5 py-1.5 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-bold shadow-md transition-colors cursor-pointer"
           >
             <UserPlus className="w-3.5 h-3.5" />
-            <span>Add New Person</span>
+            <span className="hidden sm:inline">Add New Person</span>
           </button>
         )}
 

@@ -9,9 +9,80 @@
     font-family: 'Inter', sans-serif;
   }
 
-  *, *::before, *::after {
-    border-radius: 0px !important;
+  button,
+  input,
+  select,
+  textarea {
+    border-radius: 0.5rem;
   }
+
+  button {
+    transition:
+      background-color 160ms ease,
+      border-color 160ms ease,
+      color 160ms ease,
+      box-shadow 160ms ease,
+      transform 160ms ease;
+  }
+
+  button:active {
+    transform: translateY(1px);
+  }
+
+  button:focus-visible,
+  input:focus-visible,
+  select:focus-visible,
+  textarea:focus-visible,
+  a:focus-visible {
+    outline: 2px solid #00f0ff;
+    outline-offset: 2px;
+  }
+}
+
+/* Consistent professional radii across cards, controls, dialogs and status shapes. */
+[class*="bg-[#111d44]"] {
+  border-radius: 0.75rem;
+  border: 1px solid rgba(166, 196, 235, 0.06);
+}
+
+[class*="bg-[#0a122e]"] {
+  border-radius: 0.5rem;
+}
+
+[class*="bg-[#16285a]"] {
+  border-radius: 0.5rem;
+}
+
+[class*="bg-[#072e54]"] {
+  border-radius: 0.625rem;
+}
+
+button {
+  border-radius: 0.625rem;
+}
+
+input,
+select,
+textarea {
+  border-radius: 0.625rem;
+}
+
+input[type="checkbox"] {
+  border-radius: 0.25rem;
+  accent-color: #00f0ff;
+}
+
+input[type="radio"] {
+  border-radius: 9999px;
+}
+
+.fixed.inset-0 [class*="bg-[#111d44]"],
+.fixed.inset-0 [class*="bg-[#0c152e]"] {
+  border-radius: 1rem;
+}
+
+img {
+  border-radius: 0.5rem;
 }
 
 /* Custom scrollbar matching bright midnight navy theme */
@@ -24,7 +95,7 @@
 }
 ::-webkit-scrollbar-thumb {
   background: #16285a;
-  border-radius: 0 !important;
+  border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #00f0ff;

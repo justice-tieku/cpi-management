@@ -428,10 +428,12 @@ app.post('/api/shepherds/create', async (req, res) => {
       ? authorization.slice(7)
       : null;
     if (!accessToken) {
+      console.warn('[CREATE SHEPHERD ERROR] Request rejected: missing access token.');
       return res.status(401).json({ success: false, error: 'Authentication required.' });
     }
     const { data: authData, error: authError } = await supabase.auth.getUser(accessToken);
     if (authError || !authData?.user) {
+      console.warn('[CREATE SHEPHERD ERROR] Request rejected: invalid session.', authError);
       return res.status(401).json({ success: false, error: 'Invalid or expired session.' });
     }
     const { data: actorProfile, error: actorError } = await supabase
@@ -440,9 +442,11 @@ app.post('/api/shepherds/create', async (req, res) => {
       .eq('id', authData.user.id)
       .maybeSingle();
     if (actorError || actorProfile?.role !== 'pastor') {
+      console.warn('[CREATE SHEPHERD ERROR] Request rejected: actor profile is not a pastor.', actorError);
       return res.status(403).json({ success: false, error: 'Only the pastor can create shepherd accounts.' });
     }
     if (!process.env.SUPABASE_SECRET_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      console.error('[CREATE SHEPHERD ERROR] Server-side Supabase admin key is not configured.');
       return res.status(503).json({
         success: false,
         error: 'Shepherd account creation requires SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY to be configured in Render.'
@@ -581,7 +585,7 @@ app.post('/api/shepherds/create', async (req, res) => {
     });
   } catch (err) {
     console.error('[CREATE SHEPHERD ERROR]', err);
-    res.status(500).json({ success: false, error: 'Could not add user.' });
+    res.status(500).json({ success: false, error: 'Could not add shepherd.' });
   }
 });
 

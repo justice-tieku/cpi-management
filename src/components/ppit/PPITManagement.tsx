@@ -15,7 +15,7 @@ import { supabase, isSupabaseConfigured } from '../../../backend/client';
 import { Database } from '../../../backend/types';
 import { useCMS } from '../../context/CMSContext';
 import { isFutureDate } from '../../utils/date';
-import { getPpitAbsenceStreaks } from '../../utils/ppit';
+import { getPpitAbsenceStreaks, getPpitRosterMembers, PPIT_MEETING_LEADER_ID } from '../../utils/ppit';
 import { mapError } from '../../utils/errors';
 
 type PpitMember = Database['public']['Tables']['ppit_members']['Row'];
@@ -24,6 +24,7 @@ type PpitTab = 'roster' | 'attendance' | 'red-list';
 type AttendanceMark = 'Present' | 'Absent';
 
 const today = () => new Date().toISOString().slice(0, 10);
+const meetingLeaderName = 'REV FESTUS AGYEI SARFO';
 
 export const PPITManagement: React.FC = () => {
   const { currentUser } = useCMS();
@@ -48,6 +49,11 @@ export const PPITManagement: React.FC = () => {
   const [isSavingMember, setIsSavingMember] = useState(false);
   const attendanceDirtyRef = useRef(false);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const meetingLeader = members.find((member) => member.id === PPIT_MEETING_LEADER_ID);
+  const rosterMembers = useMemo(
+    () => getPpitRosterMembers(members),
+    [members]
+  );
 
   const loadData = useCallback(async (force = false, showLoading = true) => {
     if (!isSupabaseConfigured) {
@@ -102,7 +108,7 @@ export const PPITManagement: React.FC = () => {
   useEffect(() => {
     const currentMarks = Object.fromEntries(
       attendance
-        .filter((record) => record.session_date === sessionDate)
+        .filter((record) => record.session_date === sessionDate && record.ppit_member_id !== PPIT_MEETING_LEADER_ID)
         .map((record) => [record.ppit_member_id, record.status as AttendanceMark])
     );
     setDraftMarks(currentMarks);
@@ -121,25 +127,25 @@ export const PPITManagement: React.FC = () => {
   }, [hasUnsavedAttendance]);
 
   const branches = useMemo(
-    () => Array.from(new Set(members.map((member) => member.branch))).sort(),
-    [members]
+    () => Array.from(new Set(rosterMembers.map((member) => member.branch))).sort(),
+    [rosterMembers]
   );
   const filteredMembers = useMemo(
-    () => members.filter((member) => {
+    () => rosterMembers.filter((member) => {
       const matchesSearch = `${member.name} ${member.contact || ''}`.toLowerCase().includes(search.toLowerCase());
       return matchesSearch && (branchFilter === 'all' || member.branch === branchFilter);
     }),
-    [branchFilter, members, search]
+    [branchFilter, rosterMembers, search]
   );
   const absenceStreaks = useMemo(() => getPpitAbsenceStreaks(
     attendance.filter((record): record is PpitAttendance & { status: AttendanceMark } =>
-      record.status === 'Present' || record.status === 'Absent'
+      record.ppit_member_id !== PPIT_MEETING_LEADER_ID && (record.status === 'Present' || record.status === 'Absent')
     )
   ), [attendance]);
-  const redList = members
+  const redList = rosterMembers
     .map((member) => ({ member, streak: absenceStreaks.get(member.id) }))
     .filter((item) => item.streak && item.streak.count > 0 && item.streak.count < 3);
-  const criticalAbsentees = members
+  const criticalAbsentees = rosterMembers
     .map((member) => ({ member, streak: absenceStreaks.get(member.id) }))
     .filter((item) => item.streak && item.streak.count >= 3);
 
@@ -197,7 +203,7 @@ export const PPITManagement: React.FC = () => {
   };
 
   const markAll = (status: AttendanceMark) => {
-    setDraftMarks(Object.fromEntries(members.map((member) => [member.id, status])));
+    setDraftMarks(Object.fromEntries(rosterMembers.map((member) => [member.id, status])));
     setHasUnsavedAttendance(true);
   };
 
@@ -208,7 +214,7 @@ export const PPITManagement: React.FC = () => {
 
   const handleSaveAttendance = async () => {
     if (!canManage) return;
-    if (members.length === 0) {
+    if (rosterMembers.length === 0) {
       setNotice({ message: 'The PPIT roster is empty.', isError: true });
       return;
     }
@@ -216,7 +222,7 @@ export const PPITManagement: React.FC = () => {
       setNotice({ message: 'Attendance date cannot be in the future.', isError: true });
       return;
     }
-    if (members.some((member) => !draftMarks[member.id])) {
+    if (rosterMembers.some((member) => !draftMarks[member.id])) {
       setNotice({ message: 'Mark every member present or absent before saving.', isError: true });
       return;
     }
@@ -231,7 +237,7 @@ export const PPITManagement: React.FC = () => {
         return;
       }
 
-      const records = members.map((member) => ({
+      const records = rosterMembers.map((member) => ({
         ppit_member_id: member.id,
         session_date: sessionDate,
         status: draftMarks[member.id],
@@ -328,6 +334,9 @@ export const PPITManagement: React.FC = () => {
           You can view PPIT records. Only the designated PPIT shepherd can edit the roster or record attendance.
         </div>
       )}
+      <p className="rounded-lg border border-[#00f0ff]/20 bg-[#111d44] px-3 py-2 text-sm text-[#a6c4eb]">
+        <span className="font-semibold text-white">Pastor:</span> {meetingLeader?.name || meetingLeaderName}
+      </p>
       {error && <div className="rounded-lg border border-[#ff6b8b]/30 bg-[#38141e] p-3 text-sm text-[#ff9caf]" role="alert">{error}</div>}
       {notice && (
         <div className={`rounded-lg p-3 text-sm ${notice.isError ? 'bg-[#38141e] text-[#ff9caf]' : 'bg-[#0f382a] text-[#8fffc1]'}`} role={notice.isError ? 'alert' : 'status'}>
@@ -338,7 +347,7 @@ export const PPITManagement: React.FC = () => {
       <div className="grid gap-3 sm:grid-cols-3">
         <div className="rounded-xl border border-white/5 bg-[#111d44] p-4">
           <div className="flex items-center gap-2 text-xs text-[#a6c4eb]"><Users className="h-4 w-4 text-[#00f0ff]" /> Roster</div>
-          <p className="mt-2 text-2xl font-bold text-white">{members.length}</p>
+          <p className="mt-2 text-2xl font-bold text-white">{rosterMembers.length}</p>
         </div>
         <div className="rounded-xl border border-white/5 bg-[#111d44] p-4">
           <div className="flex items-center gap-2 text-xs text-[#a6c4eb]"><AlertTriangle className="h-4 w-4 text-amber-400" /> Red List</div>
@@ -351,7 +360,7 @@ export const PPITManagement: React.FC = () => {
       </div>
 
       <div className="flex flex-wrap gap-2">
-        {tabButton('roster', 'Roster', Users, members.length)}
+        {tabButton('roster', 'Roster', Users, rosterMembers.length)}
         {tabButton('attendance', 'Attendance', CalendarCheck)}
         {tabButton('red-list', 'Red List', AlertTriangle, redList.length + criticalAbsentees.length)}
       </div>
@@ -374,22 +383,42 @@ export const PPITManagement: React.FC = () => {
             </select>
           </div>
           {filteredMembers.length === 0 ? (
-            <p className="py-8 text-center text-sm text-[#a6c4eb]">{members.length ? 'No matching PPIT members.' : 'No PPIT members loaded. Run the PPIT migration in Supabase.'}</p>
+            <p className="py-8 text-center text-sm text-[#a6c4eb]">
+              {rosterMembers.length
+                ? 'No matching PPIT members.'
+                : members.length
+                  ? 'There are no regular PPIT members in the roster.'
+                  : 'No PPIT members loaded. Run the PPIT migration in Supabase.'}
+            </p>
           ) : (
-            <div className="divide-y divide-white/5">
-              {filteredMembers.map((member) => (
-                <div key={member.id} className="flex items-center justify-between gap-3 py-3">
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-white">{member.name}</p>
-                    <p className="mt-1 text-xs text-[#a6c4eb]">{member.branch} <span className="px-1">·</span> {member.contact || 'Contact not added'}</p>
-                  </div>
-                  {canManage && (
-                    <button type="button" onClick={() => openEditMember(member)} aria-label={`Edit ${member.name}`} className="rounded-lg bg-[#16285a] p-2 text-[#00f0ff] hover:bg-[#203a7a]">
-                      <Pencil className="h-4 w-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
+            <div className="overflow-x-auto rounded-lg">
+              <table className="w-full min-w-[420px] text-left text-sm">
+                <thead className="border-b border-white/10 bg-[#111d44] text-xs uppercase text-[#a6c4eb]">
+                  <tr>
+                    <th scope="col" className="px-3 py-3">Name</th>
+                    <th scope="col" className="px-3 py-3">Contact</th>
+                    <th scope="col" className="px-3 py-3">Branch</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {filteredMembers.map((member) => (
+                    <tr key={member.id} className="text-white">
+                      <td className="max-w-[220px] px-3 py-3 font-semibold">
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="truncate">{member.name}</span>
+                          {canManage && (
+                            <button type="button" onClick={() => openEditMember(member)} aria-label={`Edit ${member.name}`} className="shrink-0 rounded-lg bg-[#16285a] p-2 text-[#00f0ff] hover:bg-[#203a7a]">
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                      <td className="whitespace-nowrap px-3 py-3 text-[#a6c4eb]">{member.contact || '—'}</td>
+                      <td className="whitespace-nowrap px-3 py-3 text-[#a6c4eb]">{member.branch}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           )}
         </section>
@@ -409,13 +438,13 @@ export const PPITManagement: React.FC = () => {
           </div>
           {isFutureDate(sessionDate) && <p className="text-xs text-amber-300">Choose today or an earlier date to record attendance.</p>}
           <div className="divide-y divide-white/5">
-            {members.map((member) => (
-              <div key={member.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <div className="min-w-0">
+            {rosterMembers.map((member) => (
+              <div key={member.id} className="flex min-w-0 flex-nowrap items-center gap-2 py-3">
+                <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-semibold text-white">{member.name}</p>
                   <p className="mt-1 text-xs text-[#a6c4eb]">{member.branch}</p>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex shrink-0 items-center gap-1.5">
                   {(['Present', 'Absent'] as const).map((mark) => (
                     <button
                       key={mark}
@@ -426,7 +455,7 @@ export const PPITManagement: React.FC = () => {
                         setDraftMarks((previous) => ({ ...previous, [member.id]: mark }));
                         setHasUnsavedAttendance(true);
                       }}
-                      className={`rounded-lg px-3 py-2 text-xs font-bold disabled:cursor-default ${
+                      className={`whitespace-nowrap rounded-lg px-2.5 py-2 text-[11px] font-bold sm:px-3 sm:text-xs disabled:cursor-default ${
                         draftMarks[member.id] === mark
                           ? mark === 'Present' ? 'bg-[#0f382a] text-[#8fffc1]' : 'bg-[#38141e] text-[#ff9caf]'
                           : 'bg-[#111d44] text-[#a6c4eb]'
@@ -440,11 +469,11 @@ export const PPITManagement: React.FC = () => {
               </div>
             ))}
           </div>
-          {members.length === 0 && <p className="py-6 text-center text-sm text-[#a6c4eb]">The PPIT roster is empty.</p>}
+          {rosterMembers.length === 0 && <p className="py-6 text-center text-sm text-[#a6c4eb]">The PPIT roster is empty.</p>}
           {canManage && (
             <div className="flex items-center justify-between border-t border-white/5 pt-4">
               <span className="text-xs text-[#a6c4eb]">{hasUnsavedAttendance ? 'Unsaved attendance changes' : 'Changes save to Supabase'}</span>
-              <button type="button" onClick={() => void handleSaveAttendance()} disabled={isSaving || isFutureDate(sessionDate) || members.length === 0} className="flex items-center gap-2 rounded-lg bg-[#00f0ff] px-4 py-2.5 text-xs font-bold text-[#070c1e] disabled:opacity-50">
+              <button type="button" onClick={() => void handleSaveAttendance()} disabled={isSaving || isFutureDate(sessionDate) || rosterMembers.length === 0} className="flex items-center gap-2 rounded-lg bg-[#00f0ff] px-4 py-2.5 text-xs font-bold text-[#070c1e] disabled:opacity-50">
                 <Save className="h-4 w-4" /> {isSaving ? 'Saving…' : 'Save attendance'}
               </button>
             </div>

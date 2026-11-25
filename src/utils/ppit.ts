@@ -9,6 +9,12 @@ export interface PpitAbsenceStreak {
   missedDates: string[];
 }
 
+export const PPIT_MEETING_LEADER_ID = 'PPIT-001';
+
+export function getPpitRosterMembers<T extends { id: string }>(members: readonly T[]): T[] {
+  return members.filter((member) => member.id !== PPIT_MEETING_LEADER_ID);
+}
+
 export function getPpitAbsenceStreaks(
   records: readonly PpitAttendanceEntry[]
 ): Map<string, PpitAbsenceStreak> {

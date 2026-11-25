@@ -1,5 +1,5 @@
 import { validatePhone, formatPhone, validateAmount, validateCount, validateEmail, validateName } from './validation.ts';
-import { getPpitAbsenceStreaks } from './ppit.ts';
+import { getPpitAbsenceStreaks, getPpitRosterMembers } from './ppit.ts';
 
 const assert = (cond: boolean, msg: string) => { if (!cond) throw new Error(msg); };
 
@@ -43,5 +43,11 @@ const ppitStreaks = getPpitAbsenceStreaks([
 assert(ppitStreaks.get('one')?.count === 2, 'PPIT consecutive absences stop at the most recent presence');
 assert(ppitStreaks.get('two')?.count === 3, 'PPIT consecutive absences reach critical threshold');
 assert(ppitStreaks.get('three')?.count === 0, 'PPIT present member has no absence streak');
+
+const ppitRoster = getPpitRosterMembers([
+  { id: 'PPIT-001', name: 'Meeting leader' },
+  { id: 'PPIT-002', name: 'Regular member' }
+]);
+assert(ppitRoster.length === 1 && ppitRoster[0].id === 'PPIT-002', 'PPIT meeting leader is excluded from the member roster');
 
 console.log('All validation tests passed.');

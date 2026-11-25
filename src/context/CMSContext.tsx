@@ -1444,11 +1444,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       : null;
     const resolvedServiceName = serviceName || 'Sunday 1st Service — Communion';
     const resolvedCategory = serviceCategory || 'sunday';
-    if (!['sunday', 'midweek', 'vigil', 'ppit'].includes(resolvedCategory)) {
+    if (!['sunday', 'midweek', 'vigil'].includes(resolvedCategory)) {
       return { success: false, error: 'Select a valid service category.' };
-    }
-    if (resolvedCategory === 'ppit' && (currentUser.role !== 'shepherd' || !currentUser.isPpitShepherd)) {
-      return { success: false, error: 'Only the designated PPIT shepherd can record PPIT attendance.' };
     }
     const payload = recordsToSave.map((rec) => {
       const member = members.find((m) => m.id === rec.memberId);
@@ -1506,21 +1503,6 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           return { success: false, error: mapError(error).message };
         }
 
-        if (resolvedCategory === 'ppit') {
-          const presentCount = payload.filter((record) => record.status === 'Present').length;
-          const absentCount = payload.length - presentCount;
-          const { error: summaryError } = await (supabase.from('ppit_summary') as any).upsert({
-            session_date: recordsToSave[0]?.date,
-            present_count: presentCount,
-            absent_count: absentCount,
-            total_count: payload.length,
-            recorded_by: currentUser.name,
-            updated_at: new Date().toISOString()
-          }, { onConflict: 'session_date' });
-          if (summaryError) {
-            return { success: false, error: mapError(summaryError).message };
-          }
-        }
       } catch (err: any) {
         console.error('[Supabase batchSaveAttendance] Catch:', err);
         return { success: false, error: mapError(err).message };

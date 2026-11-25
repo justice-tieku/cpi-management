@@ -176,6 +176,25 @@ CREATE TABLE IF NOT EXISTS public.ppit_summary (
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
 );
 
+CREATE TABLE IF NOT EXISTS public.ppit_members (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    contact TEXT,
+    branch TEXT NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS public.ppit_attendance_records (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    ppit_member_id TEXT NOT NULL REFERENCES public.ppit_members(id),
+    session_date DATE NOT NULL,
+    status attendance_status NOT NULL,
+    recorded_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    recorded_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
+    UNIQUE (ppit_member_id, session_date)
+);
+
 -- Weekly Cell Fellowship Meetings & Cell Offerings
 CREATE TABLE IF NOT EXISTS public.cell_meetings (
     id TEXT PRIMARY KEY,
@@ -310,6 +329,9 @@ CREATE INDEX IF NOT EXISTS idx_members_cell ON public.members(cell_group);
 CREATE INDEX IF NOT EXISTS idx_members_dob ON public.members(date_of_birth);
 CREATE INDEX IF NOT EXISTS idx_attendance_date ON public.attendance_records(service_date);
 CREATE INDEX IF NOT EXISTS idx_attendance_member ON public.attendance_records(member_id);
+CREATE INDEX IF NOT EXISTS idx_ppit_members_branch ON public.ppit_members(branch);
+CREATE INDEX IF NOT EXISTS idx_ppit_attendance_date ON public.ppit_attendance_records(session_date);
+CREATE INDEX IF NOT EXISTS idx_ppit_attendance_member ON public.ppit_attendance_records(ppit_member_id);
 CREATE INDEX IF NOT EXISTS idx_meetings_shepherd ON public.cell_meetings(shepherd_id);
 CREATE INDEX IF NOT EXISTS idx_tasks_shepherd ON public.follow_up_tasks(shepherd_id);
 CREATE INDEX IF NOT EXISTS idx_messages_participants ON public.chat_messages(sender_id, recipient_id);
@@ -362,6 +384,8 @@ ALTER TABLE public.members ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.shepherd_assignments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.attendance_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ppit_summary ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ppit_members ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.ppit_attendance_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cell_meetings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.follow_up_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.visitors ENABLE ROW LEVEL SECURITY;
@@ -452,6 +476,42 @@ CREATE POLICY "PPIT summary writable by designated shepherd"
 ON public.ppit_summary FOR ALL TO anon, authenticated
 USING (public.is_ppit_shepherd())
 WITH CHECK (public.is_ppit_shepherd());
+
+DROP POLICY IF EXISTS "PPIT roster viewable by pastor and designated shepherd" ON public.ppit_members;
+CREATE POLICY "PPIT roster viewable by pastor and designated shepherd"
+ON public.ppit_members FOR SELECT TO authenticated
+USING (public.is_pastor() OR public.is_ppit_shepherd());
+
+DROP POLICY IF EXISTS "PPIT roster insertable by designated shepherd" ON public.ppit_members;
+CREATE POLICY "PPIT roster insertable by designated shepherd"
+ON public.ppit_members FOR INSERT TO authenticated
+WITH CHECK (public.is_ppit_shepherd());
+
+DROP POLICY IF EXISTS "PPIT roster updatable by designated shepherd" ON public.ppit_members;
+CREATE POLICY "PPIT roster updatable by designated shepherd"
+ON public.ppit_members FOR UPDATE TO authenticated
+USING (public.is_ppit_shepherd())
+WITH CHECK (public.is_ppit_shepherd());
+
+DROP POLICY IF EXISTS "PPIT attendance viewable by pastor and designated shepherd" ON public.ppit_attendance_records;
+CREATE POLICY "PPIT attendance viewable by pastor and designated shepherd"
+ON public.ppit_attendance_records FOR SELECT TO authenticated
+USING (public.is_pastor() OR public.is_ppit_shepherd());
+
+DROP POLICY IF EXISTS "PPIT attendance insertable by designated shepherd" ON public.ppit_attendance_records;
+CREATE POLICY "PPIT attendance insertable by designated shepherd"
+ON public.ppit_attendance_records FOR INSERT TO authenticated
+WITH CHECK (public.is_ppit_shepherd() AND recorded_by = auth.uid());
+
+DROP POLICY IF EXISTS "PPIT attendance updatable by designated shepherd" ON public.ppit_attendance_records;
+CREATE POLICY "PPIT attendance updatable by designated shepherd"
+ON public.ppit_attendance_records FOR UPDATE TO authenticated
+USING (public.is_ppit_shepherd())
+WITH CHECK (public.is_ppit_shepherd() AND recorded_by = auth.uid());
+
+REVOKE ALL ON public.ppit_members, public.ppit_attendance_records FROM anon, authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.ppit_members TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.ppit_attendance_records TO authenticated;
 
 -- Cell Meetings Policies
 DROP POLICY IF EXISTS "Cell meetings viewable by pastor or cell shepherd" ON public.cell_meetings;
@@ -642,3 +702,6 @@ DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.chat_messages; 
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.announcements; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.church_events; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
 DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.notifications; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.ppit_members; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.ppit_attendance_records; EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+DO $$ BEGIN ALTER PUBLICATION supabase_realtime ADD TABLE public.ppit_summary; EXCEPTION WHEN duplicate_object THEN NULL; END $$;

@@ -12,6 +12,7 @@ import {
   MessageSquare,
   Megaphone,
   CalendarDays,
+  ClipboardCheck,
   X
 } from 'lucide-react';
 import cpiLogo from '../../assets/cpi-logo.png';
@@ -29,7 +30,8 @@ export type ActiveScreen =
   | 'reports'
   | 'messages'
   | 'announcements'
-  | 'events';
+  | 'events'
+  | 'ppit';
 
 interface SidebarProps {
   activeScreen: ActiveScreen;
@@ -48,6 +50,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { currentUser, visibleMembers, visibleTasks, visibleMessages, redListMembers } = useCMS();
   const isPastor = currentUser.role === 'pastor';
+  const canAccessPpit = isPastor || (currentUser.role === 'shepherd' && currentUser.isPpitShepherd === true);
 
   // Simple, direct navigation names as requested
   const navItems = [
@@ -77,6 +80,12 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badge: redListMembers.length > 0 ? `Red: ${redListMembers.length}` : undefined,
       roles: ['pastor', 'shepherd']
     },
+    ...(canAccessPpit ? [{
+      id: 'ppit' as ActiveScreen,
+      label: 'PPIT',
+      icon: ClipboardCheck,
+      roles: ['pastor', 'shepherd']
+    }] : []),
     {
       id: 'first-timers' as ActiveScreen,
       label: 'First Timers',

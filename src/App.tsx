@@ -16,6 +16,7 @@ import { CellMeetingsView } from './components/cell/CellMeetingsView';
 import { MessagingCenter } from './components/communications/MessagingCenter';
 import { AnnouncementsBoard } from './components/communications/AnnouncementsBoard';
 import { ChurchEventsBoard } from './components/events/ChurchEventsBoard';
+import { PPITManagement } from './components/ppit/PPITManagement';
 import {
   getStoredSession,
   saveStoredSession,
@@ -187,6 +188,10 @@ const CMSApp: React.FC = () => {
     events: {
       title: 'Church Events',
       subtitle: 'Church calendar & activities'
+    },
+    ppit: {
+      title: 'PPIT Membership',
+      subtitle: 'Roster, attendance & Red List'
     }
   };
 
@@ -227,6 +232,7 @@ const CMSApp: React.FC = () => {
           {activeScreen === 'messages' && <MessagingCenter />}
           {activeScreen === 'announcements' && <AnnouncementsBoard />}
           {activeScreen === 'events' && <ChurchEventsBoard />}
+          {activeScreen === 'ppit' && (isPastor || (currentUser.role === 'shepherd' && currentUser.isPpitShepherd)) && <PPITManagement />}
         </main>
       </div>
 

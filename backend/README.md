@@ -14,6 +14,7 @@ backend/
 ├── client.ts               # Typed Supabase Client initialized from Vite environment variables
 ├── index.ts                # Unified module export entrypoint
 ├── README.md               # Backend documentation and setup guide
+├── ppit_migration.sql      # PPIT designation, roster, and attendance setup
 └── services/
     ├── memberService.ts    # Member CRUD, cell reassignment, and pastoral notes
     ├── attendanceService.ts# Sunday Communion, Wednesday Midweek, and Vigil recording
@@ -32,8 +33,9 @@ backend/
 Every table has **Row Level Security (RLS)** enabled with strict policies:
 
 1. **Pastor / Administrator:**
-   - Full church-wide read and write permissions on every table.
+   - Full church-wide access to the management data, with PPIT person-level records as a read-only exception.
    - Can view all care cells, member records, financial ledgers, and attendance rates.
+   - PPIT roster and person-level attendance are view-only; only the designated PPIT shepherd can change them.
    - Private 1-on-1 messaging channel with each individual shepherd.
 
 2. **Cell Shepherds:**
@@ -43,6 +45,7 @@ Every table has **Row Level Security (RLS)** enabled with strict policies:
    - **Cell Offerings:** Can only view and remit cell fellowship offerings for their cell. Cannot see tithes, building funds, or other cells.
    - **Messaging Privacy:** Shepherds can **ONLY** message the Pastor. Messages are strictly private — no shepherd can view another shepherd's conversations.
    - **Announcements & Events:** Read-only access to directives and upcoming events published by the pastor.
+   - The designated PPIT shepherd alone can view and manage the PPIT roster and its attendance; other shepherds cannot access it.
 
 ---
 
@@ -64,7 +67,12 @@ Every table has **Row Level Security (RLS)** enabled with strict policies:
 3. Paste and click **Run**.
 4. Initial care cells (Bethel, Eden, Moriah, Sharon, Hebron), initial shepherd profiles, canonical members, sample cell meetings, and flyers will be inserted.
 
-### Step 4: Connect to the Frontend
+### Step 4: Set up the PPIT roster
+1. In Supabase SQL Editor, run [backend/ppit_migration.sql](ppit_migration.sql).
+2. This creates the restricted PPIT roster/attendance tables and inserts the 49 names and branches. Contact fields start empty.
+3. When creating the PPIT shepherd account in the app, select **PPIT Shepherd**. Only one shepherd can be designated at a time.
+
+### Step 5: Connect to the Frontend
 Create or open the `.env` file in the root of the project:
 
 ```env

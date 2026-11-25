@@ -38,7 +38,7 @@ export const AttendanceRecording: React.FC = () => {
   // Navigation between Roster mark-up, Red List, and Critical Absentee List
   const [activeTab, setActiveTab] = useState<'roster' | 'red_list' | 'critical_absentee'>('roster');
 
-  const [serviceCategory, setServiceCategory] = useState<'sunday' | 'midweek' | 'vigil' | 'ppit'>('sunday');
+  const [serviceCategory, setServiceCategory] = useState<'sunday' | 'midweek' | 'vigil'>('sunday');
   const [serviceDate, setServiceDate] = useState(() => new Date().toISOString().split('T')[0]);
   const [serviceName, setServiceName] = useState('Sunday 1st Service — Communion');
   const [searchTerm, setSearchTerm] = useState('');
@@ -63,7 +63,7 @@ export const AttendanceRecording: React.FC = () => {
   });
 
   // Switch category updates serviceName & default day
-  const handleCategoryChange = (cat: 'sunday' | 'midweek' | 'vigil' | 'ppit') => {
+  const handleCategoryChange = (cat: 'sunday' | 'midweek' | 'vigil') => {
     setServiceCategory(cat);
     if (cat === 'sunday') {
       setServiceName('Sunday Service');
@@ -75,7 +75,7 @@ export const AttendanceRecording: React.FC = () => {
       setServiceName('Friday Prayer Meeting');
       setServiceDate(new Date().toISOString().split('T')[0]);
     } else {
-      setServiceName('PPIT');
+      setServiceName('Friday Prayer Meeting');
       setServiceDate(new Date().toISOString().split('T')[0]);
     }
   };
@@ -392,19 +392,6 @@ export const AttendanceRecording: React.FC = () => {
               >
                 Friday Night Prayer
               </button>
-              {currentUser.role === 'shepherd' && currentUser.isPpitShepherd && (
-                <button
-                  type="button"
-                  onClick={() => handleCategoryChange('ppit')}
-                  className={`px-3 py-1.5 font-medium transition-colors cursor-pointer ${
-                    serviceCategory === 'ppit'
-                      ? 'bg-[#a78bfa] text-[#070c1e] shadow-sm font-bold'
-                      : 'text-[#a6c4eb] hover:text-slate-200'
-                  }`}
-                >
-                  PPIT
-                </button>
-              )}
             </div>
           </div>
 

@@ -1,4 +1,5 @@
 import { validatePhone, formatPhone, validateAmount, validateCount, validateEmail, validateName } from './validation.ts';
+import { getPpitAbsenceStreaks } from './ppit.ts';
 
 const assert = (cond: boolean, msg: string) => { if (!cond) throw new Error(msg); };
 
@@ -29,5 +30,18 @@ assert(validateEmail('bad') !== null, 'invalid email');
 assert(validateName('John') === null, 'valid name');
 assert(validateName('J') !== null, 'short name');
 assert(validateName('John123') !== null, 'digits name');
+
+const ppitStreaks = getPpitAbsenceStreaks([
+  { ppit_member_id: 'one', session_date: '2026-03-01', status: 'Present' },
+  { ppit_member_id: 'one', session_date: '2026-03-08', status: 'Absent' },
+  { ppit_member_id: 'one', session_date: '2026-03-15', status: 'Absent' },
+  { ppit_member_id: 'two', session_date: '2026-03-01', status: 'Absent' },
+  { ppit_member_id: 'two', session_date: '2026-03-08', status: 'Absent' },
+  { ppit_member_id: 'two', session_date: '2026-03-15', status: 'Absent' },
+  { ppit_member_id: 'three', session_date: '2026-03-15', status: 'Present' }
+]);
+assert(ppitStreaks.get('one')?.count === 2, 'PPIT consecutive absences stop at the most recent presence');
+assert(ppitStreaks.get('two')?.count === 3, 'PPIT consecutive absences reach critical threshold');
+assert(ppitStreaks.get('three')?.count === 0, 'PPIT present member has no absence streak');
 
 console.log('All validation tests passed.');

@@ -104,6 +104,7 @@ export interface Database {
           is_ppit_shepherd?: boolean;
           updated_at?: string;
         };
+        Relationships: [];
       };
       care_cells: {
         Row: {
@@ -128,6 +129,7 @@ export interface Database {
           shepherd_id?: string | null;
           max_capacity?: number;
         };
+        Relationships: [];
       };
       members: {
         Row: {
@@ -189,6 +191,7 @@ export interface Database {
           confidential_notes?: string | null;
           updated_at?: string;
         };
+        Relationships: [];
       };
       attendance_records: {
         Row: {
@@ -228,6 +231,82 @@ export interface Database {
           recorded_at?: string;
           consecutive_absences?: number;
         };
+        Relationships: [];
+      };
+      ppit_members: {
+        Row: {
+          id: string;
+          name: string;
+          contact: string | null;
+          branch: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id: string;
+          name: string;
+          contact?: string | null;
+          branch: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          name?: string;
+          contact?: string | null;
+          branch?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      ppit_attendance_records: {
+        Row: {
+          id: string;
+          ppit_member_id: string;
+          session_date: string;
+          status: AttendanceStatus;
+          recorded_by: string | null;
+          recorded_at: string;
+        };
+        Insert: {
+          id?: string;
+          ppit_member_id: string;
+          session_date: string;
+          status: AttendanceStatus;
+          recorded_by: string;
+          recorded_at?: string;
+        };
+        Update: {
+          status?: AttendanceStatus;
+          recorded_by?: string;
+          recorded_at?: string;
+        };
+        Relationships: [];
+      };
+      ppit_summary: {
+        Row: {
+          session_date: string;
+          present_count: number;
+          absent_count: number;
+          total_count: number;
+          recorded_by: string;
+          updated_at: string;
+        };
+        Insert: {
+          session_date: string;
+          present_count?: number;
+          absent_count?: number;
+          total_count?: number;
+          recorded_by: string;
+          updated_at?: string;
+        };
+        Update: {
+          present_count?: number;
+          absent_count?: number;
+          total_count?: number;
+          recorded_by?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
       };
       cell_meetings: {
         Row: {
@@ -262,6 +341,7 @@ export interface Database {
           offering_amount?: number;
           notes?: string | null;
         };
+        Relationships: [];
       };
       follow_up_tasks: {
         Row: {
@@ -306,6 +386,7 @@ export interface Database {
           contact_attempts?: number;
           completed_at?: string | null;
         };
+        Relationships: [];
       };
       chat_messages: {
         Row: {
@@ -333,6 +414,7 @@ export interface Database {
         Update: {
           is_read?: boolean;
         };
+        Relationships: [];
       };
       announcements: {
         Row: {
@@ -361,6 +443,7 @@ export interface Database {
           priority?: PriorityLevel;
           target?: AnnouncementTarget;
         };
+        Relationships: [];
       };
       church_events: {
         Row: {
@@ -396,6 +479,7 @@ export interface Database {
           flyer_url?: string | null;
           category?: EventCategory;
         };
+        Relationships: [];
       };
       finance_records: {
         Row: {
@@ -428,6 +512,7 @@ export interface Database {
           status?: string;
           amount?: number;
         };
+        Relationships: [];
       };
       visitors: {
         Row: {
@@ -467,6 +552,7 @@ export interface Database {
           assigned_shepherd_id?: string | null;
           assigned_shepherd_name?: string | null;
         };
+        Relationships: [];
       };
       notifications: {
         Row: {
@@ -492,7 +578,10 @@ export interface Database {
         Update: {
           is_read?: boolean;
         };
+        Relationships: [];
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
   };
 }

@@ -442,6 +442,12 @@ app.post('/api/shepherds/create', async (req, res) => {
     if (actorError || actorProfile?.role !== 'pastor') {
       return res.status(403).json({ success: false, error: 'Only the pastor can create shepherd accounts.' });
     }
+    if (!process.env.SUPABASE_SECRET_KEY && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+      return res.status(503).json({
+        success: false,
+        error: 'Shepherd account creation requires SUPABASE_SECRET_KEY or SUPABASE_SERVICE_ROLE_KEY to be configured in Render.'
+      });
+    }
 
     const { name, email, phone, cellName, password, isPpitShepherd = false } = req.body;
 
@@ -464,8 +470,30 @@ app.post('/api/shepherds/create', async (req, res) => {
       });
     }
 
+    const { error: profileSchemaError } = await supabase
+      .from('profiles')
+      .select('is_ppit_shepherd')
+      .limit(0);
+    if (profileSchemaError) {
+      console.error('[CREATE SHEPHERD ERROR] Profiles schema check failed:', profileSchemaError);
+      if (profileSchemaError.code === '42703' || profileSchemaError.code === 'PGRST204') {
+        return res.status(503).json({
+          success: false,
+          error: 'The profiles table is missing the PPIT shepherd field. Run backend/ppit_migration.sql in Supabase, then retry.'
+        });
+      }
+      throw profileSchemaError;
+    }
+
     // 1. Create or update user in Supabase Auth
-    const { data: existingUsers } = await supabase.auth.admin.listUsers();
+    const { data: existingUsers, error: listUsersError } = await supabase.auth.admin.listUsers();
+    if (listUsersError) {
+      console.error('[CREATE SHEPHERD ERROR] Supabase Auth admin access failed:', listUsersError);
+      return res.status(503).json({
+        success: false,
+        error: 'Supabase Auth admin access failed. Verify the Render Supabase server-side key has admin permissions.'
+      });
+    }
     const cleanEmail = email.trim().toLowerCase();
     const existing = existingUsers?.users?.find(u => u.email?.toLowerCase() === cleanEmail);
 
@@ -479,7 +507,8 @@ app.post('/api/shepherds/create', async (req, res) => {
       userId = existing.id;
     } else {
       // Remove any pre-existing unlinked profile record with this email to prevent trigger constraint conflicts
-      await supabase.from('profiles').delete().eq('email', cleanEmail);
+      const { error: deleteProfileError } = await supabase.from('profiles').delete().eq('email', cleanEmail);
+      if (deleteProfileError) throw deleteProfileError;
 
       const { data: created, error } = await supabase.auth.admin.createUser({
         email: cleanEmail,
@@ -490,13 +519,15 @@ app.post('/api/shepherds/create', async (req, res) => {
 
       if (error) {
         // If user already exists in auth or conflicted, lookup again and update
-        const { data: retryList } = await supabase.auth.admin.listUsers();
+        const { data: retryList, error: retryListError } = await supabase.auth.admin.listUsers();
+        if (retryListError) throw retryListError;
         const retryUser = retryList?.users?.find(u => u.email?.toLowerCase() === cleanEmail);
         if (retryUser) {
-          await supabase.auth.admin.updateUserById(retryUser.id, {
+          const { error: retryUpdateError } = await supabase.auth.admin.updateUserById(retryUser.id, {
             password: shepherdPassword,
             user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone, is_ppit_shepherd: Boolean(isPpitShepherd) }
           });
+          if (retryUpdateError) throw retryUpdateError;
           userId = retryUser.id;
         } else {
           throw error;
@@ -508,7 +539,11 @@ app.post('/api/shepherds/create', async (req, res) => {
 
     // 2. Upsert to public.profiles
     if (isPpitShepherd) {
-      await supabase.from('profiles').update({ is_ppit_shepherd: false }).neq('id', userId);
+      const { error: clearPpitError } = await supabase
+        .from('profiles')
+        .update({ is_ppit_shepherd: false })
+        .neq('id', userId);
+      if (clearPpitError) throw clearPpitError;
     }
 
     const { data: profile, error: profErr } = await supabase.from('profiles').upsert({
@@ -525,11 +560,12 @@ app.post('/api/shepherds/create', async (req, res) => {
     if (profErr) throw profErr;
 
     // 3. Ensure care cell exists
-    await supabase.from('care_cells').upsert({
+    const { error: cellError } = await supabase.from('care_cells').upsert({
       name: cellName.trim(),
       shepherd_id: userId,
       max_capacity: 35
     }, { onConflict: 'name' });
+    if (cellError) throw cellError;
 
     res.status(201).json({
       success: true,
@@ -545,7 +581,10 @@ app.post('/api/shepherds/create', async (req, res) => {
     });
   } catch (err) {
     console.error('[CREATE SHEPHERD ERROR]', err);
-    res.status(500).json({ success: false, error: 'Request unsuccessful. Please try again.' });
+    const message = typeof err?.message === 'string'
+      ? err.message
+      : 'An unexpected error occurred while creating the shepherd account.';
+    res.status(500).json({ success: false, error: message });
   }
 });
 

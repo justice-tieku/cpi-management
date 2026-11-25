@@ -100,7 +100,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
       const res = await apiClient.createShepherd({
         name: newShepherdName.trim(),
         email: newShepherdEmail.trim(),
-        phone: formatPhone(newShepherdPhone.trim()),
+        phone: newShepherdPhone.trim() ? formatPhone(newShepherdPhone.trim()) : undefined,
         cellName: newShepherdCell.trim(),
         password: newShepherdPassword.trim(),
         isPpitShepherd
@@ -889,7 +889,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-[11px] font-semibold text-[#a6c4eb] block mb-1">
-                      Phone Number *
+                      Phone Number (optional)
                     </label>
                     <input
                       type="tel"

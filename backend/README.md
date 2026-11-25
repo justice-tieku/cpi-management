@@ -72,6 +72,9 @@ Every table has **Row Level Security (RLS)** enabled with strict policies:
 2. This creates the restricted PPIT roster/attendance tables and inserts the 49 names and branches. Contact fields start empty.
 3. When creating the PPIT shepherd account in the app, select **PPIT Shepherd**. Only one shepherd can be designated at a time.
 
+### Shepherd account creation (Render)
+The shepherd-creation API uses Supabase Auth administrative operations. In the Render service environment, set `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`) to a server-side Supabase key with admin permissions. Never put this key in a `VITE_` frontend variable. The PPIT migration must also be applied because the API writes `profiles.is_ppit_shepherd`.
+
 ### Step 5: Connect to the Frontend
 Create or open the `.env` file in the root of the project:
 

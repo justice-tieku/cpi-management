@@ -50,8 +50,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { currentUser, visibleMembers, visibleTasks, visibleMessages, redListMembers } = useCMS();
   const isPastor = currentUser.role === 'pastor';
-  const canAccessPpit = isPastor || (currentUser.role === 'shepherd' && currentUser.isPpitShepherd === true);
-
   // Simple, direct navigation names as requested
   const navItems = [
     {
@@ -80,7 +78,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       badge: redListMembers.length > 0 ? `Red: ${redListMembers.length}` : undefined,
       roles: ['pastor', 'shepherd']
     },
-    ...(canAccessPpit ? [{
+    ...(isPastor || currentUser.role === 'shepherd' ? [{
       id: 'ppit' as ActiveScreen,
       label: 'PPIT',
       icon: ClipboardCheck,

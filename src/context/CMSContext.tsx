@@ -46,6 +46,7 @@ interface CMSContextType {
   updateMember: (memberId: string, updates: Partial<Member>) => Promise<{ success: boolean; error?: string }>;
   deleteMember: (memberId: string) => Promise<{ success: boolean; error?: string }>;
   deleteShepherd: (shepherdId: string) => Promise<{ success: boolean; error?: string }>;
+  setPpitShepherdPermission: (shepherdId: string, granted: boolean) => Promise<{ success: boolean; error?: string }>;
   reassignMember: (memberId: string, newShepherdId: string, reason: string) => Promise<{ success: boolean; error?: string }>;
   shepherds: { id: string; name: string; cell: string; assignedCount: number; maxCapacity: number; isPpitShepherd: boolean }[];
   recordShepherdLogin: (name: string, cellName?: string) => { id: string; name: string; cell: string; email: string };
@@ -355,6 +356,14 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               isPpitShepherd: s.is_ppit_shepherd === true
             }))
           );
+          setCurrentUser((prev) => {
+            if (prev.role !== 'shepherd') return prev;
+            const myProfile = (dbShepherds as any[]).find((s) => s.id === prev.id);
+            if (!myProfile) return prev;
+            const nextPpit = myProfile.is_ppit_shepherd === true;
+            if (prev.isPpitShepherd === nextPpit) return prev;
+            return { ...prev, isPpitShepherd: nextPpit };
+          });
         }
 
         const { data: dbAuditLogs } = await supabase
@@ -1123,6 +1132,57 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return { success: true };
   };
 
+  const setPpitShepherdPermission = async (
+    shepherdId: string,
+    granted: boolean
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!isPastor) {
+      return { success: false, error: 'Only the Pastor can manage PPIT permissions.' };
+    }
+    const target = shepherds.find((s) => s.id === shepherdId);
+    if (!target) {
+      return { success: false, error: 'Shepherd not found.' };
+    }
+
+    if (isSupabaseConfigured) {
+      try {
+        if (granted) {
+          const { error: clearErr } = await (supabase.from('profiles') as any)
+            .update({ is_ppit_shepherd: false })
+            .neq('id', shepherdId);
+          if (clearErr) return { success: false, error: mapError(clearErr).message };
+        }
+
+        const { error: updateErr } = await (supabase.from('profiles') as any)
+          .update({ is_ppit_shepherd: granted })
+          .eq('id', shepherdId);
+        if (updateErr) return { success: false, error: mapError(updateErr).message };
+
+        await (supabase.from('audit_logs') as any).insert({
+          id: `LOG-${Date.now()}`,
+          actor_id: (await supabase.auth.getUser()).data.user?.id || null,
+          actor_name: currentUser.name,
+          actor_role: currentUser.role,
+          action: granted ? 'GRANT_PPIT_PERMISSION' : 'REVOKE_PPIT_PERMISSION',
+          entity_type: 'Shepherd',
+          entity_id: shepherdId,
+          details: `${granted ? 'Granted' : 'Revoked'} PPIT management permission for ${target.name}`
+        });
+      } catch (err: any) {
+        return { success: false, error: mapError(err).message };
+      }
+    }
+
+    setShepherds((prev) =>
+      prev.map((s) => ({
+        ...s,
+        isPpitShepherd: granted ? s.id === shepherdId : s.id === shepherdId ? false : s.isPpitShepherd
+      }))
+    );
+
+    return { success: true };
+  };
+
   const deleteMember = async (memberId: string): Promise<{ success: boolean; error?: string }> => {
     if (!memberId) return { success: false, error: 'Invalid member.' };
     const target = members.find((member) => member.id === memberId);
@@ -1873,6 +1933,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         updateMember,
         deleteMember,
         deleteShepherd,
+        setPpitShepherdPermission,
         reassignMember,
         shepherds,
         recordShepherdLogin,

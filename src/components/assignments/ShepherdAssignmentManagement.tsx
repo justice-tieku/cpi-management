@@ -38,6 +38,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
     followUpTasks,
     reassignMember,
     deleteShepherd,
+    setPpitShepherdPermission,
     assignmentsHistory
   } = useCMS();
 
@@ -54,6 +55,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
   const [reassignError, setReassignError] = useState<string | null>(null);
   const [successNotice, setSuccessNotice] = useState('');
   const [isDeletingShepherd, setIsDeletingShepherd] = useState(false);
+  const [isUpdatingPpit, setIsUpdatingPpit] = useState(false);
 
   // Invite / Create Shepherd Modal State
   const [showInviteModal, setShowInviteModal] = useState(false);
@@ -159,7 +161,8 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
     name: 'No shepherd yet',
     cell: '—',
     assignedCount: 0,
-    maxCapacity: 30
+    maxCapacity: 30,
+    isPpitShepherd: false
   };
   const activeMembers = members.filter(
     (m) => activeShepherd && (m.currentShepherdId === activeShepherd.id || m.cellGroup === activeShepherd.cell)
@@ -201,6 +204,25 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
       presentCount
     };
   });
+
+  const handleTogglePpitPermission = async () => {
+    if (!activeShepherd.id) return;
+    const nextGranted = !activeShepherd.isPpitShepherd;
+    setIsUpdatingPpit(true);
+    setReassignError(null);
+    const result = await setPpitShepherdPermission(activeShepherd.id, nextGranted);
+    setIsUpdatingPpit(false);
+    if (result.success) {
+      setSuccessNotice(
+        nextGranted
+          ? `PPIT permission granted to ${activeShepherd.name}.`
+          : `PPIT permission revoked from ${activeShepherd.name}.`
+      );
+      setTimeout(() => setSuccessNotice(''), 5000);
+    } else {
+      setReassignError(result.error || 'Unable to update PPIT permission.');
+    }
+  };
 
   const handleDeleteShepherd = async () => {
     if (!activeShepherd.id) return;
@@ -517,18 +539,42 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
             {/* Top Shepherd Identity Row */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-5">
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <h3 className="text-lg font-bold text-white">{activeShepherd.name}</h3>
                   <span className="text-[10px] font-mono text-[#00f0ff] bg-[#072e54] px-2 py-0.5">
                     {activeShepherd.id}
                   </span>
+                  {activeShepherd.isPpitShepherd && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[#070c1e] bg-[#00ff9d] px-2 py-0.5">
+                      PPIT Permitted
+                    </span>
+                  )}
                 </div>
                 <p className="text-xs text-slate-300 mt-0.5">
                   Shepherd Group: <strong className="text-white">{activeShepherd.cell}</strong>
                 </p>
               </div>
 
-              <div className="flex items-center gap-3">
+              <div className="flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleTogglePpitPermission}
+                  disabled={isUpdatingPpit || !activeShepherd.id}
+                  className={`px-3.5 py-2 text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors disabled:opacity-50 ${
+                    activeShepherd.isPpitShepherd
+                      ? 'bg-[#0f382a] hover:bg-[#154d3a] text-[#00ff9d]'
+                      : 'bg-[#0a122e] hover:bg-[#16285a] text-[#a6c4eb] border border-[#00f0ff]/30'
+                  }`}
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>
+                    {isUpdatingPpit
+                      ? 'Updating...'
+                      : activeShepherd.isPpitShepherd
+                        ? 'Revoke PPIT Permission'
+                        : 'Grant PPIT Permission'}
+                  </span>
+                </button>
                 <button
                   type="button"
                   onClick={handleDeleteShepherd}

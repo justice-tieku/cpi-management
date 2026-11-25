@@ -232,7 +232,7 @@ const CMSApp: React.FC = () => {
           {activeScreen === 'messages' && <MessagingCenter />}
           {activeScreen === 'announcements' && <AnnouncementsBoard />}
           {activeScreen === 'events' && <ChurchEventsBoard />}
-          {activeScreen === 'ppit' && (isPastor || (currentUser.role === 'shepherd' && currentUser.isPpitShepherd)) && <PPITManagement />}
+          {activeScreen === 'ppit' && (isPastor || currentUser.role === 'shepherd') && <PPITManagement />}
         </main>
       </div>
 

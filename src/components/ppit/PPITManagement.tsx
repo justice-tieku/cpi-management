@@ -3,10 +3,13 @@ import {
   AlertTriangle,
   CalendarCheck,
   Check,
+  ChevronRight,
+  Lock,
   Pencil,
   Plus,
   RefreshCw,
   Save,
+  Shield,
   ShieldCheck,
   Users,
   X
@@ -27,10 +30,18 @@ const today = () => new Date().toISOString().slice(0, 10);
 const meetingLeaderName = 'REV FESTUS AGYEI SARFO';
 
 export const PPITManagement: React.FC = () => {
-  const { currentUser } = useCMS();
+  const { currentUser, setCurrentUser, shepherds, setPpitShepherdPermission } = useCMS();
   const isPastor = currentUser.role === 'pastor';
-  const canManage = currentUser.role === 'shepherd' && currentUser.isPpitShepherd === true;
+  const isShepherd = currentUser.role === 'shepherd';
+  const [permissionVerified, setPermissionVerified] = useState(!isShepherd);
+  const canManage = isShepherd && permissionVerified && currentUser.isPpitShepherd === true;
   const canView = isPastor || canManage;
+  const isLockedShepherd = isShepherd && !canManage;
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferTargetId, setTransferTargetId] = useState('');
+  const [isTransferring, setIsTransferring] = useState(false);
+  const [transferError, setTransferError] = useState('');
+  const [transferSuccess, setTransferSuccess] = useState('');
   const [members, setMembers] = useState<PpitMember[]>([]);
   const [attendance, setAttendance] = useState<PpitAttendance[]>([]);
   const [activeTab, setActiveTab] = useState<PpitTab>('roster');
@@ -54,6 +65,39 @@ export const PPITManagement: React.FC = () => {
     () => getPpitRosterMembers(members),
     [members]
   );
+
+  const verifyPpitPermission = useCallback(async () => {
+    if (!isShepherd) return;
+    const { data, error: permissionError } = await supabase
+      .from('profiles')
+      .select('role,is_ppit_shepherd')
+      .eq('id', currentUser.id)
+      .maybeSingle();
+    if (permissionError) {
+      setError(mapError(permissionError).message);
+      if (currentUser.isPpitShepherd) {
+        setCurrentUser({ ...currentUser, isPpitShepherd: false });
+      }
+    } else {
+      const hasPermission = data?.role === 'shepherd' && data.is_ppit_shepherd === true;
+      if (currentUser.isPpitShepherd !== hasPermission) {
+        setCurrentUser({ ...currentUser, isPpitShepherd: hasPermission });
+      }
+    }
+    setPermissionVerified(true);
+  }, [currentUser, isShepherd, setCurrentUser]);
+
+  useEffect(() => {
+    if (!isShepherd) return;
+    setPermissionVerified(false);
+    void verifyPpitPermission();
+    window.addEventListener('focus', verifyPpitPermission);
+    const permissionCheck = window.setInterval(() => void verifyPpitPermission(), 30000);
+    return () => {
+      window.removeEventListener('focus', verifyPpitPermission);
+      window.clearInterval(permissionCheck);
+    };
+  }, [isShepherd, verifyPpitPermission]);
 
   const loadData = useCallback(async (force = false, showLoading = true) => {
     if (!isSupabaseConfigured) {
@@ -281,13 +325,69 @@ export const PPITManagement: React.FC = () => {
     }
   };
 
-  if (!canView) {
+  if (!canView && !isLockedShepherd) {
     return (
       <div className="p-6 text-sm text-[#ff6b8b]" role="alert">
         PPIT records are available only to the Pastor and designated PPIT shepherd.
       </div>
     );
   }
+
+  if (isLockedShepherd) {
+    return (
+      <section className="mx-auto max-w-2xl p-6 sm:p-10">
+        <div className="rounded-2xl border border-[#00f0ff]/20 bg-gradient-to-br from-[#111d44] to-[#0c152e] p-8 text-center shadow-xl">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#00f0ff]/10 text-[#00f0ff]">
+            <Lock className="h-7 w-7" aria-hidden="true" />
+          </div>
+          <h1 className="mt-5 text-xl font-bold text-white">PPIT access is restricted</h1>
+          <p className="mx-auto mt-2 max-w-md text-sm leading-6 text-[#a6c4eb]">
+            {error
+              ? 'We could not verify your PPIT access. Please try again or contact the Pastor.'
+              : permissionVerified
+              ? 'Your account has not been granted permission to manage PPIT. Ask the Pastor to grant access before using this page.'
+              : 'Checking your PPIT access…'}
+          </p>
+          {error && <p className="mt-4 rounded-lg bg-[#38141e] p-3 text-left text-sm text-[#ff9caf]" role="alert">{error}</p>}
+          <div className="mt-6 inline-flex items-center gap-2 rounded-lg border border-white/10 bg-[#070c1e]/60 px-4 py-2 text-xs font-semibold text-slate-400">
+            <Shield className="h-4 w-4" />
+            PPIT roster and attendance are hidden until access is granted
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  // ── Shepherd Transfer handlers (pastor only) ─────────────────────────────
+  const handleOpenTransfer = () => {
+    const currentPpit = shepherds.find((s) => s.isPpitShepherd);
+    const nextCandidate = shepherds.find((s) => !s.isPpitShepherd && s.id);
+    setTransferTargetId(nextCandidate?.id || currentPpit?.id || shepherds[0]?.id || '');
+    setTransferError('');
+    setTransferSuccess('');
+    setShowTransferModal(true);
+  };
+
+  const handleConfirmTransfer = async () => {
+    if (!transferTargetId) {
+      setTransferError('Please select a shepherd to transfer the PPIT role to.');
+      return;
+    }
+    setIsTransferring(true);
+    setTransferError('');
+    const result = await setPpitShepherdPermission(transferTargetId, true);
+    setIsTransferring(false);
+    if (result.success) {
+      const target = shepherds.find((s) => s.id === transferTargetId);
+      setTransferSuccess(`PPIT role transferred to ${target?.name || 'the selected shepherd'} successfully.`);
+      setTimeout(() => {
+        setShowTransferModal(false);
+        setTransferSuccess('');
+      }, 2500);
+    } else {
+      setTransferError(result.error || 'Unable to transfer PPIT role. Please try again.');
+    }
+  };
 
   const tabButton = (tab: PpitTab, label: string, icon: React.ElementType, count?: number) => {
     const Icon = icon;
@@ -313,14 +413,94 @@ export const PPITManagement: React.FC = () => {
         <div>
           <h1 className="text-xl font-bold text-white">PPIT Full Membership</h1>
           <p className="mt-1 text-xs text-[#a6c4eb]">
-            {isPastor ? 'Pastor view — read-only roster and attendance.' : 'Manage the PPIT roster and record attendance.'}
+            {isPastor ? 'Pastor view — review records and assign the PPIT shepherd.' : 'Manage the PPIT roster and record attendance.'}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          {isPastor && (
+            <button
+              type="button"
+              onClick={handleOpenTransfer}
+              disabled={shepherds.length === 0}
+              className="flex items-center gap-2 rounded-lg border border-[#00f0ff]/30 bg-[#111d44] px-3 py-2 text-xs font-semibold text-[#a6c4eb] transition hover:border-[#00f0ff] hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <Shield className="h-4 w-4 text-[#00f0ff]" />
+              Assign / transfer PPIT
+              <ChevronRight className="h-3.5 w-3.5" />
+            </button>
+          )}
           {canManage && activeTab === 'roster' && (
             <button type="button" onClick={openNewMember} className="flex items-center gap-2 rounded-lg bg-[#00f0ff] px-3 py-2 text-xs font-bold text-[#070c1e]">
               <Plus className="h-4 w-4" /> Add member
             </button>
+          )}
+          {showTransferModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 p-4">
+              <form
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleConfirmTransfer();
+                }}
+                className="w-full max-w-md space-y-5 rounded-2xl border border-white/10 bg-[#111d44] p-6 shadow-2xl"
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="ppit-transfer-title"
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div>
+                    <h2 id="ppit-transfer-title" className="text-lg font-bold text-white">Assign PPIT responsibility</h2>
+                    <p className="mt-1 text-sm text-[#a6c4eb]">Choose the shepherd who will manage the PPIT roster and attendance.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowTransferModal(false)}
+                    disabled={isTransferring}
+                    aria-label="Close dialog"
+                    className="rounded-lg p-2 text-[#a6c4eb] hover:bg-[#16285a] disabled:opacity-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </div>
+                <label htmlFor="ppit-transfer-shepherd" className="block text-xs font-semibold text-[#a6c4eb]">
+                  Shepherd
+                  <select
+                    id="ppit-transfer-shepherd"
+                    required
+                    value={transferTargetId}
+                    onChange={(event) => setTransferTargetId(event.target.value)}
+                    disabled={isTransferring || shepherds.length === 0}
+                    className="mt-2 w-full rounded-lg bg-[#070c1e] px-3 py-3 text-sm text-white disabled:opacity-50"
+                  >
+                    <option value="">Select a shepherd</option>
+                    {shepherds.map((shepherd) => (
+                      <option key={shepherd.id} value={shepherd.id}>
+                        {shepherd.name}{shepherd.isPpitShepherd ? ' — currently assigned' : ''}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {transferError && <p className="rounded-lg bg-[#38141e] p-3 text-sm text-[#ff9caf]" role="alert">{transferError}</p>}
+                {transferSuccess && <p className="rounded-lg bg-[#0f382a] p-3 text-sm text-[#8fffc1]" role="status">{transferSuccess}</p>}
+                {shepherds.length === 0 && <p className="text-sm text-amber-300">Create a shepherd account before assigning PPIT responsibility.</p>}
+                <div className="flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowTransferModal(false)}
+                    disabled={isTransferring}
+                    className="rounded-lg bg-[#16285a] px-4 py-2.5 text-xs font-semibold text-[#a6c4eb] disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isTransferring || !transferTargetId || shepherds.length === 0}
+                    className="rounded-lg bg-[#00f0ff] px-4 py-2.5 text-xs font-bold text-[#070c1e] disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isTransferring ? 'Updating…' : 'Confirm assignment'}
+                  </button>
+                </div>
+              </form>
+            </div>
           )}
           <button type="button" onClick={() => void loadData()} disabled={isLoading} className="flex items-center gap-2 rounded-lg bg-[#111d44] px-3 py-2 text-xs font-semibold text-[#a6c4eb] disabled:opacity-50">
             <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} /> Refresh
@@ -331,7 +511,7 @@ export const PPITManagement: React.FC = () => {
       {isPastor && (
         <div className="flex items-start gap-2 rounded-lg border border-[#00f0ff]/20 bg-[#111d44] p-3 text-xs text-[#a6c4eb]">
           <ShieldCheck className="h-4 w-4 shrink-0 text-[#00f0ff]" />
-          You can view PPIT records. Only the designated PPIT shepherd can edit the roster or record attendance.
+          You can view PPIT records and assign the shepherd responsible for managing this page.
         </div>
       )}
       <p className="rounded-lg border border-[#00f0ff]/20 bg-[#111d44] px-3 py-2 text-sm text-[#a6c4eb]">

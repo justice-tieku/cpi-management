@@ -581,10 +581,7 @@ app.post('/api/shepherds/create', async (req, res) => {
     });
   } catch (err) {
     console.error('[CREATE SHEPHERD ERROR]', err);
-    const message = typeof err?.message === 'string'
-      ? err.message
-      : 'An unexpected error occurred while creating the shepherd account.';
-    res.status(500).json({ success: false, error: message });
+    res.status(500).json({ success: false, error: 'Could not add user.' });
   }
 });
 

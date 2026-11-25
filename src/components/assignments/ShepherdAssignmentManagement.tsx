@@ -106,7 +106,10 @@ export const ShepherdAssignmentManagement: React.FC = () => {
         isPpitShepherd
       });
 
-      if (!res.success) throw new Error(res.error || 'Faied to create shepherd account.');
+      if (!res.success) {
+        setInviteError('Could not add user.');
+        return;
+      }
 
       setCreatedCredentials({
         name: newShepherdName.trim(),
@@ -116,8 +119,8 @@ export const ShepherdAssignmentManagement: React.FC = () => {
       });
 
       // Success is shown inside the modal via createdCredentials panel
-    } catch (err: any) {
-      setInviteError(err?.message || 'Could not create the shepherd account. Check the details and try again.');
+    } catch {
+      setInviteError('Could not add user.');
     } finally {
       setIsCreatingShepherd(false);
     }
@@ -919,7 +922,8 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                     Initial Private Password
                   </label>
                   <input
-                    type="text"
+                    type="password"
+                    autoComplete="new-password"
                     value={newShepherdPassword}
                     onChange={(e) => setNewShepherdPassword(e.target.value)}
                     placeholder="Enter a private password"

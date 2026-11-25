@@ -108,7 +108,8 @@ export const ShepherdAssignmentManagement: React.FC = () => {
 
       if (!res.success) {
         console.error('[Shepherd account creation failed]', res.error);
-        setInviteError('Could not add shepherd.');
+        const rawErr = typeof res.error === 'string' && res.error.trim() ? res.error : 'Could not add shepherd.';
+        setInviteError(rawErr.replace(/supabase/gi, 'database'));
         return;
       }
 
@@ -118,6 +119,13 @@ export const ShepherdAssignmentManagement: React.FC = () => {
         cell: newShepherdCell.trim(),
         password: newShepherdPassword.trim()
       });
+
+      setNewShepherdName('');
+      setNewShepherdEmail('');
+      setNewShepherdPhone('');
+      setNewShepherdCell('');
+      setNewShepherdPassword('');
+      setIsPpitShepherd(false);
 
       // Success is shown inside the modal via createdCredentials panel
     } catch (error) {

@@ -462,6 +462,14 @@ app.post('/api/shepherds/create', async (req, res) => {
     if (phone && !isValidPhone(phone)) {
       return res.status(400).json({ success: false, error: 'Enter a valid phone number.' });
     }
+    const normalizedPhone = phone && phone.trim()
+      ? (() => {
+          let digits = phone.replace(/[\s\-().]/g, '').replace(/\D/g, '');
+          if (digits.startsWith('233')) digits = digits.slice(3);
+          if (digits.startsWith('0')) digits = digits.slice(1);
+          return `+233${digits}`;
+        })()
+      : null;
     if (password?.trim() && password.trim().length < 6) {
       return res.status(400).json({ success: false, error: 'Password must be at least 6 characters.' });
     }
@@ -505,7 +513,7 @@ app.post('/api/shepherds/create', async (req, res) => {
     if (existing) {
       const { data: updated, error } = await supabase.auth.admin.updateUserById(existing.id, {
         password: shepherdPassword,
-        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone, is_ppit_shepherd: Boolean(isPpitShepherd) }
+        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone: normalizedPhone, is_ppit_shepherd: Boolean(isPpitShepherd) }
       });
       if (error) throw error;
       userId = existing.id;
@@ -518,7 +526,7 @@ app.post('/api/shepherds/create', async (req, res) => {
         email: cleanEmail,
         password: shepherdPassword,
         email_confirm: true,
-        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone, is_ppit_shepherd: Boolean(isPpitShepherd) }
+        user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone: normalizedPhone, is_ppit_shepherd: Boolean(isPpitShepherd) }
       });
 
       if (error) {
@@ -529,7 +537,7 @@ app.post('/api/shepherds/create', async (req, res) => {
         if (retryUser) {
           const { error: retryUpdateError } = await supabase.auth.admin.updateUserById(retryUser.id, {
             password: shepherdPassword,
-            user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone, is_ppit_shepherd: Boolean(isPpitShepherd) }
+            user_metadata: { name: name.trim(), role: 'shepherd', assigned_cell: cellName.trim(), phone: normalizedPhone, is_ppit_shepherd: Boolean(isPpitShepherd) }
           });
           if (retryUpdateError) throw retryUpdateError;
           userId = retryUser.id;
@@ -556,7 +564,7 @@ app.post('/api/shepherds/create', async (req, res) => {
       name: name.trim(),
       role: 'shepherd',
       assigned_cell: cellName.trim(),
-      phone: phone || null,
+      phone: normalizedPhone,
       is_ppit_shepherd: Boolean(isPpitShepherd),
       branch: 'Main Sanctuary — Central Cathedral'
     }).select().single();
@@ -585,6 +593,12 @@ app.post('/api/shepherds/create', async (req, res) => {
     });
   } catch (err) {
     console.error('[CREATE SHEPHERD ERROR]', err);
+    if (err?.message?.includes('Database error saving new user')) {
+      return res.status(503).json({
+        success: false,
+        error: 'Database account sync trigger needs an update. Please run backend/fix_shepherd_creation.sql in your SQL Editor and try again.'
+      });
+    }
     res.status(500).json({ success: false, error: 'Could not add shepherd.' });
   }
 });

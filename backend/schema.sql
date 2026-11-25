@@ -678,9 +678,9 @@ BEGIN
     VALUES (
         new.id,
         new.email,
-        COALESCE(new.raw_user_meta_data->>'name', split_part(new.email, '@', 1)),
-        COALESCE((new.raw_user_meta_data->>'role')::user_role, 'shepherd'),
-        new.raw_user_meta_data->>'assigned_cell'
+        COALESCE(NULLIF(new.raw_user_meta_data->>'name', ''), split_part(new.email, '@', 1)),
+        COALESCE(NULLIF(new.raw_user_meta_data->>'role', '')::public.user_role, 'shepherd'::public.user_role),
+        NULLIF(new.raw_user_meta_data->>'assigned_cell', '')
     )
     ON CONFLICT (email) DO UPDATE SET
         id = EXCLUDED.id,
@@ -690,7 +690,7 @@ BEGIN
         updated_at = timezone('utc', now());
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created

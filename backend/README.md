@@ -15,6 +15,7 @@ backend/
 ├── index.ts                # Unified module export entrypoint
 ├── README.md               # Backend documentation and setup guide
 ├── ppit_migration.sql      # PPIT designation, roster, and attendance setup
+├── gender_migration.sql    # Optional member and PPIT gender fields
 └── services/
     ├── memberService.ts    # Member CRUD, cell reassignment, and pastoral notes
     ├── attendanceService.ts# Sunday Communion, Wednesday Midweek, and Vigil recording
@@ -76,6 +77,8 @@ Every table has **Row Level Security (RLS)** enabled with strict policies:
 The shepherd-creation API uses Supabase Auth administrative operations. In the Render service environment, set `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`) to a server-side Supabase key with admin permissions. Never put this key in a `VITE_` frontend variable. The PPIT migration must also be applied because the API writes `profiles.is_ppit_shepherd`.
 
 ### Step 5: Connect to the Frontend
+For an existing database, run [backend/gender_migration.sql](gender_migration.sql) in Supabase SQL Editor to enable optional gender reporting. Existing people remain “Not specified” until their records are updated.
+
 Create or open the `.env` file in the root of the project:
 
 ```env

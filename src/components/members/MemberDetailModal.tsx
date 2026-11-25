@@ -66,6 +66,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
     email: '',
     city: '',
     dateOfBirth: '',
+    gender: '' as '' | 'Male' | 'Female',
     spiritualStage: 'New Convert' as SpiritualStage,
     status: 'Active' as MemberStatus,
     generalNotes: ''
@@ -80,6 +81,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
         email: member.email || '',
         city: member.city || '',
         dateOfBirth: member.dateOfBirth || '',
+        gender: member.gender || '',
         spiritualStage: member.spiritualStage || 'New Convert',
         status: member.status || 'Active',
         generalNotes: member.generalNotes || ''
@@ -145,6 +147,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
         email: form.email.trim(),
         city: form.city.trim(),
         dateOfBirth: normalizeDate(form.dateOfBirth) || undefined,
+        gender: form.gender || undefined,
         spiritualStage: form.spiritualStage,
         status: form.status,
         generalNotes: form.generalNotes.trim()
@@ -487,6 +490,19 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
                     onChange={(e) => setForm({ ...form, dateOfBirth: e.target.value })}
                     className="w-full px-3 py-2 bg-[#0a122e] text-white focus:outline-none"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">Gender (optional)</label>
+                  <select
+                    value={form.gender}
+                    onChange={(e) => setForm({ ...form, gender: e.target.value as '' | 'Male' | 'Female' })}
+                    className="w-full px-3 py-2 bg-[#0a122e] text-white focus:outline-none"
+                  >
+                    <option value="">Not specified</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                  </select>
                 </div>
 
                 <div>

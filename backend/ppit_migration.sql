@@ -71,9 +71,12 @@ CREATE TABLE IF NOT EXISTS public.ppit_members (
   name TEXT NOT NULL,
   contact TEXT,
   branch TEXT NOT NULL,
+  gender TEXT CHECK (gender IN ('Male', 'Female')),
   created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
 );
+ALTER TABLE public.ppit_members
+  ADD COLUMN IF NOT EXISTS gender TEXT CHECK (gender IN ('Male', 'Female'));
 
 CREATE TABLE IF NOT EXISTS public.ppit_attendance_records (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,

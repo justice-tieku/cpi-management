@@ -140,6 +140,7 @@ export interface Database {
           email: string | null;
           city: string;
           date_of_birth: string | null;
+          gender: 'Male' | 'Female' | null;
           status: MemberStatus;
           spiritual_stage: SpiritualStage;
           department: string | null;
@@ -161,6 +162,7 @@ export interface Database {
           email?: string | null;
           city?: string;
           date_of_birth?: string | null;
+          gender?: 'Male' | 'Female' | null;
           status?: MemberStatus;
           spiritual_stage?: SpiritualStage;
           department?: string | null;
@@ -181,6 +183,7 @@ export interface Database {
           email?: string | null;
           city?: string;
           date_of_birth?: string | null;
+          gender?: 'Male' | 'Female' | null;
           status?: MemberStatus;
           spiritual_stage?: SpiritualStage;
           department?: string | null;
@@ -239,6 +242,7 @@ export interface Database {
           name: string;
           contact: string | null;
           branch: string;
+          gender: 'Male' | 'Female' | null;
           created_at: string;
           updated_at: string;
         };
@@ -247,6 +251,7 @@ export interface Database {
           name: string;
           contact?: string | null;
           branch: string;
+          gender?: 'Male' | 'Female' | null;
           created_at?: string;
           updated_at?: string;
         };
@@ -254,6 +259,7 @@ export interface Database {
           name?: string;
           contact?: string | null;
           branch?: string;
+          gender?: 'Male' | 'Female' | null;
           updated_at?: string;
         };
         Relationships: [];

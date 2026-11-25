@@ -215,6 +215,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               email: m.email || '',
               city: m.city || 'Central District',
               dateOfBirth: m.date_of_birth || undefined,
+              gender: m.gender || undefined,
               status: m.status,
               spiritualStage: m.spiritual_stage,
               department: m.department || undefined,
@@ -893,6 +894,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           email: newMember.email || null,
           city: newMember.city || 'Central District',
           date_of_birth: normalizedDob,
+          gender: newMember.gender || null,
           status: newMember.status || 'New Member',
           spiritual_stage: newMember.spiritualStage || 'New Convert',
           department: newMember.department || null,
@@ -1060,6 +1062,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           dbPayload.date_of_birth = norm;
           updates.dateOfBirth = norm || undefined;
         }
+        if (updates.gender !== undefined) dbPayload.gender = updates.gender || null;
         if (updates.status !== undefined) dbPayload.status = updates.status;
         if (updates.spiritualStage !== undefined) dbPayload.spiritual_stage = updates.spiritualStage;
         if (updates.department !== undefined) dbPayload.department = updates.department || null;

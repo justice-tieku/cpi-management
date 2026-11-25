@@ -14,7 +14,8 @@ import {
   X,
   Phone,
   FileText,
-  Printer,
+  Download,
+  FileSpreadsheet,
   AlertTriangle,
   UserX,
   Activity,
@@ -24,6 +25,8 @@ import { useCMS } from '../../context/CMSContext';
 import { AttendanceGrowthCharts } from './AttendanceGrowthCharts';
 import { BirthdayWidget } from '../common/BirthdayWidget';
 import { supabase, isSupabaseConfigured } from '../../../backend/client';
+import { getGenderSummary } from '../../utils/gender';
+import { exportReportExcel, exportReportPdf, ReportExport } from '../../utils/reportExport';
 
 interface ExecutiveDashboardProps {
   onNavigate?: (screen: any) => void;
@@ -45,6 +48,7 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({ onNaviga
   } = useCMS();
 
   const [selectedShepherdId, setSelectedShepherdId] = useState<string | null>(null);
+  const [exportError, setExportError] = useState('');
   const [ppitSummary, setPpitSummary] = useState<{
     sessionDate: string;
     presentCount: number;
@@ -125,6 +129,41 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({ onNaviga
       icon: CalendarCheck
     }
   ];
+  const genderSummary = getGenderSummary(members);
+
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    setExportError('');
+    const report: ReportExport = {
+      title: 'Pastor Executive Dashboard',
+      filename: `CPI_Executive_Dashboard_${new Date().toISOString().slice(0, 10)}`,
+      columns: ['Section', 'Member or metric', 'Value', 'Details'],
+      rows: [
+        ...kpiData.map((item) => ['Dashboard metric', item.title, item.value, `${item.change} — ${item.subtext}`]),
+        ['Demographics', 'Male', genderSummary.male, genderSummary.maleShare],
+        ['Demographics', 'Female', genderSummary.female, genderSummary.femaleShare],
+        ['Demographics', 'Not specified', genderSummary.unspecified, 'Excluded from gender share'],
+        ['Demographics', 'Male-to-female ratio', genderSummary.maleToFemale, 'Based on recorded gender'],
+        ...redListMembers.map((record) => ['Red List', record.memberName, record.stageLabel, record.missedSundays.join(', ')]),
+        ...criticalAbsenteeMembers.map((record) => ['Critical absentee', record.memberName, record.stageLabel, record.missedSundays.join(', ')])
+      ],
+      summary: [
+        ['Prepared for', currentUser.name],
+        ['Total members', genderSummary.total],
+        ['Male', genderSummary.male],
+        ['Female', genderSummary.female],
+        ['Not specified', genderSummary.unspecified],
+        ['Male share of known gender', genderSummary.maleShare],
+        ['Female share of known gender', genderSummary.femaleShare],
+        ['Male-to-female ratio', genderSummary.maleToFemale]
+      ]
+    };
+    try {
+      if (format === 'excel') await exportReportExcel(report);
+      else await exportReportPdf(report);
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Unable to create the report.');
+    }
+  };
 
   // Selected shepherd dossier data for modal
   const selectedShepherd = shepherds.find((s) => s.id === selectedShepherdId);
@@ -177,13 +216,13 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({ onNaviga
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-3.5 py-2 bg-[#16285a] hover:bg-[#1c3066] text-[#cbd5e1] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
-          >
-            <Printer className="w-3.5 h-3.5 text-[#00f0ff]" />
-            <span>Print Report</span>
+          <button type="button" onClick={() => void handleExport('excel')} className="px-3.5 py-2 bg-white text-black text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Export Excel</span>
+          </button>
+          <button type="button" onClick={() => void handleExport('pdf')} className="px-3.5 py-2 bg-white text-black text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+            <Download className="w-3.5 h-3.5" />
+            <span>Download PDF</span>
           </button>
           <span className="px-3 py-1.5 bg-[#072e54] text-[#00f0ff] text-xs font-bold flex items-center gap-1.5">
             <span className="w-2 h-2 bg-[#00ff9d]" />
@@ -191,6 +230,8 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({ onNaviga
           </span>
         </div>
       </div>
+
+      {exportError && <p className="rounded-lg border border-red-300 bg-white p-3 text-sm text-black" role="alert">{exportError}</p>}
 
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">

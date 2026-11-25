@@ -121,6 +121,7 @@ CREATE TABLE IF NOT EXISTS public.members (
     email TEXT,
     city TEXT DEFAULT 'Central District',
     date_of_birth DATE,
+    gender TEXT CHECK (gender IN ('Male', 'Female')),
     status member_status NOT NULL DEFAULT 'Active',
     spiritual_stage spiritual_stage NOT NULL DEFAULT 'New Convert',
     department TEXT,
@@ -181,6 +182,7 @@ CREATE TABLE IF NOT EXISTS public.ppit_members (
     name TEXT NOT NULL,
     contact TEXT,
     branch TEXT NOT NULL,
+    gender TEXT CHECK (gender IN ('Male', 'Female')),
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
 );

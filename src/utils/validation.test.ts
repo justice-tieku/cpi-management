@@ -1,5 +1,6 @@
 import { validatePhone, formatPhone, validateAmount, validateCount, validateEmail, validateName } from './validation.ts';
 import { getPpitAbsenceStreaks, getPpitRosterMembers } from './ppit.ts';
+import { getGenderSummary } from './gender.ts';
 
 const assert = (cond: boolean, msg: string) => { if (!cond) throw new Error(msg); };
 
@@ -49,5 +50,18 @@ const ppitRoster = getPpitRosterMembers([
   { id: 'PPIT-002', name: 'Regular member' }
 ]);
 assert(ppitRoster.length === 1 && ppitRoster[0].id === 'PPIT-002', 'PPIT meeting leader is excluded from the member roster');
+
+const genderSummary = getGenderSummary([
+  { gender: 'Male' },
+  { gender: 'Female' },
+  { gender: 'Female' },
+  { gender: null },
+  {}
+]);
+assert(genderSummary.total === 5 && genderSummary.unspecified === 2, 'gender summary counts unspecified values in the total');
+assert(genderSummary.maleShare === '33.3%' && genderSummary.femaleShare === '66.7%', 'gender shares use only known gender values');
+assert(genderSummary.maleToFemale === '1:2', 'gender ratio is simplified');
+assert(getGenderSummary([{ gender: 'Female' }]).maleToFemale === '0:1', 'gender ratio supports zero males');
+assert(getGenderSummary([]).maleToFemale === 'N/A', 'empty gender ratio is not divided by zero');
 
 console.log('All validation tests passed.');

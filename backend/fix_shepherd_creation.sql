@@ -1,8 +1,3 @@
--- =============================================================================
--- CPI Church Management — Fix Shepherd Account Creation Trigger
--- Run this once in Supabase Dashboard -> SQL Editor.
--- Fixes: "Database error saving new user" when creating shepherd accounts.
--- =============================================================================
 
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$

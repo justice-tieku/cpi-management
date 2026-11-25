@@ -17,11 +17,14 @@ import {
   AlertCircle,
   AlertTriangle,
   Bell,
-  Printer
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
 import { BirthdayWidget } from '../common/BirthdayWidget';
 import { supabase, isSupabaseConfigured } from '../../../backend/client';
+import { getGenderSummary } from '../../utils/gender';
+import { exportReportExcel, exportReportPdf, ReportExport } from '../../utils/reportExport';
 
 interface ShepherdDashboardProps {
   onNavigate?: (screen: any) => void;
@@ -42,6 +45,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
   } = useCMS();
 
   const flockCount = visibleMembers.length;
+  const [exportError, setExportError] = useState('');
   const [ppitSummary, setPpitSummary] = useState<{
     sessionDate: string;
     presentCount: number;
@@ -146,6 +150,67 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
       tone: '#ff4069'
     }))
   ].slice(0, 5);
+  const genderSummary = getGenderSummary(visibleMembers);
+  const memberById = new Map(visibleMembers.map((member) => [member.id, member]));
+  const sundayRecords = visibleAttendance.filter((record) =>
+    record.serviceDate === latestSunday.latestDate &&
+    record.status !== 'Excused' &&
+    record.status !== 'Not Recorded' &&
+    (record.serviceName.toLowerCase().includes('sunday') || record.serviceName.toLowerCase().includes('communion'))
+  );
+  const presentGender = getGenderSummary(sundayRecords
+    .filter((record) => record.status === 'Present')
+    .map((record) => memberById.get(record.memberId))
+    .filter((member): member is (typeof visibleMembers)[number] => member !== undefined));
+  const absentGender = getGenderSummary(sundayRecords
+    .filter((record) => record.status === 'Absent')
+    .map((record) => memberById.get(record.memberId))
+    .filter((member): member is (typeof visibleMembers)[number] => member !== undefined));
+
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    setExportError('');
+    const report: ReportExport = {
+      title: 'Shepherd Dashboard Summary',
+      filename: `CPI_Shepherd_Summary_${new Date().toISOString().slice(0, 10)}`,
+      columns: ['Section', 'Member or metric', 'Value', 'Details'],
+      rows: [
+        ['Attendance', 'Sunday service date', latestSunday.latestDate || 'Not recorded', `${sundayPresent} present; ${sundayAbsent} absent`],
+        ['Attendance gender', 'Male-to-female ratio', genderSummary.maleToFemale, `${genderSummary.male} male (${genderSummary.maleShare}); ${genderSummary.female} female (${genderSummary.femaleShare})`],
+        ['Attendance gender', 'Present', `${presentGender.male} male; ${presentGender.female} female`, `${presentGender.unspecified} not specified`],
+        ['Attendance gender', 'Absent', `${absentGender.male} male; ${absentGender.female} female`, `${absentGender.unspecified} not specified`],
+        ...sundayRecords.map((record) => {
+          const member = memberById.get(record.memberId);
+          return ['Attendance roster', record.memberName, record.status, member?.gender || 'Not specified'];
+        }),
+        ...redListMembers.map((record) => ['Red List', record.memberName, record.stageLabel, record.missedSundays.join(', ')]),
+        ...criticalAbsenteeMembers.map((record) => ['Critical absentee', record.memberName, record.stageLabel, record.missedSundays.join(', ')]),
+        ...visibleCellMeetings.map((meeting) => ['Cell meeting', meeting.cellName, meeting.date, `${meeting.attendeesCount} attendees; GH₵ ${meeting.offeringAmount.toFixed(2)}`]),
+        ...openTasks.map((task) => ['Open follow-up', task.memberName, task.taskType, task.dueDate || task.nextAction || ''])
+      ],
+      summary: [
+        ['Shepherd', currentUser.name],
+        ['Care group', currentUser.assignedCell || ''],
+        ['Members', flockCount],
+        ['Male', genderSummary.male],
+        ['Female', genderSummary.female],
+        ['Not specified', genderSummary.unspecified],
+        ['Male share of known gender', genderSummary.maleShare],
+        ['Female share of known gender', genderSummary.femaleShare],
+        ['Male-to-female ratio', genderSummary.maleToFemale],
+        ['Sunday attendance rate', `${sundayRate}%`],
+        ['Cell meetings', totalCellMeetings],
+        ['Cell offering total', `GH₵ ${totalCellOfferings.toFixed(2)}`],
+        ['Open follow-ups', openTasks.length],
+        ['Active first-timers', activeVisitors]
+      ]
+    };
+    try {
+      if (format === 'excel') await exportReportExcel(report);
+      else await exportReportPdf(report);
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Unable to create the report.');
+    }
+  };
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
@@ -165,13 +230,13 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-3.5 py-2 bg-[#16285a] hover:bg-[#1c3066] text-[#cbd5e1] text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition-colors"
-          >
-            <Printer className="w-3.5 h-3.5 text-[#00f0ff]" />
-            <span>Print Summary</span>
+          <button type="button" onClick={() => void handleExport('excel')} className="px-3.5 py-2 bg-white text-black text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Export Excel</span>
+          </button>
+          <button type="button" onClick={() => void handleExport('pdf')} className="px-3.5 py-2 bg-white text-black text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+            <Download className="w-3.5 h-3.5" />
+            <span>Download PDF</span>
           </button>
           <span className="px-3 py-1.5 bg-[#043621] text-[#00ff9d] text-xs font-bold flex items-center gap-1.5">
             <span className="w-2 h-2 bg-[#00ff9d]" />
@@ -179,6 +244,8 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
           </span>
         </div>
       </div>
+
+      {exportError && <p className="rounded-lg border border-red-300 bg-white p-3 text-sm text-black" role="alert">{exportError}</p>}
 
       {/* Red List Alert Banner for Shepherd */}
       {redListMembers.length > 0 && (

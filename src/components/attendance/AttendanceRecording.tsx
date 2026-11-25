@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
   CalendarCheck,
+  Download,
   Search,
   Check,
   Save,
   Users,
   Filter,
   CheckCircle2,
-  Printer,
   FileSpreadsheet,
   AlertTriangle,
   UserX,
@@ -23,6 +23,8 @@ import { useCMS } from '../../context/CMSContext';
 import { DirectOutreachModal } from '../common/DirectOutreachModal';
 import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
 import { isFutureDate } from '../../utils/date';
+import { getGenderSummary } from '../../utils/gender';
+import { exportReportExcel, exportReportPdf, ReportExport } from '../../utils/reportExport';
 
 export const AttendanceRecording: React.FC = () => {
   const {
@@ -175,29 +177,6 @@ export const AttendanceRecording: React.FC = () => {
     setTimeout(() => setSaveNotice(null), 4000);
   };
 
-  const handleExportCSV = () => {
-    const headers = ['Member Name', 'Telephone', 'Shepherd Group', 'Shepherd', 'Spiritual Stage', 'Service Date', 'Service Session', 'Status'];
-    const rows = displayedMembers.map((m) => [
-      `"${m.firstName} ${m.lastName}"`,
-      `"${formatGhanaianPhone(m.phone)}"`,
-      `"${m.cellGroup}"`,
-      `"${m.currentShepherdName || ''}"`,
-      `"${m.spiritualStage}"`,
-      `"${serviceDate}"`,
-      `"${serviceName}"`,
-      `"${presentMembers[m.id] ? 'PRESENT' : 'ABSENT'}"`
-    ]);
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `CPI_Attendance_${serviceName.replace(/[^a-zA-Z0-9]/g, '_')}_${serviceDate}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   // Filter members according to search and (if pastor) cell filter
   const displayedMembers = visibleMembers.filter((m) => {
     const matchesSearch =
@@ -216,6 +195,9 @@ export const AttendanceRecording: React.FC = () => {
     (m) => presentMembers[m.id] !== true
   ).length;
   const rate = totalCount > 0 ? Math.round((presentCount / totalCount) * 100) : 0;
+  const genderSummary = getGenderSummary(displayedMembers);
+  const presentGender = getGenderSummary(displayedMembers.filter((member) => presentMembers[member.id]));
+  const absentGender = getGenderSummary(displayedMembers.filter((member) => !presentMembers[member.id]));
 
   // Cells list for Pastor filter
   const uniqueCells = Array.from(new Set(visibleMembers.map((m) => m.cellGroup)));
@@ -223,6 +205,89 @@ export const AttendanceRecording: React.FC = () => {
   // Helper map for member risk labels in main table
   const redListMap = new Map(redListMembers.map((r) => [r.memberId, r]));
   const criticalMap = new Map(criticalAbsenteeMembers.map((r) => [r.memberId, r]));
+  const visibleMemberMap = new Map(visibleMembers.map((member) => [member.id, member]));
+  const activeRiskReports = activeTab === 'red_list' ? redListMembers : criticalAbsenteeMembers;
+  const riskGenderSummary = getGenderSummary(activeRiskReports
+    .map((record) => visibleMemberMap.get(record.memberId))
+    .filter((member): member is (typeof visibleMembers)[number] => member !== undefined));
+
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    const reportMembers = activeTab === 'roster'
+      ? displayedMembers
+      : (activeTab === 'red_list' ? redListMembers : criticalAbsenteeMembers)
+        .map((record) => visibleMemberMap.get(record.memberId))
+        .filter((member): member is (typeof visibleMembers)[number] => member !== undefined);
+    const stats = getGenderSummary(reportMembers);
+    const summary: ReportExport['summary'] = [
+      ['Total members', stats.total],
+      ['Male', stats.male],
+      ['Female', stats.female],
+      ['Not specified', stats.unspecified],
+      ['Male share of known gender', stats.maleShare],
+      ['Female share of known gender', stats.femaleShare],
+      ['Male-to-female ratio', stats.maleToFemale],
+      ['Service date', serviceDate],
+      ['Service session', serviceName]
+    ];
+    let columns: string[];
+    let rows: ReportExport['rows'];
+    let title: string;
+    if (activeTab === 'roster') {
+      summary.push(
+        ['Present', reportMembers.filter((member) => presentMembers[member.id]).length],
+        ['Absent', reportMembers.filter((member) => !presentMembers[member.id]).length],
+        ['Attendance rate', `${rate}%`],
+        ['Male present', presentGender.male],
+        ['Female present', presentGender.female],
+        ['Male absent', absentGender.male],
+        ['Female absent', absentGender.female]
+      );
+      title = 'Church Service Attendance';
+      columns = ['Member ID', 'Member name', 'Telephone', 'Shepherd group', 'Shepherd', 'Spiritual stage', 'Gender', 'Service date', 'Service session', 'Status'];
+      rows = reportMembers.map((member) => [
+        member.id,
+        `${member.firstName} ${member.lastName}`,
+        formatGhanaianPhone(member.phone),
+        member.cellGroup,
+        member.currentShepherdName || '',
+        member.spiritualStage,
+        member.gender || 'Not specified',
+        serviceDate,
+        serviceName,
+        presentMembers[member.id] ? 'Present' : 'Absent'
+      ]);
+    } else {
+      const absenceReports = activeTab === 'red_list' ? redListMembers : criticalAbsenteeMembers;
+      title = activeTab === 'red_list' ? 'Church Attendance Red List' : 'Church Critical Absentees';
+      columns = ['Member name', 'Telephone', 'Shepherd group', 'Shepherd', 'Gender', 'Missed Sundays', 'Last attended', 'Category', 'Recommended action'];
+      rows = absenceReports.map((record) => [
+        record.memberName,
+        formatGhanaianPhone(record.phone),
+        record.cellGroup,
+        record.shepherdName,
+        visibleMemberMap.get(record.memberId)?.gender || 'Not specified',
+        record.missedSundays.join(', '),
+        record.lastAttendedSunday || 'Not recorded',
+        record.stageLabel,
+        record.actionPrompt
+      ]);
+      summary.push(['Members needing follow-up', reportMembers.length]);
+    }
+
+    try {
+      const report = {
+        title,
+        filename: `CPI_${title.replace(/[^a-zA-Z0-9]+/g, '_')}_${serviceDate}`,
+        columns,
+        rows,
+        summary
+      };
+      if (format === 'excel') await exportReportExcel(report);
+      else await exportReportPdf(report);
+    } catch (exportError) {
+      setSaveNotice({ message: `Export failed: ${exportError instanceof Error ? exportError.message : 'Unable to create the report.'}`, isError: true });
+    }
+  };
 
   return (
     <div className="p-6 md:p-8 space-y-6 max-w-7xl mx-auto">
@@ -238,23 +303,13 @@ export const AttendanceRecording: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={handleExportCSV}
-            className="px-3.5 py-2 bg-[#111d44] hover:bg-[#16285a] text-xs text-slate-300 flex items-center gap-2 cursor-pointer transition-colors"
-            title="Export attendance roster to CSV"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-[#00f0ff]" />
-            <span>Export CSV</span>
+          <button type="button" onClick={() => void handleExport('excel')} className="px-3.5 py-2 bg-white text-xs text-black flex items-center gap-2 cursor-pointer">
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Export Excel</span>
           </button>
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-3.5 py-2 bg-[#111d44] hover:bg-[#16285a] text-xs text-slate-300 flex items-center gap-2 cursor-pointer transition-colors"
-            title="Print attendance sheet"
-          >
-            <Printer className="w-3.5 h-3.5 text-[#00f0ff]" />
-            <span>Print Sheet</span>
+          <button type="button" onClick={() => void handleExport('pdf')} className="px-3.5 py-2 bg-white text-xs text-black flex items-center gap-2 cursor-pointer">
+            <Download className="w-3.5 h-3.5" />
+            <span>Download PDF</span>
           </button>
           <button
             onClick={handleSave}
@@ -328,11 +383,17 @@ export const AttendanceRecording: React.FC = () => {
         </button>
       </div>
 
+      {activeTab !== 'roster' && (
+        <div className="rounded-lg border border-white/10 bg-[#111d44] px-4 py-3 text-xs text-[#a6c4eb]">
+          Gender totals on this list: {riskGenderSummary.male} male ({riskGenderSummary.maleShare}), {riskGenderSummary.female} female ({riskGenderSummary.femaleShare}), {riskGenderSummary.unspecified} not specified. M:F {riskGenderSummary.maleToFemale}.
+        </div>
+      )}
+
       {/* TAB 1: SERVICE ROSTER MARK-UP */}
       {activeTab === 'roster' && (
         <div className="space-y-6">
           {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             <div className="p-4 bg-[#111d44]">
               <p className="text-[10px] text-[#a6c4eb] uppercase tracking-wider">Total Members</p>
               <p className="text-xl font-bold text-white mt-1">{totalCount}</p>
@@ -348,6 +409,11 @@ export const AttendanceRecording: React.FC = () => {
             <div className="p-4 bg-[#111d44]">
               <p className="text-[10px] text-[#00f0ff] uppercase tracking-wider">Attendance Rate</p>
               <p className="text-xl font-bold text-[#00f0ff] mt-1">{rate}%</p>
+            </div>
+            <div className="p-4 bg-[#111d44]">
+              <p className="text-[10px] text-[#a6c4eb] uppercase tracking-wider">Gender (M:F)</p>
+              <p className="text-sm font-bold text-white mt-1">{genderSummary.male} : {genderSummary.female} ({genderSummary.maleToFemale})</p>
+              <p className="mt-1 text-[10px] text-[#a6c4eb]">Present {presentGender.male}M/{presentGender.female}F · Absent {absentGender.male}M/{absentGender.female}F · {genderSummary.unspecified} unspecified</p>
             </div>
           </div>
 

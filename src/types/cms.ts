@@ -33,6 +33,8 @@ export type SpiritualStage =
   | 'Deacon / Deaconess'
   | 'Minister / Elder';
 
+export type Gender = 'Male' | 'Female';
+
 export interface Member {
   id: string;
   firstName: string;
@@ -42,6 +44,7 @@ export interface Member {
   email: string;
   city: string;
   dateOfBirth?: string;
+  gender?: Gender;
   status: MemberStatus;
   spiritualStage: SpiritualStage;
   department?: string;

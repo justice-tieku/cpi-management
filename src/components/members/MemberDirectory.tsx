@@ -7,8 +7,8 @@ import {
   Phone,
   Shield,
   FileSpreadsheet,
+  Download,
   HeartHandshake,
-  Printer,
   Eye,
   Edit3,
   MessageSquare
@@ -19,6 +19,8 @@ import { AddPersonModal } from '../common/AddPersonModal';
 import { MemberDetailModal } from './MemberDetailModal';
 import { DirectOutreachModal } from '../common/DirectOutreachModal';
 import { formatGhanaianPhone } from '../../utils/phone';
+import { getGenderSummary } from '../../utils/gender';
+import { exportReportExcel, exportReportPdf, ReportExport } from '../../utils/reportExport';
 
 export const MemberDirectory: React.FC = () => {
   const { visibleMembers, currentUser, redListMembers, criticalAbsenteeMembers } = useCMS();
@@ -26,6 +28,7 @@ export const MemberDirectory: React.FC = () => {
   const [selectedCell, setSelectedCell] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [exportError, setExportError] = useState('');
   const pageSize = 25;
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [outreachMember, setOutreachMember] = useState<{
@@ -46,31 +49,6 @@ export const MemberDirectory: React.FC = () => {
   const redMap = new Map(redListMembers.map((r) => [r.memberId, r]));
   const critMap = new Map(criticalAbsenteeMembers.map((r) => [r.memberId, r]));
 
-  const handleExportCSV = () => {
-    const headers = ['ID', 'First Name', 'Last Name', 'Phone', 'Email', 'City', 'Shepherd Group', 'Shepherd', 'Stage', 'Date of Birth'];
-    const rows = filteredMembers.map((m) => [
-      `"${m.id}"`,
-      `"${m.firstName}"`,
-      `"${m.lastName}"`,
-      `"${formatGhanaianPhone(m.phone)}"`,
-      `"${m.email || ''}"`,
-      `"${m.city || ''}"`,
-      `"${m.cellGroup || ''}"`,
-      `"${m.currentShepherdName || ''}"`,
-      `"${m.spiritualStage || ''}"`,
-      `"${m.dateOfBirth || ''}"`
-    ]);
-
-    const csvContent = 'data:text/csv;charset=utf-8,' + [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `CPI_Flock_Roster_${new Date().toISOString().split('T')[0]}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
   const filteredMembers = visibleMembers.filter((m) => {
     const matchesSearch =
       m.firstName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -83,6 +61,44 @@ export const MemberDirectory: React.FC = () => {
 
   const totalPages = Math.max(1, Math.ceil(filteredMembers.length / pageSize));
   const pagedMembers = filteredMembers.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  const genderSummary = getGenderSummary(filteredMembers);
+
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    setExportError('');
+    const report: ReportExport = {
+      title: currentUser.role === 'pastor' ? 'Church Membership Roster' : 'Assigned Flock Roster',
+      filename: `CPI_Flock_Roster_${new Date().toISOString().slice(0, 10)}`,
+      columns: ['ID', 'First name', 'Last name', 'Phone', 'Email', 'City', 'Shepherd group', 'Shepherd', 'Stage', 'Gender', 'Date of birth'],
+      rows: filteredMembers.map((member) => [
+        member.id,
+        member.firstName,
+        member.lastName,
+        formatGhanaianPhone(member.phone),
+        member.email || '',
+        member.city || '',
+        member.cellGroup || '',
+        member.currentShepherdName || '',
+        member.spiritualStage || '',
+        member.gender || 'Not specified',
+        member.dateOfBirth || ''
+      ]),
+      summary: [
+        ['Total members', genderSummary.total],
+        ['Male', genderSummary.male],
+        ['Female', genderSummary.female],
+        ['Not specified', genderSummary.unspecified],
+        ['Male share of known gender', genderSummary.maleShare],
+        ['Female share of known gender', genderSummary.femaleShare],
+        ['Male-to-female ratio', genderSummary.maleToFemale]
+      ]
+    };
+    try {
+      if (format === 'excel') await exportReportExcel(report);
+      else await exportReportPdf(report);
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Unable to create the report.');
+    }
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -104,23 +120,19 @@ export const MemberDirectory: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2.5">
-          <button
-            onClick={handleExportCSV}
-            className="px-3.5 py-2 bg-[#111d44] hover:bg-[#16285a] text-xs text-[#cbd5e1] flex items-center gap-2 cursor-pointer transition-colors shadow-md"
-            title="Download CSV spreadsheet of members"
-          >
-            <FileSpreadsheet className="w-3.5 h-3.5 text-[#00f0ff]" />
-            <span>Export CSV</span>
+          <button type="button" onClick={() => void handleExport('excel')} className="px-3.5 py-2 bg-white text-xs text-black flex items-center gap-2 cursor-pointer">
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Export Excel</span>
           </button>
-          <button
-            onClick={() => window.print()}
-            className="px-3.5 py-2 bg-[#111d44] hover:bg-[#16285a] text-xs text-[#cbd5e1] flex items-center gap-2 cursor-pointer transition-colors shadow-md"
-            title="Print member directory"
-          >
-            <Printer className="w-3.5 h-3.5 text-[#00f0ff]" />
-            <span>Print</span>
+          <button type="button" onClick={() => void handleExport('pdf')} className="px-3.5 py-2 bg-white text-xs text-black flex items-center gap-2 cursor-pointer">
+            <Download className="w-3.5 h-3.5" />
+            <span>Download PDF</span>
           </button>
         </div>
+      </div>
+      {exportError && <p className="rounded-lg border border-red-300 bg-white p-3 text-sm text-black" role="alert">{exportError}</p>}
+      <div className="rounded-lg border border-white/10 bg-[#111d44] px-4 py-3 text-xs text-[#a6c4eb]">
+        Gender totals for the current roster filter: {genderSummary.male} male ({genderSummary.maleShare}), {genderSummary.female} female ({genderSummary.femaleShare}), {genderSummary.unspecified} not specified. M:F {genderSummary.maleToFemale}.
       </div>
 
       {/* Search & Filter */}

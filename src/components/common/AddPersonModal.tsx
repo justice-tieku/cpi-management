@@ -20,6 +20,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
   const [registrationType, setRegistrationType] = useState<'member' | 'guest'>(defaultMode);
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
+  const [gender, setGender] = useState<'' | 'Male' | 'Female'>('');
   const [dob, setDob] = useState('');
   const [location, setLocation] = useState('');
   const [email, setEmail] = useState('');
@@ -114,6 +115,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
           email: email.trim(),
           city: location.trim() || 'Central',
           dateOfBirth: dob.trim() || undefined,
+          gender: gender || undefined,
           status: 'New Member',
           spiritualStage: 'New Convert',
           cellGroup: assignedShepherd ? assignedShepherd.cell : 'Central Cathedral',
@@ -148,6 +150,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
   const resetForm = () => {
     setFullName('');
     setPhone('');
+    setGender('');
     setDob('');
     setLocation('');
     setEmail('');
@@ -273,6 +276,16 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
           </div>
 
           {/* 3. Date of Birth / Visit Date */}
+          {!isGuest && (
+            <div>
+              <label className="text-[11px] font-semibold text-[#cbd5e1] block mb-1">Gender (optional)</label>
+              <select value={gender} onChange={(e) => setGender(e.target.value as '' | 'Male' | 'Female')} className="w-full px-3 py-2 bg-[#0a122e] text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00f0ff]">
+                <option value="">Not specified</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+            </div>
+          )}
           <div>
             <label className="text-[11px] font-semibold text-[#cbd5e1] block mb-1">
               {isGuest ? 'Visit Date' : 'Date of Birth'}

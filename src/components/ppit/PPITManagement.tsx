@@ -4,6 +4,8 @@ import {
   CalendarCheck,
   Check,
   ChevronRight,
+  Download,
+  FileSpreadsheet,
   Lock,
   Pencil,
   Plus,
@@ -20,6 +22,8 @@ import { useCMS } from '../../context/CMSContext';
 import { isFutureDate } from '../../utils/date';
 import { getPpitAbsenceStreaks, getPpitRosterMembers, PPIT_MEETING_LEADER_ID } from '../../utils/ppit';
 import { mapError } from '../../utils/errors';
+import { getGenderSummary } from '../../utils/gender';
+import { exportReportExcel, exportReportPdf, ReportExport } from '../../utils/reportExport';
 
 type PpitMember = Database['public']['Tables']['ppit_members']['Row'];
 type PpitAttendance = Database['public']['Tables']['ppit_attendance_records']['Row'];
@@ -56,7 +60,7 @@ export const PPITManagement: React.FC = () => {
   const [notice, setNotice] = useState<{ message: string; isError: boolean } | null>(null);
   const [editingMember, setEditingMember] = useState<PpitMember | null>(null);
   const [isCreatingMember, setIsCreatingMember] = useState(false);
-  const [memberForm, setMemberForm] = useState({ name: '', branch: '', contact: '' });
+  const [memberForm, setMemberForm] = useState({ name: '', branch: '', contact: '', gender: '' as '' | 'Male' | 'Female' });
   const [isSavingMember, setIsSavingMember] = useState(false);
   const attendanceDirtyRef = useRef(false);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -192,16 +196,94 @@ export const PPITManagement: React.FC = () => {
   const criticalAbsentees = rosterMembers
     .map((member) => ({ member, streak: absenceStreaks.get(member.id) }))
     .filter((item) => item.streak && item.streak.count >= 3);
+  const activeReportMembers = activeTab === 'roster'
+    ? filteredMembers
+    : activeTab === 'attendance'
+      ? rosterMembers
+      : [...redList, ...criticalAbsentees].map(({ member }) => member);
+  const genderSummary = getGenderSummary(activeReportMembers);
+
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    const redListItems = [...redList, ...criticalAbsentees];
+    const reportMembers = activeTab === 'roster'
+      ? filteredMembers
+      : activeTab === 'attendance'
+        ? rosterMembers
+        : redListItems.map(({ member }) => member);
+    const stats = getGenderSummary(reportMembers);
+    const summary: ReportExport['summary'] = [
+      ['Total members', stats.total],
+      ['Male', stats.male],
+      ['Female', stats.female],
+      ['Not specified', stats.unspecified],
+      ['Male share of known gender', stats.maleShare],
+      ['Female share of known gender', stats.femaleShare],
+      ['Male-to-female ratio', stats.maleToFemale]
+    ];
+    let columns: string[];
+    let rows: ReportExport['rows'];
+    let title: string;
+    if (activeTab === 'roster') {
+      title = 'PPIT Membership Roster';
+      columns = ['Name', 'Contact', 'Branch', 'Gender'];
+      rows = filteredMembers.map((member) => [member.name, member.contact || '', member.branch, member.gender || 'Not specified']);
+    } else if (activeTab === 'attendance') {
+      const sessionRecords = attendance.filter((record) => record.session_date === sessionDate);
+      const presentMembers = rosterMembers.filter((member) => draftMarks[member.id] === 'Present');
+      const absentMembers = rosterMembers.filter((member) => draftMarks[member.id] === 'Absent');
+      const presentGender = getGenderSummary(presentMembers);
+      const absentGender = getGenderSummary(absentMembers);
+      summary.push(
+        ['Session date', sessionDate],
+        ['Present', presentMembers.length],
+        ['Absent', absentMembers.length],
+        ['Not recorded', rosterMembers.length - presentMembers.length - absentMembers.length],
+        ['Male present', presentGender.male],
+        ['Female present', presentGender.female],
+        ['Male absent', absentGender.male],
+        ['Female absent', absentGender.female],
+        ['Recorded session entries', sessionRecords.length]
+      );
+      title = `PPIT Attendance — ${sessionDate}`;
+      columns = ['Name', 'Branch', 'Gender', 'Attendance status'];
+      rows = rosterMembers.map((member) => [member.name, member.branch, member.gender || 'Not specified', draftMarks[member.id] || 'Not recorded']);
+    } else {
+      title = 'PPIT Red List and Critical Absentees';
+      columns = ['Name', 'Branch', 'Gender', 'Risk category', 'Consecutive sessions missed', 'Missed session dates'];
+      rows = redListItems.map(({ member, streak }) => [
+        member.name,
+        member.branch,
+        member.gender || 'Not specified',
+        (streak?.count || 0) >= 3 ? 'Critical absentee' : 'Red List',
+        streak?.count || 0,
+        streak?.missedDates.join(', ') || ''
+      ]);
+    }
+
+    try {
+      const report = {
+        title,
+        filename: `CPI_${title.replace(/[^a-zA-Z0-9]+/g, '_')}_${today()}`,
+        columns,
+        rows,
+        summary
+      };
+      if (format === 'excel') await exportReportExcel(report);
+      else await exportReportPdf(report);
+    } catch (exportError) {
+      setNotice({ message: mapError(exportError).message, isError: true });
+    }
+  };
 
   const openNewMember = () => {
     setEditingMember(null);
-    setMemberForm({ name: '', branch: '', contact: '' });
+    setMemberForm({ name: '', branch: '', contact: '', gender: '' });
     setIsCreatingMember(true);
   };
 
   const openEditMember = (member: PpitMember) => {
     setEditingMember(member);
-    setMemberForm({ name: member.name, branch: member.branch, contact: member.contact || '' });
+    setMemberForm({ name: member.name, branch: member.branch, contact: member.contact || '', gender: member.gender || '' });
     setIsCreatingMember(true);
   };
 
@@ -221,6 +303,7 @@ export const PPITManagement: React.FC = () => {
         name,
         branch,
         contact: memberForm.contact.trim() || null,
+        gender: memberForm.gender || null,
         updated_at: new Date().toISOString()
       };
       const result = editingMember
@@ -417,6 +500,12 @@ export const PPITManagement: React.FC = () => {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
+          <button type="button" onClick={() => void handleExport('excel')} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black">
+            <FileSpreadsheet className="h-4 w-4" /> Excel
+          </button>
+          <button type="button" onClick={() => void handleExport('pdf')} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-xs font-semibold text-black">
+            <Download className="h-4 w-4" /> PDF
+          </button>
           {isPastor && (
             <button
               type="button"
@@ -524,7 +613,7 @@ export const PPITManagement: React.FC = () => {
         </div>
       )}
 
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <div className="rounded-xl border border-white/5 bg-[#111d44] p-4">
           <div className="flex items-center gap-2 text-xs text-[#a6c4eb]"><Users className="h-4 w-4 text-[#00f0ff]" /> Roster</div>
           <p className="mt-2 text-2xl font-bold text-white">{rosterMembers.length}</p>
@@ -536,6 +625,11 @@ export const PPITManagement: React.FC = () => {
         <div className="rounded-xl border border-white/5 bg-[#111d44] p-4">
           <div className="flex items-center gap-2 text-xs text-[#a6c4eb]"><AlertTriangle className="h-4 w-4 text-[#ff6b8b]" /> Critical (3+ missed)</div>
           <p className="mt-2 text-2xl font-bold text-[#ff8fa5]">{criticalAbsentees.length}</p>
+        </div>
+        <div className="rounded-xl border border-white/5 bg-[#111d44] p-4">
+          <div className="text-xs text-[#a6c4eb]">Gender breakdown</div>
+          <p className="mt-2 text-sm font-bold text-white">{genderSummary.male} male · {genderSummary.female} female</p>
+          <p className="mt-1 text-xs text-[#a6c4eb]">M:F {genderSummary.maleToFemale} · {genderSummary.maleShare}/{genderSummary.femaleShare} · {genderSummary.unspecified} not specified</p>
         </div>
       </div>
 
@@ -578,6 +672,7 @@ export const PPITManagement: React.FC = () => {
                     <th scope="col" className="px-3 py-3">Name</th>
                     <th scope="col" className="px-3 py-3">Contact</th>
                     <th scope="col" className="px-3 py-3">Branch</th>
+                    <th scope="col" className="px-3 py-3">Gender</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
@@ -595,6 +690,7 @@ export const PPITManagement: React.FC = () => {
                       </td>
                       <td className="whitespace-nowrap px-3 py-3 text-[#a6c4eb]">{member.contact || '—'}</td>
                       <td className="whitespace-nowrap px-3 py-3 text-[#a6c4eb]">{member.branch}</td>
+                      <td className="whitespace-nowrap px-3 py-3 text-[#a6c4eb]">{member.gender || 'Not specified'}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -708,6 +804,14 @@ export const PPITManagement: React.FC = () => {
             <label className="block text-xs text-[#a6c4eb]">
               Contact (optional)
               <input maxLength={120} value={memberForm.contact} onChange={(event) => setMemberForm((form) => ({ ...form, contact: event.target.value }))} placeholder="Add phone or email later" className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
+            </label>
+            <label className="block text-xs text-[#a6c4eb]">
+              Gender (optional)
+              <select value={memberForm.gender} onChange={(event) => setMemberForm((form) => ({ ...form, gender: event.target.value as '' | 'Male' | 'Female' }))} className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white">
+                <option value="">Not specified</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
             </label>
             <div className="flex justify-end gap-2 pt-2">
               <button type="button" onClick={() => setIsCreatingMember(false)} className="rounded-lg bg-[#16285a] px-4 py-2.5 text-xs font-semibold text-[#a6c4eb]">Cancel</button>

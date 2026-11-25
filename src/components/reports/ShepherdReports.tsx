@@ -5,9 +5,11 @@ import {
   Send,
   Plus,
   FileCheck,
-  Printer
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
+import { exportReportExcel, exportReportPdf, ReportExport } from '../../utils/reportExport';
 
 export const ShepherdReports: React.FC = () => {
   const { currentUser, shepherdReports, submitReport, approveReport } = useCMS();
@@ -16,12 +18,46 @@ export const ShepherdReports: React.FC = () => {
   const [submittedNotice, setSubmittedNotice] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusError, setStatusError] = useState<string | null>(null);
+  const [exportError, setExportError] = useState('');
 
   const isPastor = currentUser.role === 'pastor';
 
   const displayedReports = isPastor
     ? shepherdReports
     : shepherdReports.filter((r) => r.shepherdId === currentUser.id);
+
+  const handleExport = async (format: 'excel' | 'pdf') => {
+    setExportError('');
+    const report: ReportExport = {
+      title: 'Monthly Shepherd Reports',
+      filename: `CPI_Shepherd_Reports_${new Date().toISOString().slice(0, 10)}`,
+      columns: ['Shepherd', 'Care group', 'Period', 'Assigned members', 'Average attendance', 'Completed follow-ups', 'Overdue tasks', 'Status', 'Submitted', 'Narrative'],
+      rows: displayedReports.map((item) => [
+        item.shepherdName,
+        item.cellName,
+        item.period,
+        item.assignedSoulsCount,
+        `${item.attendanceAvgRate}%`,
+        item.followUpsCompleted,
+        item.overdueTasks,
+        item.status,
+        item.submittedAt || 'Pending',
+        item.narrative
+      ]),
+      summary: [
+        ['Reports', displayedReports.length],
+        ['Submitted', displayedReports.filter((item) => item.status === 'Submitted').length],
+        ['Approved', displayedReports.filter((item) => item.status === 'Approved').length],
+        ['Draft', displayedReports.filter((item) => item.status === 'Draft').length]
+      ]
+    };
+    try {
+      if (format === 'excel') await exportReportExcel(report);
+      else await exportReportPdf(report);
+    } catch (error) {
+      setExportError(error instanceof Error ? error.message : 'Unable to create the report.');
+    }
+  };
 
   const handleShepherdSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,13 +108,13 @@ export const ShepherdReports: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => window.print()}
-            className="px-3.5 py-2 bg-[#111d44] hover:bg-[#16285a] text-xs text-slate-300 flex items-center gap-2 cursor-pointer transition-colors"
-          >
-            <Printer className="w-3.5 h-3.5 text-[#00f0ff]" />
-            <span>Print Reports</span>
+          <button type="button" onClick={() => void handleExport('excel')} className="px-3.5 py-2 bg-white text-xs text-black flex items-center gap-2 cursor-pointer">
+            <FileSpreadsheet className="w-3.5 h-3.5" />
+            <span>Export Excel</span>
+          </button>
+          <button type="button" onClick={() => void handleExport('pdf')} className="px-3.5 py-2 bg-white text-xs text-black flex items-center gap-2 cursor-pointer">
+            <Download className="w-3.5 h-3.5" />
+            <span>Download PDF</span>
           </button>
 
           {!isPastor && (
@@ -92,6 +128,8 @@ export const ShepherdReports: React.FC = () => {
           )}
         </div>
       </div>
+
+      {exportError && <p className="rounded-lg border border-red-300 bg-white p-3 text-sm text-black" role="alert">{exportError}</p>}
 
       {submittedNotice && (
         <div className="p-3.5 bg-emerald-950/40 text-emerald-300 text-xs font-semibold flex items-center gap-2">

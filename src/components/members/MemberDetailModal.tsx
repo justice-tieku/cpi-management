@@ -220,7 +220,7 @@ export const MemberDetailModal: React.FC<MemberDetailModalProps> = ({
           <div className="flex items-center gap-2">
             {!isEditing && (
               <>
-                {currentUser.role === 'pastor' && (
+                {(currentUser.role === 'pastor' || currentUser.role === 'shepherd') && (
                   <button
                     type="button"
                     onClick={handleDelete}

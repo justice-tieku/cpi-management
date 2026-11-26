@@ -531,6 +531,7 @@ export interface Database {
           invited_by: string | null;
           assigned_shepherd_id: string | null;
           assigned_shepherd_name: string | null;
+          linked_member_id: string | null;
           journey_stage: VisitorStage;
           contact_attempts: number;
           notes: string | null;
@@ -546,6 +547,7 @@ export interface Database {
           invited_by?: string | null;
           assigned_shepherd_id?: string | null;
           assigned_shepherd_name?: string | null;
+          linked_member_id?: string | null;
           journey_stage?: VisitorStage;
           contact_attempts?: number;
           notes?: string | null;
@@ -557,6 +559,31 @@ export interface Database {
           notes?: string | null;
           assigned_shepherd_id?: string | null;
           assigned_shepherd_name?: string | null;
+          linked_member_id?: string | null;
+        };
+        Relationships: [];
+      };
+      visitor_attendance_records: {
+        Row: {
+          id: string;
+          visitor_id: string;
+          attendance_date: string;
+          status: 'Present' | 'Absent';
+          recorded_by: string | null;
+          recorded_at: string;
+        };
+        Insert: {
+          id?: string;
+          visitor_id: string;
+          attendance_date: string;
+          status: 'Present' | 'Absent';
+          recorded_by?: string | null;
+          recorded_at?: string;
+        };
+        Update: {
+          status?: 'Present' | 'Absent';
+          recorded_by?: string | null;
+          recorded_at?: string;
         };
         Relationships: [];
       };

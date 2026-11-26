@@ -179,6 +179,7 @@ export const AttendanceRecording: React.FC = () => {
 
   // Filter members according to search and (if pastor) cell filter
   const displayedMembers = visibleMembers.filter((m) => {
+    if (m.status === 'Pending Verification') return false;
     const matchesSearch =
       `${m.firstName} ${m.lastName}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
       m.phone.includes(searchTerm);

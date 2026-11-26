@@ -80,7 +80,7 @@ ALTER TABLE public.ppit_members
 
 CREATE TABLE IF NOT EXISTS public.ppit_attendance_records (
   id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
-  ppit_member_id TEXT NOT NULL REFERENCES public.ppit_members(id),
+  ppit_member_id TEXT NOT NULL REFERENCES public.ppit_members(id) ON DELETE CASCADE,
   session_date DATE NOT NULL,
   status public.attendance_status NOT NULL,
   recorded_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
@@ -111,6 +111,11 @@ ON public.ppit_members FOR UPDATE TO authenticated
 USING (public.is_ppit_shepherd())
 WITH CHECK (public.is_ppit_shepherd());
 
+DROP POLICY IF EXISTS "PPIT roster deletable by designated shepherd" ON public.ppit_members;
+CREATE POLICY "PPIT roster deletable by designated shepherd"
+ON public.ppit_members FOR DELETE TO authenticated
+USING (public.is_ppit_shepherd());
+
 DROP POLICY IF EXISTS "PPIT attendance viewable by pastor and designated shepherd" ON public.ppit_attendance_records;
 CREATE POLICY "PPIT attendance viewable by pastor and designated shepherd"
 ON public.ppit_attendance_records FOR SELECT TO authenticated
@@ -129,6 +134,7 @@ WITH CHECK (public.is_ppit_shepherd() AND recorded_by = auth.uid());
 
 REVOKE ALL ON public.ppit_members, public.ppit_attendance_records FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.ppit_members TO authenticated;
+GRANT DELETE ON public.ppit_members TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.ppit_attendance_records TO authenticated;
 
 INSERT INTO public.ppit_members (id, name, branch) VALUES

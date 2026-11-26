@@ -89,7 +89,9 @@ export const ExecutiveDashboard: React.FC<ExecutiveDashboardProps> = ({ onNaviga
   // Derive dynamic metrics
   const totalSouls = members.length;
   const sundayAttendanceCount = attendanceRecords.filter((a) => a.status === 'Present').length;
-  const activeVisitorsCount = visitors.length;
+  const activeVisitorsCount = visitors.filter((visitor) =>
+    visitor.journeyStage !== 'Closed' && visitor.journeyStage !== 'Joined/Registered'
+  ).length;
   const weeklyCellMeetingsCount = cellMeetings.length;
 
   const kpiData = [

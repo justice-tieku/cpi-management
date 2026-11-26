@@ -1,6 +1,7 @@
 import { validatePhone, formatPhone, validateAmount, validateCount, validateEmail, validateName } from './validation.ts';
-import { getPpitAbsenceStreaks, getPpitRosterMembers } from './ppit.ts';
+import { getPpitAbsenceStreaks, getPpitMobileError, getPpitRosterMembers } from './ppit.ts';
 import { getGenderSummary } from './gender.ts';
+import { getConsecutiveSundayAttendance, isSundayDate } from './visitorAttendance.ts';
 
 const assert = (cond: boolean, msg: string) => { if (!cond) throw new Error(msg); };
 
@@ -63,5 +64,26 @@ assert(genderSummary.maleShare === '33.3%' && genderSummary.femaleShare === '66.
 assert(genderSummary.maleToFemale === '1:2', 'gender ratio is simplified');
 assert(getGenderSummary([{ gender: 'Female' }]).maleToFemale === '0:1', 'gender ratio supports zero males');
 assert(getGenderSummary([]).maleToFemale === 'N/A', 'empty gender ratio is not divided by zero');
+
+const visitorAttendance = [
+  { id: '1', visitorId: 'v1', attendanceDate: '2026-03-01', status: 'Present' as const },
+  { id: '2', visitorId: 'v1', attendanceDate: '2026-03-08', status: 'Present' as const },
+  { id: '3', visitorId: 'v1', attendanceDate: '2026-03-15', status: 'Present' as const }
+];
+assert(isSundayDate('2026-03-15') && !isSundayDate('2026-03-16'), 'visitor attendance accepts Sundays only');
+assert(getConsecutiveSundayAttendance(visitorAttendance, 'v1') === 3, 'three consecutive Sunday attendances reach promotion threshold');
+assert(getConsecutiveSundayAttendance([
+  ...visitorAttendance,
+  { id: '4', visitorId: 'v1', attendanceDate: '2026-03-22', status: 'Absent' as const }
+], 'v1') === 0, 'an absence resets the visitor attendance streak');
+assert(getConsecutiveSundayAttendance([
+  visitorAttendance[0],
+  visitorAttendance[2]
+], 'v1') === 1, 'a skipped Sunday breaks the visitor attendance streak');
+
+const ppitContacts = [{ id: 'one', name: 'PPIT One', contact: '+233 24 123 4567' }];
+assert(getPpitMobileError('024 123 4567', ppitContacts) !== null, 'PPIT detects duplicate phone numbers in alternate formats');
+assert(getPpitMobileError('024123', ppitContacts) !== null, 'PPIT rejects a phone number that is too short');
+assert(getPpitMobileError('0241234567', ppitContacts, 'one') === null, 'PPIT allows a member to retain their own mobile number');
 
 console.log('All validation tests passed.');

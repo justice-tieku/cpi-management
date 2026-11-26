@@ -122,7 +122,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
 
   const openTasks = visibleTasks.filter((t) => t.status === 'Open');
   const activeVisitors = visibleVisitors.filter((visitor) =>
-    visitor.journeyStage !== 'Closed'
+    visitor.journeyStage !== 'Closed' && visitor.journeyStage !== 'Joined/Registered'
   ).length;
   const stageCounts = [
     'New Convert',
@@ -219,7 +219,7 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
         <div>
           <div className="flex items-center gap-2 text-[#00f0ff] text-xs font-bold uppercase tracking-wider">
             <Shield className="w-3.5 h-3.5" />
-            <span>Shepherd Operating Dashboard</span>
+            <span>Shepherd Dashboard</span>
           </div>
           <h2 className="text-xl font-bold text-white tracking-tight mt-0.5">
             Welcome, {currentUser.name}
@@ -238,10 +238,6 @@ export const ShepherdDashboard: React.FC<ShepherdDashboardProps> = ({ onNavigate
             <Download className="w-3.5 h-3.5" />
             <span>Download PDF</span>
           </button>
-          <span className="px-3 py-1.5 bg-[#043621] text-[#00ff9d] text-xs font-bold flex items-center gap-1.5">
-            <span className="w-2 h-2 bg-[#00ff9d]" />
-            Live Shepherd Console
-          </span>
         </div>
       </div>
 

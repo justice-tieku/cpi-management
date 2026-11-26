@@ -86,7 +86,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     }] : []),
     {
       id: 'first-timers' as ActiveScreen,
-      label: 'First Timers',
+      label: 'First Timers & Visitors',
       icon: UserPlus,
       roles: ['pastor', 'shepherd']
     },

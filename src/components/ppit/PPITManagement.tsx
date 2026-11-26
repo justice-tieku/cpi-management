@@ -13,6 +13,7 @@ import {
   Save,
   Shield,
   ShieldCheck,
+  Trash2,
   Users,
   X
 } from 'lucide-react';
@@ -20,10 +21,11 @@ import { supabase, isSupabaseConfigured } from '../../../backend/client';
 import { Database } from '../../../backend/types';
 import { useCMS } from '../../context/CMSContext';
 import { isFutureDate } from '../../utils/date';
-import { getPpitAbsenceStreaks, getPpitRosterMembers, PPIT_MEETING_LEADER_ID } from '../../utils/ppit';
+import { getPpitAbsenceStreaks, getPpitMobileError, getPpitRosterMembers, PPIT_MEETING_LEADER_ID } from '../../utils/ppit';
 import { mapError } from '../../utils/errors';
 import { getGenderSummary } from '../../utils/gender';
 import { exportReportExcel, exportReportPdf, ReportExport } from '../../utils/reportExport';
+import { formatPhone } from '../../utils/validation';
 
 type PpitMember = Database['public']['Tables']['ppit_members']['Row'];
 type PpitAttendance = Database['public']['Tables']['ppit_attendance_records']['Row'];
@@ -289,10 +291,20 @@ export const PPITManagement: React.FC = () => {
 
   const handleSaveMember = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!canManage) {
+      setNotice({ message: 'Only the assigned PPIT shepherd can manage this roster.', isError: true });
+      return;
+    }
     const name = memberForm.name.trim();
     const branch = memberForm.branch.trim();
     if (name.length < 2 || branch.length < 2) {
       setNotice({ message: 'Enter the member name and branch.', isError: true });
+      return;
+    }
+    const rawContact = memberForm.contact.trim();
+    const phoneError = getPpitMobileError(rawContact, members, editingMember?.id);
+    if (phoneError) {
+      setNotice({ message: phoneError, isError: true });
       return;
     }
 
@@ -302,7 +314,7 @@ export const PPITManagement: React.FC = () => {
       const payload = {
         name,
         branch,
-        contact: memberForm.contact.trim() || null,
+        contact: rawContact ? formatPhone(rawContact) : null,
         gender: memberForm.gender || null,
         updated_at: new Date().toISOString()
       };
@@ -324,6 +336,25 @@ export const PPITManagement: React.FC = () => {
       });
     } catch (saveError) {
       setNotice({ message: mapError(saveError).message, isError: true });
+    } finally {
+      setIsSavingMember(false);
+    }
+  };
+
+  const handleDeleteMember = async (member: PpitMember) => {
+    if (!canManage || !window.confirm(`Delete ${member.name} from the PPIT roster? This cannot be undone.`)) return;
+    setIsSavingMember(true);
+    setNotice(null);
+    try {
+      const { error: deleteError } = await supabase.from('ppit_members').delete().eq('id', member.id);
+      if (deleteError) throw deleteError;
+      const refreshed = await loadData(true);
+      setNotice({
+        message: refreshed ? `${member.name} was deleted.` : 'Member deleted, but the roster could not be refreshed. Use Refresh to reload it.',
+        isError: !refreshed
+      });
+    } catch (deleteError) {
+      setNotice({ message: mapError(deleteError).message, isError: true });
     } finally {
       setIsSavingMember(false);
     }
@@ -673,24 +704,26 @@ export const PPITManagement: React.FC = () => {
                     <th scope="col" className="px-3 py-3">Contact</th>
                     <th scope="col" className="px-3 py-3">Branch</th>
                     <th scope="col" className="px-3 py-3">Gender</th>
+                    {canManage && <th scope="col" className="px-3 py-3">Actions</th>}
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-white/5">
                   {filteredMembers.map((member) => (
                     <tr key={member.id} className="text-white">
-                      <td className="max-w-[220px] px-3 py-3 font-semibold">
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="truncate">{member.name}</span>
-                          {canManage && (
-                            <button type="button" onClick={() => openEditMember(member)} aria-label={`Edit ${member.name}`} className="shrink-0 rounded-lg bg-[#16285a] p-2 text-[#00f0ff] hover:bg-[#203a7a]">
-                              <Pencil className="h-4 w-4" />
-                            </button>
-                          )}
-                        </div>
-                      </td>
+                      <td className="max-w-[220px] px-3 py-3 font-semibold">{member.name}</td>
                       <td className="whitespace-nowrap px-3 py-3 text-[#a6c4eb]">{member.contact || '—'}</td>
                       <td className="whitespace-nowrap px-3 py-3 text-[#a6c4eb]">{member.branch}</td>
                       <td className="whitespace-nowrap px-3 py-3 text-[#a6c4eb]">{member.gender || 'Not specified'}</td>
+                      {canManage && (
+                        <td className="whitespace-nowrap px-3 py-3 text-right">
+                          <button type="button" onClick={() => openEditMember(member)} aria-label={`Edit ${member.name}`} className="mr-2 rounded-lg bg-[#16285a] p-2 text-[#00f0ff] hover:bg-[#203a7a]">
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button type="button" onClick={() => void handleDeleteMember(member)} disabled={isSavingMember} aria-label={`Delete ${member.name}`} className="rounded-lg bg-[#38141e] p-2 text-[#ff9caf] hover:bg-[#57202e] disabled:opacity-50">
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   ))}
                 </tbody>
@@ -802,8 +835,8 @@ export const PPITManagement: React.FC = () => {
               <input required minLength={2} maxLength={120} value={memberForm.branch} onChange={(event) => setMemberForm((form) => ({ ...form, branch: event.target.value }))} className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
             </label>
             <label className="block text-xs text-[#a6c4eb]">
-              Contact (optional)
-              <input maxLength={120} value={memberForm.contact} onChange={(event) => setMemberForm((form) => ({ ...form, contact: event.target.value }))} placeholder="Add phone or email later" className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
+              Mobile number (optional)
+              <input type="tel" inputMode="tel" maxLength={18} value={memberForm.contact} onChange={(event) => setMemberForm((form) => ({ ...form, contact: event.target.value }))} placeholder="e.g. 024 123 4567" className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
             </label>
             <label className="block text-xs text-[#a6c4eb]">
               Gender (optional)

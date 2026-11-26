@@ -22,7 +22,7 @@ import { formatGhanaianPhone } from '../../utils/phone';
 import { getGenderSummary } from '../../utils/gender';
 import { exportReportExcel, exportReportPdf, ReportExport } from '../../utils/reportExport';
 
-export const MemberDirectory: React.FC = () => {
+export const MemberDirectory: React.FC<{ onRegistered?: () => void }> = ({ onRegistered }) => {
   const { visibleMembers, currentUser, redListMembers, criticalAbsenteeMembers } = useCMS();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCell, setSelectedCell] = useState('all');
@@ -331,6 +331,7 @@ export const MemberDirectory: React.FC = () => {
       <AddPersonModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onRegistered={onRegistered}
       />
 
       {/* Direct Outreach Modal */}

@@ -189,7 +189,7 @@ CREATE TABLE IF NOT EXISTS public.ppit_members (
 
 CREATE TABLE IF NOT EXISTS public.ppit_attendance_records (
     id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
-    ppit_member_id TEXT NOT NULL REFERENCES public.ppit_members(id),
+    ppit_member_id TEXT NOT NULL REFERENCES public.ppit_members(id) ON DELETE CASCADE,
     session_date DATE NOT NULL,
     status attendance_status NOT NULL,
     recorded_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
@@ -240,10 +240,21 @@ CREATE TABLE IF NOT EXISTS public.visitors (
     invited_by TEXT,
     assigned_shepherd_id UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
     assigned_shepherd_name TEXT,
+    linked_member_id TEXT REFERENCES public.members(id) ON DELETE SET NULL,
     journey_stage visitor_stage NOT NULL DEFAULT 'First Visit',
     contact_attempts INTEGER NOT NULL DEFAULT 0,
     notes TEXT,
     created_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now())
+);
+
+CREATE TABLE IF NOT EXISTS public.visitor_attendance_records (
+    id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::TEXT,
+    visitor_id TEXT NOT NULL REFERENCES public.visitors(id) ON DELETE CASCADE,
+    attendance_date DATE NOT NULL,
+    status attendance_status NOT NULL CHECK (status IN ('Present', 'Absent')),
+    recorded_by UUID REFERENCES public.profiles(id) ON DELETE SET NULL,
+    recorded_at TIMESTAMPTZ NOT NULL DEFAULT timezone('utc', now()),
+    UNIQUE (visitor_id, attendance_date)
 );
 
 -- Finance & Stewardship Ledger
@@ -391,6 +402,7 @@ ALTER TABLE public.ppit_attendance_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.cell_meetings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.follow_up_tasks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.visitors ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.visitor_attendance_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.finance_records ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.chat_messages ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.announcements ENABLE ROW LEVEL SECURITY;
@@ -440,9 +452,14 @@ USING (
 );
 
 DROP POLICY IF EXISTS "Members deletable by pastor only" ON public.members;
-CREATE POLICY "Members deletable by pastor only"
+DROP POLICY IF EXISTS "Members deletable by pastor or cell shepherd" ON public.members;
+CREATE POLICY "Members deletable by pastor or cell shepherd"
 ON public.members FOR DELETE TO anon, authenticated
-USING (public.is_pastor());
+USING (
+    public.is_pastor() OR
+    current_shepherd_id = auth.uid() OR
+    cell_group = public.get_assigned_cell()
+);
 
 -- Attendance Policies
 DROP POLICY IF EXISTS "Attendance viewable by pastor or cell shepherd" ON public.attendance_records;
@@ -495,6 +512,11 @@ ON public.ppit_members FOR UPDATE TO authenticated
 USING (public.is_ppit_shepherd())
 WITH CHECK (public.is_ppit_shepherd());
 
+DROP POLICY IF EXISTS "PPIT roster deletable by designated shepherd" ON public.ppit_members;
+CREATE POLICY "PPIT roster deletable by designated shepherd"
+ON public.ppit_members FOR DELETE TO authenticated
+USING (public.is_ppit_shepherd());
+
 DROP POLICY IF EXISTS "PPIT attendance viewable by pastor and designated shepherd" ON public.ppit_attendance_records;
 CREATE POLICY "PPIT attendance viewable by pastor and designated shepherd"
 ON public.ppit_attendance_records FOR SELECT TO authenticated
@@ -513,7 +535,9 @@ WITH CHECK (public.is_ppit_shepherd() AND recorded_by = auth.uid());
 
 REVOKE ALL ON public.ppit_members, public.ppit_attendance_records FROM anon, authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.ppit_members TO authenticated;
+GRANT DELETE ON public.ppit_members TO authenticated;
 GRANT SELECT, INSERT, UPDATE ON public.ppit_attendance_records TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.visitor_attendance_records TO authenticated;
 
 -- Cell Meetings Policies
 DROP POLICY IF EXISTS "Cell meetings viewable by pastor or cell shepherd" ON public.cell_meetings;
@@ -580,6 +604,32 @@ ON public.visitors FOR ALL TO anon, authenticated
 USING (
     public.is_pastor() OR
     assigned_shepherd_id = auth.uid()
+);
+
+DROP POLICY IF EXISTS "Visitor attendance viewable by pastor or assigned shepherd" ON public.visitor_attendance_records;
+CREATE POLICY "Visitor attendance viewable by pastor or assigned shepherd"
+ON public.visitor_attendance_records FOR SELECT TO anon, authenticated
+USING (
+    public.is_pastor() OR EXISTS (
+        SELECT 1 FROM public.visitors v
+        WHERE v.id = visitor_id AND v.assigned_shepherd_id = auth.uid()
+    )
+);
+
+DROP POLICY IF EXISTS "Visitor attendance manageable by assigned shepherd or pastor" ON public.visitor_attendance_records;
+CREATE POLICY "Visitor attendance manageable by assigned shepherd or pastor"
+ON public.visitor_attendance_records FOR ALL TO anon, authenticated
+USING (
+    public.is_pastor() OR EXISTS (
+        SELECT 1 FROM public.visitors v
+        WHERE v.id = visitor_id AND v.assigned_shepherd_id = auth.uid()
+    )
+)
+WITH CHECK (
+    public.is_pastor() OR EXISTS (
+        SELECT 1 FROM public.visitors v
+        WHERE v.id = visitor_id AND v.assigned_shepherd_id = auth.uid()
+    )
 );
 
 -- Finance Policies (Pastor sees all; Shepherd sees ONLY cell fellowship offerings for their cell)

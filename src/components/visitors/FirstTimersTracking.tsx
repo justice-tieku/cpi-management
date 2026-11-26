@@ -4,6 +4,7 @@ import {
   Phone,
   Mail,
   Calendar,
+  Check,
   CheckCircle2,
   Clock,
   ArrowRight,
@@ -14,16 +15,18 @@ import {
   Sparkles
 } from 'lucide-react';
 import { useCMS } from '../../context/CMSContext';
-import { VisitorJourney, VisitorRecord } from '../../types/cms';
+import { VisitorAttendanceRecord, VisitorJourney, VisitorRecord } from '../../types/cms';
 import { AddPersonModal } from '../common/AddPersonModal';
 import { DirectOutreachModal } from '../common/DirectOutreachModal';
 import { formatGhanaianPhone, getCleanDialPhone } from '../../utils/phone';
+import { getConsecutiveSundayAttendance, getRecentSunday, isSundayDate } from '../../utils/visitorAttendance';
 
 export const FirstTimersTracking: React.FC = () => {
-  const { visibleVisitors, shepherds, currentUser } = useCMS();
-  const isPastor = currentUser.role === 'pastor';
+  const { visibleVisitors, visitorAttendanceRecords, recordVisitorAttendance } = useCMS();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStage, setFilterStage] = useState('all');
+  const [attendanceDate, setAttendanceDate] = useState(getRecentSunday);
+  const [savingVisitorId, setSavingVisitorId] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
   const [outreachGuest, setOutreachGuest] = useState<{
@@ -79,7 +82,25 @@ export const FirstTimersTracking: React.FC = () => {
     setTimeout(() => setFeedback(null), 2500);
   };
 
+  const handleVisitorAttendance = async (visitor: VisitorRecord, status: 'Present' | 'Absent') => {
+    setSavingVisitorId(visitor.id);
+    setFeedback(null);
+    const result = await recordVisitorAttendance(visitor.id, attendanceDate, status);
+    setSavingVisitorId('');
+    if (!result.success) {
+      setFeedback(result.error || 'Unable to save attendance.');
+      return;
+    }
+    setFeedback(status === 'Present' && getConsecutiveSundayAttendance([
+      ...visitorAttendanceRecords.filter((record) => !(record.visitorId === visitor.id && record.attendanceDate === attendanceDate)),
+      { id: '', visitorId: visitor.id, attendanceDate, status }
+    ], visitor.id) >= 3
+      ? `${visitor.name} has been moved to the church attendance list.`
+      : `${visitor.name} marked ${status.toLowerCase()} for ${attendanceDate}.`);
+  };
+
   const filteredVisitors = visitorsList.filter((v) => {
+    if (v.journeyStage === 'Joined/Registered') return false;
     const matchesSearch =
       v.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       v.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -94,10 +115,10 @@ export const FirstTimersTracking: React.FC = () => {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold text-white tracking-tight">
-            First-Timer &amp; Visitor Ministry
+            First Timers &amp; Visitors
           </h2>
           <p className="text-xs text-[#a6c4eb] mt-0.5">
-            Guest welcoming &amp; shepherd follow-up
+            Record visitors and follow up with them
           </p>
         </div>
 
@@ -106,7 +127,7 @@ export const FirstTimersTracking: React.FC = () => {
           className="px-4 py-2 bg-[#00f0ff] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-semibold shadow-sm flex items-center gap-2 cursor-pointer transition-colors"
         >
           <UserPlus className="w-3.5 h-3.5" />
-          <span>Register New Guest</span>
+          <span>Add Visitor</span>
         </button>
       </div>
 
@@ -117,10 +138,25 @@ export const FirstTimersTracking: React.FC = () => {
         </div>
       )}
 
+      <div className="flex flex-wrap items-end justify-between gap-3 rounded-xl border border-white/10 bg-[#111d44] p-4">
+        <div>
+          <label htmlFor="visitor-attendance-date" className="mb-1 block text-xs font-semibold text-[#a6c4eb]">Sunday attendance date</label>
+          <input
+            id="visitor-attendance-date"
+            type="date"
+            value={attendanceDate}
+            max={new Date().toISOString().slice(0, 10)}
+            onChange={(event) => setAttendanceDate(event.target.value)}
+            className="rounded-lg bg-[#070c1e] px-3 py-2 text-sm text-white"
+          />
+        </div>
+        {!isSundayDate(attendanceDate) && <p className="text-xs text-amber-300">Choose a Sunday to record attendance.</p>}
+      </div>
+
       {/* Visitor Journey Pathway Card */}
       <div className="p-5 bg-[#111d44] shadow-sm space-y-3">
         <h3 className="text-xs font-bold uppercase tracking-wider text-[#00f0ff]">
-          Assimilation Pathway
+          Visitor Follow-Up Steps
         </h3>
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
           {journeySteps.map((step, idx) => (
@@ -159,7 +195,7 @@ export const FirstTimersTracking: React.FC = () => {
             onChange={(e) => setFilterStage(e.target.value)}
             className="w-full sm:w-auto py-1.5 px-3 bg-[#070c1e] text-xs text-slate-200 focus:outline-none focus:ring-2 focus:ring-[#00f0ff] cursor-pointer"
           >
-            <option value="all">All Journey Stages</option>
+            <option value="all">All Follow-Up Stages</option>
             {journeySteps.map((s) => (
               <option key={s} value={s}>
                 {s}
@@ -176,7 +212,12 @@ export const FirstTimersTracking: React.FC = () => {
             No data recorded yet
           </div>
         ) : (
-          filteredVisitors.map((v) => (
+          filteredVisitors.map((v) => {
+            const attendanceMark = visitorAttendanceRecords.find((record) =>
+              record.visitorId === v.id && record.attendanceDate === attendanceDate
+            )?.status;
+            const attendanceStreak = getConsecutiveSundayAttendance(visitorAttendanceRecords, v.id);
+            return (
             <div
               key={v.id}
               className="p-4 bg-[#111d44] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 transition-all"
@@ -222,6 +263,30 @@ export const FirstTimersTracking: React.FC = () => {
                   </span>
                 </div>
 
+                <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
+                  <span className="text-[#a6c4eb]">
+                    Sunday attendance: {attendanceMark || 'Not recorded'} · Streak {attendanceStreak}/3
+                  </span>
+                  <button
+                    type="button"
+                    disabled={!isSundayDate(attendanceDate) || savingVisitorId === v.id}
+                    onClick={() => void handleVisitorAttendance(v, 'Present')}
+                    aria-pressed={attendanceMark === 'Present'}
+                    className={`rounded px-2.5 py-1.5 font-semibold disabled:opacity-40 ${attendanceMark === 'Present' ? 'bg-white text-black' : 'bg-[#16285a] text-white'}`}
+                  >
+                    <Check className="mr-1 inline h-3.5 w-3.5" /> Present
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!isSundayDate(attendanceDate) || savingVisitorId === v.id}
+                    onClick={() => void handleVisitorAttendance(v, 'Absent')}
+                    aria-pressed={attendanceMark === 'Absent'}
+                    className={`rounded px-2.5 py-1.5 font-semibold disabled:opacity-40 ${attendanceMark === 'Absent' ? 'bg-white text-black' : 'bg-[#16285a] text-white'}`}
+                  >
+                    Absent
+                  </button>
+                </div>
+
                 {v.notes && (
                   <p className="text-[11px] text-slate-300 italic pt-1">
                     &ldquo;{v.notes}&rdquo;
@@ -263,7 +328,7 @@ export const FirstTimersTracking: React.FC = () => {
                 </button>
               </div>
             </div>
-          ))
+          )})
         )}
       </div>
 

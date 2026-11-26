@@ -16,7 +16,8 @@ import {
   ChurchAnnouncement,
   ChurchEvent,
   SundayAbsenceReport,
-  SundayAbsenceCategory
+  SundayAbsenceCategory,
+  VisitorAttendanceRecord
 } from '../types/cms';
 import { supabase, isSupabaseConfigured } from '../../backend/client';
 import { formatGhanaianPhone } from '../utils/phone';
@@ -24,6 +25,7 @@ import { formatPhone } from '../utils/validation';
 import { getStoredSession } from '../utils/session';
 import { normalizeDate } from '../utils/date';
 import { mapError } from '../utils/errors';
+import { getConsecutiveSundayAttendance, isSundayDate } from '../utils/visitorAttendance';
 
 export interface CMSNotification {
   id: string;
@@ -70,7 +72,9 @@ interface CMSContextType {
   updateTaskStatus: (taskId: string, status: FollowUpStatus, note?: string) => Promise<{ success: boolean; error?: string }>;
   visitors: VisitorRecord[];
   visibleVisitors: VisitorRecord[];
-  registerVisitor: (data: Omit<VisitorRecord, 'id' | 'contactAttempts'>) => Promise<{ success: boolean; error?: string; visitor?: VisitorRecord }>;
+  visitorAttendanceRecords: VisitorAttendanceRecord[];
+  recordVisitorAttendance: (visitorId: string, date: string, status: 'Present' | 'Absent') => Promise<{ success: boolean; error?: string }>;
+  registerVisitor: (data: Omit<VisitorRecord, 'id' | 'contactAttempts' | 'linkedMemberId'>, linkedMemberId?: string) => Promise<{ success: boolean; error?: string; visitor?: VisitorRecord }>;
   shepherdReports: ShepherdReport[];
   submitReport: (reportId: string, narrative: string) => Promise<{ success: boolean; error?: string }>;
   approveReport: (reportId: string) => void;
@@ -169,6 +173,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Visitors
   const [visitors, setVisitors] = useState<VisitorRecord[]>([]);
+  const [visitorAttendanceRecords, setVisitorAttendanceRecords] = useState<VisitorAttendanceRecord[]>([]);
 
   // Reports
   const [shepherdReports, setShepherdReports] = useState<ShepherdReport[]>([]);
@@ -339,9 +344,19 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
               assignedShepherdName: v.assigned_shepherd_name || undefined,
               journeyStage: v.journey_stage,
               contactAttempts: v.contact_attempts || 0,
+              linkedMemberId: v.linked_member_id || undefined,
               notes: v.notes || undefined
             }))
           );
+        }
+        const { data: dbVisitorAttendance } = await supabase.from('visitor_attendance_records').select('*');
+        if (dbVisitorAttendance && isMounted) {
+          setVisitorAttendanceRecords(dbVisitorAttendance.map((record: any) => ({
+            id: record.id,
+            visitorId: record.visitor_id,
+            attendanceDate: record.attendance_date,
+            status: record.status
+          })));
         }
 
         // 8. Shepherds (from profiles)
@@ -827,6 +842,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   // Actions
   const registerMember = async (newMemData: Omit<Member, 'id' | 'registeredAt' | 'registeredBy'>): Promise<{ success: boolean; error?: string; member?: Member }> => {
+    if (currentUser.role !== 'pastor' && currentUser.role !== 'shepherd') {
+      return { success: false, error: 'Only a pastor or shepherd can add members.' };
+    }
     if (!newMemData || !newMemData.firstName?.trim() || !newMemData.phone?.trim()) {
       return { success: false, error: 'Please enter the required information.' };
     }
@@ -876,6 +894,7 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       phone: formattedPhone,
       email: newMemData.email?.trim() || '',
       dateOfBirth: normalizedDob || undefined,
+      status: 'Pending Verification',
       id: newId,
       registeredAt: new Date().toISOString().split('T')[0],
       registeredBy: currentUser.name || 'Senior Pastor'
@@ -927,6 +946,28 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
 
+    const visitorResult = await registerVisitor({
+      name: `${newMember.firstName} ${newMember.lastName}`.trim(),
+      phone: newMember.phone,
+      email: newMember.email,
+      visitDate: newMember.registeredAt,
+      serviceAttended: 'Sunday Service',
+      assignedShepherdId: newMember.currentShepherdId,
+      assignedShepherdName: newMember.currentShepherdName,
+      journeyStage: 'First Visit',
+      notes: newMember.generalNotes || ''
+    }, newMember.id);
+    if (!visitorResult.success) {
+      if (isSupabaseConfigured) {
+        const { error: rollbackError } = await supabase.from('members').delete().eq('id', newMember.id);
+        if (rollbackError) {
+          console.error('[Supabase registerMember] Could not roll back member after visitor tracking failed:', rollbackError);
+          return { success: false, error: `Member saved, but visitor tracking failed and the member could not be rolled back: ${visitorResult.error}` };
+        }
+      }
+      return { success: false, error: visitorResult.error || 'Unable to add this person to visitor follow-up.' };
+    }
+
     setMembers((prev) => [newMember, ...prev]);
 
     setAuditLogs((prev) => [
@@ -947,8 +988,12 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const registerVisitor = async (
-    data: Omit<VisitorRecord, 'id' | 'contactAttempts'>
+    data: Omit<VisitorRecord, 'id' | 'contactAttempts' | 'linkedMemberId'>,
+    linkedMemberId?: string
   ): Promise<{ success: boolean; error?: string; visitor?: VisitorRecord }> => {
+    if (currentUser.role !== 'pastor' && currentUser.role !== 'shepherd') {
+      return { success: false, error: 'Only a pastor or shepherd can register visitors.' };
+    }
     if (!data || !data.name?.trim() || !data.phone?.trim()) {
       return { success: false, error: 'Please enter the required information.' };
     }
@@ -967,58 +1012,22 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       serviceAttended: data.serviceAttended || 'Sunday Service',
       journeyStage: data.journeyStage || 'First Visit',
       contactAttempts: 0,
+      linkedMemberId,
       notes: data.notes || ''
     };
 
-    if (isSupabaseConfigured) {
-      try {
-        // Resolve shepherd UUID — column is nullable so null is acceptable
-        const shepherdUuid = getProfileUUID(newVisitor.assignedShepherdId) ?? null;
-
-        const visitorPayload: Record<string, any> = {
-          id: newId,
-          name: newVisitor.name,
-          phone: newVisitor.phone,
-          email: newVisitor.email || null,
-          visit_date: newVisitor.visitDate,
-          service_attended: newVisitor.serviceAttended,
-          invited_by: newVisitor.invitedBy || null,
-          assigned_shepherd_id: shepherdUuid,
-          assigned_shepherd_name: newVisitor.assignedShepherdName || null,
-          journey_stage: newVisitor.journeyStage,
-          contact_attempts: 0,
-          notes: newVisitor.notes || null
-        };
-
-        let { error } = await (supabase.from('visitors') as any).insert(visitorPayload);
-
-        // If shepherd FK fails (profile UUID not in DB), retry without shepherd FK
-        if (error && (error.code === '23503' || error.message?.includes('foreign key'))) {
-          console.warn('[Supabase registerVisitor] Shepherd FK failed, retrying without shepherd_id:', error.message);
-          const retryPayload = { ...visitorPayload, assigned_shepherd_id: null };
-          const retryResult = await (supabase.from('visitors') as any).insert(retryPayload);
-          error = retryResult.error;
-        }
-
-        if (error) {
-          console.error('[Supabase registerVisitor] Error:', error);
-          return { success: false, error: mapError(error).message };
-        }
-      } catch (err: any) {
-        console.error('[Supabase registerVisitor] Catch:', err);
-        return { success: false, error: mapError(err).message };
-      }
-    }
-
-    setVisitors((prev) => [newVisitor, ...prev]);
-
-    // Also enroll guest in member roster under 'Pending Verification' so they exist across church records
     const nameParts = newVisitor.name.split(' ');
     const firstName = nameParts[0] || '';
     const lastName = nameParts.slice(1).join(' ') || '—';
-    const guestMemberId = `CPI-M-${Date.now().toString().slice(-4)}`;
-
-    const guestMember: Member = {
+    const maxMemberNumber = members.reduce((max, member) => {
+      const match = member.id.match(/CPI-M-(\d+)/);
+      return match ? Math.max(max, Number(match[1])) : max;
+    }, 1032);
+    let guestMemberId = linkedMemberId || `CPI-M-${maxMemberNumber + 1}`;
+    while (!linkedMemberId && members.some((member) => member.id === guestMemberId)) {
+      guestMemberId = `CPI-M-${Number(guestMemberId.slice(6)) + 1}`;
+    }
+    const guestMember: Member | undefined = linkedMemberId ? undefined : {
       id: guestMemberId,
       firstName,
       lastName,
@@ -1035,9 +1044,219 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       generalNotes: `First-time guest. Invited by: ${newVisitor.invitedBy || 'Walk-in'}. ${newVisitor.notes || ''}`
     };
 
-    setMembers((prev) => [guestMember, ...prev]);
+    if (isSupabaseConfigured) {
+      try {
+        // Resolve shepherd UUID — column is nullable so null is acceptable
+        const shepherdUuid = getProfileUUID(newVisitor.assignedShepherdId) ?? null;
+
+        if (guestMember) {
+          const memberPayload = {
+            id: guestMember.id,
+            first_name: guestMember.firstName,
+            last_name: guestMember.lastName,
+            phone: guestMember.phone,
+            email: guestMember.email || null,
+            city: guestMember.city,
+            status: guestMember.status,
+            spiritual_stage: guestMember.spiritualStage,
+            cell_group: guestMember.cellGroup,
+            current_shepherd_id: shepherdUuid,
+            current_shepherd_name: guestMember.currentShepherdName || null,
+            registered_at: guestMember.registeredAt,
+            registered_by: guestMember.registeredBy,
+            general_notes: guestMember.generalNotes || null
+          };
+          const { error: memberError } = await (supabase.from('members') as any).insert(memberPayload);
+          if (memberError) return { success: false, error: mapError(memberError).message };
+        }
+
+        const visitorPayload: Record<string, any> = {
+          id: newId,
+          name: newVisitor.name,
+          phone: newVisitor.phone,
+          email: newVisitor.email || null,
+          visit_date: newVisitor.visitDate,
+          service_attended: newVisitor.serviceAttended,
+          invited_by: newVisitor.invitedBy || null,
+          assigned_shepherd_id: shepherdUuid,
+          assigned_shepherd_name: newVisitor.assignedShepherdName || null,
+          linked_member_id: guestMemberId,
+          journey_stage: newVisitor.journeyStage,
+          contact_attempts: 0,
+          notes: newVisitor.notes || null
+        };
+
+        let { error } = await (supabase.from('visitors') as any).insert(visitorPayload);
+
+        // If shepherd FK fails (profile UUID not in DB), retry without shepherd FK
+        if (error && (error.code === '23503' || error.message?.includes('foreign key'))) {
+          console.warn('[Supabase registerVisitor] Shepherd FK failed, retrying without shepherd_id:', error.message);
+          const retryPayload = { ...visitorPayload, assigned_shepherd_id: null };
+          const retryResult = await (supabase.from('visitors') as any).insert(retryPayload);
+          error = retryResult.error;
+        }
+
+        if (error) {
+          if (guestMember) {
+            const { error: rollbackError } = await supabase.from('members').delete().eq('id', guestMember.id);
+            if (rollbackError) {
+              console.error('[Supabase registerVisitor] Could not roll back pending member after visitor insert failed:', rollbackError);
+              return { success: false, error: `Visitor registration failed and the pending member could not be rolled back: ${mapError(error).message}` };
+            }
+          }
+          console.error('[Supabase registerVisitor] Error:', error);
+          return { success: false, error: mapError(error).message };
+        }
+      } catch (err: any) {
+        if (guestMember) {
+          const { error: rollbackError } = await supabase.from('members').delete().eq('id', guestMember.id);
+          if (rollbackError) {
+            console.error('[Supabase registerVisitor] Could not roll back pending member after visitor registration failed:', rollbackError);
+            return {
+              success: false,
+              error: `Visitor registration failed and the pending member could not be rolled back: ${mapError(err).message}`
+            };
+          }
+        }
+        console.error('[Supabase registerVisitor] Catch:', err);
+        return { success: false, error: mapError(err).message };
+      }
+    }
+
+    setVisitors((prev) => [newVisitor, ...prev]);
+    if (guestMember) setMembers((prev) => [guestMember, ...prev]);
 
     return { success: true, visitor: newVisitor };
+  };
+
+  const recordVisitorAttendance = async (
+    visitorId: string,
+    date: string,
+    status: 'Present' | 'Absent'
+  ): Promise<{ success: boolean; error?: string }> => {
+    if (!isSundayDate(date) || new Date(`${date}T00:00:00`) > new Date()) {
+      return { success: false, error: 'Choose a Sunday that is today or earlier.' };
+    }
+    const visitor = visibleVisitors.find((item) => item.id === visitorId);
+    if (!visitor || (currentUser.role !== 'pastor' && currentUser.role !== 'shepherd')) {
+      return { success: false, error: 'You do not have permission to record this visitor’s attendance.' };
+    }
+
+    const record: VisitorAttendanceRecord = {
+      id: `VATT-${visitorId}-${date}`,
+      visitorId,
+      attendanceDate: date,
+      status
+    };
+    const updatedRecords = [
+      ...visitorAttendanceRecords.filter((item) => !(item.visitorId === visitorId && item.attendanceDate === date)),
+      record
+    ];
+
+    if (isSupabaseConfigured) {
+      const { data: authData } = await supabase.auth.getUser();
+      const { error } = await supabase.from('visitor_attendance_records').upsert({
+        visitor_id: visitorId,
+        attendance_date: date,
+        status,
+        recorded_by: authData.user?.id || null,
+        recorded_at: new Date().toISOString()
+      }, { onConflict: 'visitor_id,attendance_date' });
+      if (error) return { success: false, error: mapError(error).message };
+    }
+
+    setVisitorAttendanceRecords(updatedRecords);
+    const attendanceStreak = getConsecutiveSundayAttendance(updatedRecords, visitorId);
+    if (attendanceStreak < 3 || visitor.journeyStage === 'Joined/Registered') {
+      return { success: true };
+    }
+
+    let linkedMemberId = visitor.linkedMemberId;
+    let member = linkedMemberId ? members.find((item) => item.id === linkedMemberId) : undefined;
+    if (!member) {
+      const normalizedPhone = visitor.phone.replace(/\D/g, '').replace(/^233/, '').replace(/^0/, '');
+      member = members.find((item) =>
+        item.phone.replace(/\D/g, '').replace(/^233/, '').replace(/^0/, '') === normalizedPhone
+      );
+    }
+    if (!member) {
+      const maxMemberNumber = members.reduce((max, item) => {
+        const match = item.id.match(/CPI-M-(\d+)/);
+        return match ? Math.max(max, Number(match[1])) : max;
+      }, 1032);
+      linkedMemberId = `CPI-M-${maxMemberNumber + 1}`;
+      const nameParts = visitor.name.split(' ');
+      member = {
+        id: linkedMemberId,
+        firstName: nameParts[0] || '',
+        lastName: nameParts.slice(1).join(' ') || '—',
+        phone: visitor.phone,
+        email: visitor.email,
+        city: 'Central District',
+        status: 'New Member',
+        spiritualStage: 'New Convert',
+        cellGroup: visitor.assignedShepherdName ? `${visitor.assignedShepherdName}'s Group` : 'First-Timers Care',
+        currentShepherdId: visitor.assignedShepherdId,
+        currentShepherdName: visitor.assignedShepherdName,
+        registeredAt: visitor.visitDate,
+        registeredBy: currentUser.name,
+        generalNotes: `Completed three consecutive Sunday attendances. ${visitor.notes || ''}`
+      };
+      if (isSupabaseConfigured) {
+        const payload = {
+          id: member.id,
+          first_name: member.firstName,
+          last_name: member.lastName,
+          phone: member.phone,
+          email: member.email || null,
+          city: member.city,
+          status: member.status,
+          spiritual_stage: member.spiritualStage,
+          cell_group: member.cellGroup,
+          current_shepherd_id: getProfileUUID(member.currentShepherdId),
+          current_shepherd_name: member.currentShepherdName || null,
+          registered_at: member.registeredAt,
+          registered_by: member.registeredBy,
+          general_notes: member.generalNotes || null
+        };
+        const { error } = await (supabase.from('members') as any).insert(payload);
+        if (error) return { success: false, error: `Attendance saved, but membership promotion failed: ${mapError(error).message}` };
+      }
+      setMembers((previous) => [member!, ...previous]);
+    } else {
+      linkedMemberId = member.id;
+      if (member.status !== 'New Member') {
+        if (isSupabaseConfigured) {
+          const { error } = await supabase.from('members').update({ status: 'New Member' }).eq('id', member.id);
+          if (error) return { success: false, error: `Attendance saved, but membership promotion failed: ${mapError(error).message}` };
+        }
+        member = { ...member, status: 'New Member' };
+        setMembers((previous) => previous.map((item) => item.id === member!.id ? member! : item));
+      }
+    }
+
+    if (isSupabaseConfigured) {
+      const { error } = await supabase.from('visitors').update({
+        linked_member_id: linkedMemberId,
+        journey_stage: 'Joined/Registered'
+      }).eq('id', visitorId);
+      if (error) return { success: false, error: `Member was added, but the visitor record could not be updated: ${mapError(error).message}` };
+    }
+
+    setVisitors((previous) => previous.map((item) => item.id === visitorId
+      ? { ...item, linkedMemberId, journeyStage: 'Joined/Registered' }
+      : item));
+    setAuditLogs((previous) => [{
+      id: `LOG-${Date.now()}`,
+      timestamp: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      actorName: currentUser.name,
+      actorRole: currentUser.role,
+      action: 'PROMOTE_VISITOR',
+      entityType: 'Member',
+      entityId: linkedMemberId || '',
+      details: `Moved ${visitor.name} to the member attendance list after three consecutive Sunday attendances.`
+    }, ...previous]);
+    return { success: true };
   };
 
   const updateMember = async (memberId: string, updates: Partial<Member>): Promise<{ success: boolean; error?: string }> => {
@@ -1187,8 +1406,14 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const deleteMember = async (memberId: string): Promise<{ success: boolean; error?: string }> => {
+    if (currentUser.role !== 'pastor' && currentUser.role !== 'shepherd') {
+      return { success: false, error: 'Only a pastor or shepherd can delete members.' };
+    }
     if (!memberId) return { success: false, error: 'Invalid member.' };
     const target = members.find((member) => member.id === memberId);
+    if (!target || (currentUser.role === 'shepherd' && !visibleMembers.some((member) => member.id === memberId))) {
+      return { success: false, error: 'You can only delete members in your assigned shepherd group.' };
+    }
     if (isSupabaseConfigured) {
       try {
         const { error } = await supabase.from('members').delete().eq('id', memberId);
@@ -1208,6 +1433,9 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }
     }
     setMembers((prev) => prev.filter((member) => member.id !== memberId));
+    setVisitors((prev) => prev.map((visitor) => visitor.linkedMemberId === memberId
+      ? { ...visitor, linkedMemberId: undefined }
+      : visitor));
     return { success: true };
   };
 
@@ -1961,6 +2189,8 @@ export const CMSProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         visitors,
         visibleVisitors,
         registerVisitor,
+        visitorAttendanceRecords,
+        recordVisitorAttendance,
         shepherdReports,
         submitReport,
         approveReport,

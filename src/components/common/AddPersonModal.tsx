@@ -6,12 +6,14 @@ import { validateName, validatePhone, validateEmail, validateDob, formatPhone } 
 interface AddPersonModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onRegistered?: () => void;
   defaultMode?: 'member' | 'guest';
 }
 
 export const AddPersonModal: React.FC<AddPersonModalProps> = ({
   isOpen,
   onClose,
+  onRegistered,
   defaultMode = 'member'
 }) => {
   const { currentUser, shepherds, registerMember, registerVisitor } = useCMS();
@@ -94,6 +96,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
           });
           setTimeout(() => {
             onClose();
+            onRegistered?.();
             resetForm();
           }, 1200);
         } else {
@@ -131,6 +134,7 @@ export const AddPersonModal: React.FC<AddPersonModalProps> = ({
           });
           setTimeout(() => {
             onClose();
+            onRegistered?.();
             resetForm();
           }, 1200);
         } else {

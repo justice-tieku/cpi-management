@@ -76,10 +76,11 @@ Every table has **Row Level Security (RLS)** enabled with strict policies:
 ### Shepherd account creation (Render)
 The shepherd-creation API uses Supabase Auth administrative operations. In the Render service environment, set `SUPABASE_SECRET_KEY` (or `SUPABASE_SERVICE_ROLE_KEY`) to a server-side Supabase key with admin permissions. Never put this key in a `VITE_` frontend variable. The PPIT migration must also be applied because the API writes `profiles.is_ppit_shepherd`.
 
-### Step 5: Connect to the Frontend
-For an existing database, run [backend/gender_migration.sql](gender_migration.sql) in Supabase SQL Editor to enable optional gender reporting. Existing people remain “Not specified” until their records are updated.
+### Step 5: Update an Existing Database
+For an existing database, run [backend/gender_migration.sql](gender_migration.sql) and [backend/workflow_permissions_migration.sql](workflow_permissions_migration.sql) in Supabase SQL Editor. The workflow migration adds visitor attendance tracking, visitor-to-member links, and the pastor/shepherd and PPIT permissions used by the updated app.
 
-Create or open the `.env` file in the root of the project:
+### Step 6: Connect to the Frontend
+Existing people remain “Not specified” for gender until their records are updated. Create or open the `.env` file in the root of the project:
 
 ```env
 VITE_SUPABASE_URL=https://your-project-id.supabase.co

@@ -142,7 +142,7 @@ const CMSApp: React.FC = () => {
   // Simple, clean, short titles & descriptions with "Shepherd" terminology
   const screenTitles: Record<ActiveScreen, { title: string; subtitle: string }> = {
     dashboard: {
-      title: isPastor ? 'Dashboard' : 'My Shepherd Dashboard',
+      title: isPastor ? 'Dashboard' : 'Shepherd Dashboard',
       subtitle: isPastor ? 'Overview & key metrics' : 'Flock overview & status'
     },
     members: {
@@ -158,7 +158,7 @@ const CMSApp: React.FC = () => {
       subtitle: isPastor ? 'Sunday service roll & Red List' : 'Sunday attendance & Red List'
     },
     'first-timers': {
-      title: 'First Timers',
+      title: 'First Timers & Visitors',
       subtitle: 'Guest registry & follow-up'
     },
     care: {
@@ -222,7 +222,7 @@ const CMSApp: React.FC = () => {
             : 'overflow-y-auto pb-12'
         }`}>
           {activeScreen === 'dashboard' && (isPastor ? <ExecutiveDashboard onNavigate={setActiveScreen} /> : <ShepherdDashboard onNavigate={setActiveScreen} />)}
-          {activeScreen === 'members' && <MemberDirectory />}
+          {activeScreen === 'members' && <MemberDirectory onRegistered={() => setActiveScreen('first-timers')} />}
           {activeScreen === 'shepherds' && <ShepherdAssignmentManagement />}
           {activeScreen === 'attendance' && <AttendanceRecording />}
           {activeScreen === 'first-timers' && <FirstTimersTracking />}
@@ -240,6 +240,9 @@ const CMSApp: React.FC = () => {
       <AddPersonModal
         isOpen={isAddPersonOpen}
         onClose={() => setIsAddPersonOpen(false)}
+        onRegistered={() => {
+          if (activeScreen === 'members') setActiveScreen('first-timers');
+        }}
         defaultMode={activeScreen === 'first-timers' ? 'guest' : 'member'}
       />
     </div>

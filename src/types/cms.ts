@@ -163,7 +163,15 @@ export interface VisitorRecord {
   assignedShepherdName?: string;
   journeyStage: VisitorJourney;
   contactAttempts: number;
+  linkedMemberId?: string;
   notes?: string;
+}
+
+export interface VisitorAttendanceRecord {
+  id: string;
+  visitorId: string;
+  attendanceDate: string;
+  status: 'Present' | 'Absent';
 }
 
 export interface ShepherdReport {

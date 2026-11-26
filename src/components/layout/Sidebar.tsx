@@ -146,7 +146,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const renderSidebarContent = (isMobileView = false) => (
     <div className="flex flex-col h-full justify-between">
       {/* Brand Header */}
-      <div>
+      <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="p-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <img
@@ -228,7 +228,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Footer Logout */}
-      <div className="p-3">
+      <div className="shrink-0 p-3">
         <button
           onClick={() => {
             if (onMobileClose) onMobileClose();

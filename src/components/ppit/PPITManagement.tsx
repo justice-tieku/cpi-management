@@ -63,6 +63,7 @@ export const PPITManagement: React.FC = () => {
   const [editingMember, setEditingMember] = useState<PpitMember | null>(null);
   const [isCreatingMember, setIsCreatingMember] = useState(false);
   const [memberForm, setMemberForm] = useState({ name: '', branch: '', contact: '', gender: '' as '' | 'Male' | 'Female' });
+  const [memberFormError, setMemberFormError] = useState('');
   const [isSavingMember, setIsSavingMember] = useState(false);
   const attendanceDirtyRef = useRef(false);
   const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -280,35 +281,38 @@ export const PPITManagement: React.FC = () => {
   const openNewMember = () => {
     setEditingMember(null);
     setMemberForm({ name: '', branch: '', contact: '', gender: '' });
+    setMemberFormError('');
     setIsCreatingMember(true);
   };
 
   const openEditMember = (member: PpitMember) => {
     setEditingMember(member);
     setMemberForm({ name: member.name, branch: member.branch, contact: member.contact || '', gender: member.gender || '' });
+    setMemberFormError('');
     setIsCreatingMember(true);
   };
 
   const handleSaveMember = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!canManage) {
-      setNotice({ message: 'Only the assigned PPIT shepherd can manage this roster.', isError: true });
+      setMemberFormError('Only the assigned PPIT shepherd can manage this roster.');
       return;
     }
     const name = memberForm.name.trim();
     const branch = memberForm.branch.trim();
     if (name.length < 2 || branch.length < 2) {
-      setNotice({ message: 'Enter the member name and branch.', isError: true });
+      setMemberFormError('Enter the member name and branch.');
       return;
     }
     const rawContact = memberForm.contact.trim();
     const phoneError = getPpitMobileError(rawContact, members, editingMember?.id);
     if (phoneError) {
-      setNotice({ message: phoneError, isError: true });
+      setMemberFormError(phoneError);
       return;
     }
 
     setIsSavingMember(true);
+    setMemberFormError('');
     setNotice(null);
     try {
       const payload = {
@@ -335,7 +339,7 @@ export const PPITManagement: React.FC = () => {
         isError: !refreshed
       });
     } catch (saveError) {
-      setNotice({ message: mapError(saveError).message, isError: true });
+      setMemberFormError(mapError(saveError).message);
     } finally {
       setIsSavingMember(false);
     }
@@ -781,7 +785,7 @@ export const PPITManagement: React.FC = () => {
           {rosterMembers.length === 0 && <p className="py-6 text-center text-sm text-[#a6c4eb]">The PPIT roster is empty.</p>}
           {canManage && (
             <div className="flex items-center justify-between border-t border-white/5 pt-4">
-              <span className="text-xs text-[#a6c4eb]">{hasUnsavedAttendance ? 'Unsaved attendance changes' : 'Changes save to Supabase'}</span>
+              {hasUnsavedAttendance && <span className="text-xs text-[#a6c4eb]">Unsaved attendance changes</span>}
               <button type="button" onClick={() => void handleSaveAttendance()} disabled={isSaving || isFutureDate(sessionDate) || rosterMembers.length === 0} className="flex items-center gap-2 rounded-lg bg-[#00f0ff] px-4 py-2.5 text-xs font-bold text-[#070c1e] disabled:opacity-50">
                 <Save className="h-4 w-4" /> {isSaving ? 'Saving…' : 'Save attendance'}
               </button>
@@ -826,17 +830,18 @@ export const PPITManagement: React.FC = () => {
               <h2 id="ppit-member-modal-title" className="text-base font-bold text-white">{editingMember ? 'Edit PPIT member' : 'Add PPIT member'}</h2>
               <button type="button" onClick={() => setIsCreatingMember(false)} aria-label="Close dialog" className="rounded-lg p-2 text-[#a6c4eb] hover:bg-[#16285a]"><X className="h-4 w-4" /></button>
             </div>
+            {memberFormError && <div className="rounded-lg border border-[#ff6b8b]/30 bg-[#38141e] p-3 text-sm text-[#ff9caf]" role="alert">{memberFormError}</div>}
             <label className="block text-xs text-[#a6c4eb]">
               Full name
-              <input required minLength={2} maxLength={120} value={memberForm.name} onChange={(event) => setMemberForm((form) => ({ ...form, name: event.target.value }))} className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
+              <input required minLength={2} maxLength={120} value={memberForm.name} onChange={(event) => { setMemberForm((form) => ({ ...form, name: event.target.value })); setMemberFormError(''); }} className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
             </label>
             <label className="block text-xs text-[#a6c4eb]">
               Branch
-              <input required minLength={2} maxLength={120} value={memberForm.branch} onChange={(event) => setMemberForm((form) => ({ ...form, branch: event.target.value }))} className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
+              <input required minLength={2} maxLength={120} value={memberForm.branch} onChange={(event) => { setMemberForm((form) => ({ ...form, branch: event.target.value })); setMemberFormError(''); }} className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
             </label>
             <label className="block text-xs text-[#a6c4eb]">
               Mobile number (optional)
-              <input type="tel" inputMode="tel" maxLength={18} value={memberForm.contact} onChange={(event) => setMemberForm((form) => ({ ...form, contact: event.target.value }))} placeholder="e.g. 024 123 4567" className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
+              <input type="tel" inputMode="tel" maxLength={18} value={memberForm.contact} onChange={(event) => { setMemberForm((form) => ({ ...form, contact: event.target.value })); setMemberFormError(''); }} placeholder="e.g. 024 123 4567" className="mt-1 w-full rounded-lg bg-[#070c1e] px-3 py-2.5 text-sm text-white outline-none focus:ring-2 focus:ring-[#00f0ff]" />
             </label>
             <label className="block text-xs text-[#a6c4eb]">
               Gender (optional)

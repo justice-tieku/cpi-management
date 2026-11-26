@@ -67,6 +67,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
   const [isPpitShepherd, setIsPpitShepherd] = useState(false);
   const [isCreatingShepherd, setIsCreatingShepherd] = useState(false);
   const [inviteError, setInviteError] = useState('');
+  const [shepherdPhoneError, setShepherdPhoneError] = useState('');
   const [createdCredentials, setCreatedCredentials] = useState<{
     name: string;
     email: string;
@@ -86,12 +87,13 @@ export const ShepherdAssignmentManagement: React.FC = () => {
       if (emailErr) errors.push(emailErr);
     }
     const phoneErr = newShepherdPhone.trim() ? validatePhone(newShepherdPhone) : null;
+    setShepherdPhoneError(phoneErr || '');
     if (phoneErr) errors.push(phoneErr);
     const cellErr = validateText(newShepherdCell, 'Cell name', 2, 120);
     if (cellErr) errors.push(cellErr);
     if (newShepherdPassword.trim().length < 6) errors.push('Password must be at least 6 characters.');
     if (errors.length > 0) {
-      setInviteError(errors.join(' '));
+      setInviteError(errors.filter((error) => error !== phoneErr).join(' '));
       return;
     }
 
@@ -125,6 +127,7 @@ export const ShepherdAssignmentManagement: React.FC = () => {
       setNewShepherdName('');
       setNewShepherdEmail('');
       setNewShepherdPhone('');
+      setShepherdPhoneError('');
       setNewShepherdCell('');
       setNewShepherdPassword('');
       setIsPpitShepherd(false);
@@ -309,6 +312,7 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
             onClick={() => {
               setCreatedCredentials(null);
               setInviteError('');
+              setShepherdPhoneError('');
               setShowInviteModal(true);
             }}
             className="px-3.5 py-1.5 bg-[#00ff9d] hover:bg-[#3bf2ff] text-[#070c1e] text-xs font-bold transition-colors cursor-pointer flex items-center gap-1.5 shadow-sm"
@@ -953,10 +957,17 @@ Please sign in and lead your flock in prayer and discipleship. God bless you!`;
                     <input
                       type="tel"
                       value={newShepherdPhone}
-                      onChange={(e) => setNewShepherdPhone(e.target.value)}
+                      onChange={(e) => {
+                        setNewShepherdPhone(e.target.value);
+                        if (shepherdPhoneError) setShepherdPhoneError(e.target.value.trim() ? validatePhone(e.target.value) || '' : '');
+                      }}
+                      onBlur={() => setShepherdPhoneError(newShepherdPhone.trim() ? validatePhone(newShepherdPhone) || '' : '')}
+                      aria-invalid={!!shepherdPhoneError}
+                      aria-describedby={shepherdPhoneError ? 'shepherd-phone-error' : undefined}
                       placeholder="+233 54 000 0000"
-                      className="w-full px-3 py-2 bg-[#0a122e] text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#00f0ff]"
+                      className={`w-full px-3 py-2 bg-[#0a122e] text-xs text-white focus:outline-none focus:ring-1 focus:ring-[#00f0ff] ${shepherdPhoneError ? 'ring-1 ring-[#ff6b8b]' : ''}`}
                     />
+                    {shepherdPhoneError && <p id="shepherd-phone-error" className="mt-1 text-[10px] text-[#ff9caf]" role="alert">{shepherdPhoneError}</p>}
                   </div>
                   <div>
                     <label className="text-[11px] font-semibold text-[#a6c4eb] block mb-1">
